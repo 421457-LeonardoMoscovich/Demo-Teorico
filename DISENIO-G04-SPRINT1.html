@@ -1,0 +1,1094 @@
+<title>Tema 04 — Teóricos y Encuestas · Diseño Sprint 1</title>
+
+<style>
+  :root {
+    --paper:      #ffffff;
+    --paper-2:    #f4f6f8;
+    --ink:        #0f1922;
+    --ink-2:      #46586a;
+    --muted:      #6b7d8d;
+    --rule:       #dae1e7;
+    --rule-2:     #eaeef1;
+    --accent:     #10607f;
+    --accent-2:   #e7f1f5;
+    --flag:       #a8461c;
+    --flag-2:     #fbeee8;
+    --ok:         #2d6a4c;
+    --ok-2:       #e9f2ed;
+
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+
+    --measure: 68ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:    #0e161d;
+      --paper-2:  #16212b;
+      --ink:      #e3ebf1;
+      --ink-2:    #a8bccc;
+      --muted:    #8399a9;
+      --rule:     #26343f;
+      --rule-2:   #1c2831;
+      --accent:   #5fb4d6;
+      --accent-2: #12303d;
+      --flag:     #e08a5f;
+      --flag-2:   #332016;
+      --ok:       #7dc0a0;
+      --ok-2:     #172b23;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0e161d; --paper-2:#16212b; --ink:#e3ebf1; --ink-2:#a8bccc;
+    --muted:#8399a9; --rule:#26343f; --rule-2:#1c2831; --accent:#5fb4d6;
+    --accent-2:#12303d; --flag:#e08a5f; --flag-2:#332016; --ok:#7dc0a0; --ok-2:#172b23;
+  }
+  :root[data-theme="light"] {
+    --paper:#ffffff; --paper-2:#f4f6f8; --ink:#0f1922; --ink-2:#46586a;
+    --muted:#6b7d8d; --rule:#dae1e7; --rule-2:#eaeef1; --accent:#10607f;
+    --accent-2:#e7f1f5; --flag:#a8461c; --flag-2:#fbeee8; --ok:#2d6a4c; --ok-2:#e9f2ed;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding: 3.5rem 0 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.1rem;
+  }
+  .masthead h1 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -.025em;
+    text-wrap: balance;
+    margin-bottom: .6rem;
+  }
+  .masthead .dek {
+    color: var(--ink-2);
+    font-size: 1.1rem;
+    max-width: 60ch;
+    margin-bottom: 1.8rem;
+  }
+  .stamp {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 2.25rem;
+    font-family: var(--mono);
+    font-size: .76rem;
+    color: var(--muted);
+  }
+  .stamp b { color: var(--ink); font-weight: 500; }
+
+  /* ---------- shell ---------- */
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 clamp(1.1rem, 4vw, 2.5rem) 6rem; }
+  .col { max-width: var(--measure); }
+
+  section { margin-bottom: 4rem; scroll-margin-top: 5rem; }
+
+  h2 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -.015em;
+    line-height: 1.2;
+    text-wrap: balance;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--rule);
+    margin-bottom: 1.4rem;
+    display: flex;
+    align-items: baseline;
+    gap: .85rem;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: .82rem;
+    font-weight: 400;
+    color: var(--accent);
+    letter-spacing: .08em;
+    flex: none;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-weight: 650;
+    font-size: 1.06rem;
+    letter-spacing: -.005em;
+    margin: 2.2rem 0 .75rem;
+  }
+  p { margin-bottom: 1.05rem; }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 700; }
+  em { font-style: italic; color: var(--ink-2); }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible, .navlink:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ul, ol { margin: 0 0 1.05rem 0; padding-left: 1.3rem; }
+  li { margin-bottom: .45rem; }
+  li::marker { color: var(--muted); }
+
+  code {
+    font-family: var(--mono);
+    font-size: .85em;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-2);
+    border-radius: 3px;
+    padding: .08em .34em;
+  }
+
+  /* ---------- nav ---------- */
+  .toc {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 2.5rem;
+    overflow-x: auto;
+  }
+  .toc-inner {
+    display: flex; gap: 1.5rem;
+    padding: .8rem 0;
+    font-family: var(--mono);
+    font-size: .74rem;
+    letter-spacing: .04em;
+    white-space: nowrap;
+  }
+  .navlink { color: var(--muted); text-decoration: none; }
+  .navlink:hover { color: var(--accent); }
+
+  /* ---------- tables ---------- */
+  .scroller { overflow-x: auto; margin-bottom: 1.4rem; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 460px;
+    font-family: var(--sans);
+    font-size: .88rem;
+    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    text-align: left;
+    font-weight: 650;
+    font-size: .72rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1.5px solid var(--ink);
+    padding: 0 .8rem .5rem 0;
+    vertical-align: bottom;
+  }
+  td {
+    padding: .62rem .8rem .62rem 0;
+    border-bottom: 1px solid var(--rule-2);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: 1px solid var(--rule); }
+  td.id, th.id { font-family: var(--mono); font-size: .78rem; color: var(--accent); white-space: nowrap; width: 1%; }
+  td.path { font-family: var(--mono); font-size: .78rem; }
+  .verb {
+    font-family: var(--mono); font-size: .7rem; font-weight: 600;
+    letter-spacing: .06em; color: var(--muted);
+  }
+
+  /* ---------- callouts ---------- */
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-2);
+    padding: 1rem 1.15rem;
+    margin: 1.6rem 0;
+    font-size: .95rem;
+  }
+  .note.flag { border-left-color: var(--flag); background: var(--flag-2); }
+  .note .lbl {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .45rem;
+  }
+  .note.flag .lbl { color: var(--flag); }
+  .note p:last-child { margin-bottom: 0; }
+
+  /* ---------- ownership split ---------- */
+  .split { display: grid; gap: 1.5rem; margin-bottom: 1.5rem; }
+  @media (min-width: 720px) { .split { grid-template-columns: 1fr 1fr; } }
+  .panel { border: 1px solid var(--rule); padding: 1.15rem 1.25rem; }
+  .panel h4 {
+    font-family: var(--mono);
+    font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: .8rem; padding-bottom: .5rem;
+    border-bottom: 1px solid var(--rule-2);
+  }
+  .panel.own { border-color: var(--accent); }
+  .panel.own h4 { color: var(--accent); }
+  .panel.notown h4 { color: var(--muted); }
+  .panel ul { margin: 0; padding-left: 1.1rem; font-family: var(--sans); font-size: .88rem; line-height: 1.5; }
+  .panel li { margin-bottom: .5rem; }
+  .panel .who { color: var(--muted); font-size: .95em; }
+
+  /* ---------- figures ---------- */
+  figure { margin: 2rem 0; }
+  figure svg { display: block; width: 100%; max-width: 100%; height: auto; }
+  .figbox { border: 1px solid var(--rule); padding: 1.5rem 1.25rem 1.1rem; background: var(--paper-2); overflow-x: auto; }
+  figcaption {
+    font-family: var(--sans);
+    font-size: .82rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-top: .9rem;
+    max-width: 62ch;
+  }
+  figcaption b { color: var(--ink-2); font-weight: 650; }
+
+  /* svg tokens */
+  .s-box  { fill: var(--paper); stroke: var(--ink-2); stroke-width: 1.2; }
+  .s-ours { fill: var(--accent-2); stroke: var(--accent); stroke-width: 1.6; }
+  .s-db   { fill: var(--paper); stroke: var(--muted); stroke-width: 1.2; }
+  .s-line { stroke: var(--ink-2); stroke-width: 1.3; fill: none; }
+  .s-acc  { stroke: var(--accent); stroke-width: 1.7; fill: none; }
+  .s-dash { stroke: var(--flag); stroke-width: 1.6; fill: none; stroke-dasharray: 6 5; }
+  .s-t    { font-family: var(--sans); font-size: 13px; fill: var(--ink); }
+  .s-t-b  { font-family: var(--sans); font-size: 13px; font-weight: 650; fill: var(--ink); }
+  .s-lbl  { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); }
+  .s-lbl-a{ font-family: var(--mono); font-size: 10.5px; fill: var(--accent); }
+  .s-lbl-f{ font-family: var(--mono); font-size: 10.5px; fill: var(--flag); }
+  .s-sub  { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+
+  /* ---------- decisions ---------- */
+  .dec { border-top: 1px solid var(--rule-2); padding: 1rem 0; display: grid; gap: .3rem .95rem; }
+  @media (min-width: 640px) { .dec { grid-template-columns: 4.5rem 1fr; } }
+  .dec:first-of-type { border-top: 1px solid var(--ink); }
+  .dec .tag {
+    font-family: var(--mono); font-size: .74rem; color: var(--accent);
+    letter-spacing: .04em; padding-top: .18rem;
+  }
+  .dec .what { font-family: var(--sans); font-size: .96rem; font-weight: 600; line-height: 1.4; }
+  .dec .why { font-size: .88rem; color: var(--ink-2); font-family: var(--sans); line-height: 1.5; grid-column: -2 / -1; }
+
+  /* ---------- todo board ---------- */
+  .board { display: grid; gap: 1.75rem; }
+  @media (min-width: 860px) { .board { grid-template-columns: 1fr 1fr; } }
+  .track h3 { margin-top: 0; display: flex; align-items: baseline; gap: .6rem; }
+  .track h3 .cnt { font-family: var(--mono); font-size: .72rem; font-weight: 400; color: var(--muted); }
+  .todo { list-style: none; padding: 0; margin: 0; font-family: var(--sans); font-size: .87rem; }
+  .todo li {
+    display: grid; grid-template-columns: 3.1rem 1fr; gap: .7rem;
+    padding: .55rem 0; border-bottom: 1px solid var(--rule-2); margin: 0;
+    line-height: 1.42;
+  }
+  .todo .k { font-family: var(--mono); font-size: .76rem; color: var(--accent); }
+  .todo .dep { display: block; font-family: var(--mono); font-size: .68rem; color: var(--muted); margin-top: .15rem; }
+  .todo li.crit .k { font-weight: 700; }
+  .todo li.crit .t::after {
+    content: "ruta crítica";
+    font-family: var(--mono); font-size: .62rem; letter-spacing: .07em;
+    color: var(--flag); border: 1px solid var(--flag); border-radius: 2px;
+    padding: .05em .3em; margin-left: .45rem; white-space: nowrap;
+  }
+
+  /* ---------- assumptions ---------- */
+  .asum { list-style: none; padding: 0; margin: 0 0 1.4rem; font-family: var(--sans); font-size: .9rem; }
+  .asum li {
+    display: grid; grid-template-columns: 1.6rem 1fr auto; gap: .7rem;
+    align-items: baseline;
+    padding: .62rem 0; border-bottom: 1px solid var(--rule-2); margin: 0;
+  }
+  .asum .n { font-family: var(--mono); font-size: .76rem; color: var(--muted); }
+  .asum .q {
+    font-family: var(--mono); font-size: .7rem; color: var(--muted);
+    white-space: nowrap; border: 1px solid var(--rule); border-radius: 2px; padding: .1em .4em;
+  }
+  .asum li.risk .q { color: var(--flag); border-color: var(--flag); }
+
+  footer {
+    border-top: 2px solid var(--ink);
+    padding-top: 1.2rem;
+    font-family: var(--mono);
+    font-size: .74rem;
+    color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: .4rem 2rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Programación IV · Back End · Grupo 4</div>
+    <h1>Tema 04 — Teóricos y Encuestas</h1>
+    <p class="dek">Documento de diseño y planificación del Sprint 1: frontera del dominio, modelo de datos, contratos con los demás equipos y desglose de tareas.</p>
+    <div class="stamp">
+      <span>Servicio <b>ms-teoricos-encuestas</b></span>
+      <span>Stack <b>Spring Boot · Eureka · Gateway · PostgreSQL · Kafka</b></span>
+      <span>Entregable <b>Diseño + planificación</b></span>
+      <span>Equipo <b>10 personas · 3 frentes</b></span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Secciones">
+    <div class="toc-inner">
+      <a class="navlink" href="#alcance">01 Alcance</a>
+      <a class="navlink" href="#decisiones">02 Decisiones</a>
+      <a class="navlink" href="#estructura">03 Estructura</a>
+      <a class="navlink" href="#datos">04 Datos</a>
+      <a class="navlink" href="#anonimato">05 Anonimato</a>
+      <a class="navlink" href="#contratos">06 Contratos</a>
+      <a class="navlink" href="#supuestos">07 Supuestos</a>
+      <a class="navlink" href="#todos">08 Tareas</a>
+      <a class="navlink" href="#backlog">09 Backlog</a>
+    </div>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section id="alcance">
+    <h2><span class="num">01</span> Alcance del tema</h2>
+
+    <div class="col">
+      <p>El reparto nos asigna dos subdominios: los <strong>ítems teóricos y su corrección</strong>, y las <strong>encuestas de satisfacción</strong> que alimentan los KPI-01 y KPI-02 del producto. Comparten un solo concepto —el curso-cohorte— y ninguna entidad.</p>
+      <p>La frontera importa más que el alcance: buena parte de lo que parece nuestro es, en realidad, de otro equipo.</p>
+    </div>
+
+    <div class="split">
+      <div class="panel own">
+        <h4>Somos dueños</h4>
+        <ul>
+          <li><strong>Ítem teórico</strong> — la pregunta concreta, versionada, con su tipo, enunciado y criterio de corrección</li>
+          <li><strong>Banco de ítems</strong> — colección reutilizable del profesor <span class="who">(RF-DES-02)</span></li>
+          <li><strong>Respuesta del alumno</strong> a cada ítem de un intento</li>
+          <li><strong>Corrección</strong> — nota y aprobado/desaprobado</li>
+          <li><strong>Instrumento de encuesta</strong> — la campaña, no la encuesta individual</li>
+          <li><strong>Marcador de cumplimiento</strong> — binario, sin contenido <span class="who">(RF-ENC-12)</span></li>
+          <li><strong>Respuesta de encuesta</strong> — puntaje y comentario, sin autor <span class="who">(RF-ENC-04)</span></li>
+        </ul>
+      </div>
+      <div class="panel notown">
+        <h4>No somos dueños</h4>
+        <ul>
+          <li><strong>Ciclo de vida del desafío</strong>, entrega, estados, fechas, versionado <span class="who">→ Tema 03</span><br><span class="who">Teórico y práctico son dos tipos del mismo desafío, y eso vive una sola vez.</span></li>
+          <li><strong>XP, monedas, vidas, ranking</strong> <span class="who">→ Tema 10</span><br><span class="who">Emitimos el hecho; el efecto económico lo decide el 10.</span></li>
+          <li><strong>Pertenencia a la cohorte</strong> y su ciclo de vida <span class="who">→ Tema 02</span></li>
+          <li><strong>Identidad, roles y validación del token</strong> <span class="who">→ Tema 01</span></li>
+          <li><strong>Moderación de contenido</strong> <span class="who">→ Tema 11</span> — la consumimos</li>
+        </ul>
+      </div>
+    </div>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 880 400" role="img" aria-label="Camino de una solicitud: el cliente entra por el API Gateway, que resuelve la instancia contra Eureka y rutea; cuando ms-teoricos necesita al Tema 02, la llamada sale y vuelve a entrar por el gateway, nunca directo.">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- cliente -->
+          <rect class="s-box" x="360" y="14" width="160" height="42" rx="2"/>
+          <text class="s-t" x="440" y="40" text-anchor="middle">Front · Alumno / Profesor</text>
+
+          <!-- eureka -->
+          <rect class="s-box" x="700" y="14" width="150" height="42" rx="2"/>
+          <text class="s-t" x="775" y="40" text-anchor="middle">Eureka</text>
+
+          <!-- gateway -->
+          <rect class="s-ours" x="30" y="104" width="820" height="46" rx="2"/>
+          <text class="s-t-b" x="52" y="133">API Gateway</text>
+          <text class="s-lbl-a" x="168" y="133">única puerta de entrada · valida token · balancea</text>
+
+          <!-- cliente -> gateway -->
+          <g color="var(--ink-2)">
+            <line class="s-line" x1="440" y1="56" x2="440" y2="100" marker-end="url(#ar)"/>
+          </g>
+          <!-- gateway <-> eureka -->
+          <g color="var(--muted)">
+            <path class="s-line" style="stroke-dasharray:5 4" d="M 775 104 L 775 60" marker-end="url(#ar)"/>
+          </g>
+          <text class="s-lbl" x="785" y="88">resuelve instancia</text>
+
+          <!-- services -->
+          <rect class="s-ours" x="30" y="214" width="378" height="74" rx="2"/>
+          <text class="s-t-b" x="219" y="236" text-anchor="middle">ms-teoricos-encuestas</text>
+          <text class="s-sub" x="219" y="252" text-anchor="middle">Grupo 4 · un servicio, dos módulos</text>
+          <line x1="219" y1="258" x2="219" y2="282" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>
+          <text class="s-sub" x="124" y="276" text-anchor="middle">teoricos</text>
+          <text class="s-sub" x="314" y="276" text-anchor="middle">encuestas</text>
+
+          <rect class="s-box" x="452" y="222" width="124" height="58" rx="2"/>
+          <text class="s-t" x="514" y="246" text-anchor="middle">Tema 02</text>
+          <text class="s-sub" x="514" y="264" text-anchor="middle">cohorte</text>
+
+          <rect class="s-box" x="588" y="222" width="124" height="58" rx="2"/>
+          <text class="s-t" x="650" y="246" text-anchor="middle">Tema 03</text>
+          <text class="s-sub" x="650" y="264" text-anchor="middle">desafíos</text>
+
+          <rect class="s-box" x="724" y="222" width="126" height="58" rx="2"/>
+          <text class="s-t" x="787" y="246" text-anchor="middle">Tema 11</text>
+          <text class="s-sub" x="787" y="264" text-anchor="middle">moderación</text>
+
+          <!-- gateway -> services -->
+          <g color="var(--ink-2)">
+            <line class="s-line" x1="120" y1="150" x2="120" y2="218" marker-end="url(#ar)"/>
+            <line class="s-line" x1="318" y1="150" x2="318" y2="218" marker-end="url(#ar)"/>
+            <line class="s-line" x1="514" y1="150" x2="514" y2="218" marker-end="url(#ar)"/>
+            <line class="s-line" x1="650" y1="150" x2="650" y2="218" marker-end="url(#ar)"/>
+            <line class="s-line" x1="787" y1="150" x2="787" y2="218" marker-end="url(#ar)"/>
+          </g>
+
+          <!-- bases -->
+          <rect class="s-db" x="52" y="318" width="334" height="40" rx="2"/>
+          <text class="s-sub" x="219" y="343" text-anchor="middle">base exclusiva · 4 esquemas · 4 roles sin permisos cruzados</text>
+          <g color="var(--muted)">
+            <line class="s-line" x1="219" y1="288" x2="219" y2="314" marker-end="url(#ar)"/>
+          </g>
+
+          <!-- the loop back through gateway -->
+          <g color="var(--accent)">
+            <path class="s-acc" d="M 196 222 L 196 182 L 470 182 L 470 150" marker-end="url(#ar)"/>
+          </g>
+          <text class="s-lbl-a" x="232" y="176">¿pertenece a la cohorte? — sale y vuelve a entrar por el gateway</text>
+        </svg>
+      </div>
+      <figcaption><b>Ninguna flecha une dos microservicios.</b> Cuando el módulo <code>teoricos</code> necesita saber si un alumno pertenece a la cohorte, la llamada sube al gateway y vuelve a bajar: desde el Tema 02, nosotros somos un consumidor externo más. Una llamada directa perdería el balanceo, la validación centralizada y la traza.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section id="decisiones">
+    <h2><span class="num">02</span> Decisiones cerradas</h2>
+    <div class="col">
+      <p>Quince decisiones tomadas antes de escribir código. Cada una fija una interpretación donde el PRD y la propuesta arquitectónica dejaban margen.</p>
+    </div>
+
+    <div class="dec">
+      <div class="tag">D-01</div>
+      <div class="what">La corrección de respuestas abiertas la hace el profesor en el MVP</div>
+      <div class="why">El objetivo declarado es que la haga el LLM. El contrato se diseña asincrónico y con corrector intercambiable, para que incorporarlo sea un adaptador nuevo y no un refactor.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-02</div>
+      <div class="what">No hay encuesta por desafío</div>
+      <div class="why">No está en el PRD. Con abstención obligatoria en cada desafío, la fatiga dispararía la tasa de abstención — que es exactamente el argumento de RF-ENC-02 para no agregarle una cuarta pregunta a la encuesta de cierre.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-03</div>
+      <div class="what">El único gate de encuesta es al cierre de curso, sobre el resultado académico final</div>
+      <div class="why">RF-ENC-11 + RF-RNK-10. Consecuencia directa: no bloqueamos al 03 ni al 05, y nuestro interlocutor en el gate pasa a ser el 02/10.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-04</div>
+      <div class="what">Los ítems se versionan y son inmutables una vez respondidos</div>
+      <div class="why">RF-CUR-05 permite editar desafíos publicados y en uso. Mismo criterio que el PRD ya aplica a <code>rubric_version</code> (RF-IA-13) y a los parámetros de economía (RF-CFG-06): editar crea versión nueva, no recalcula lo ya corregido.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-05</div>
+      <div class="what">Moderación: contrato cerrado más stub tras feature flag</div>
+      <div class="why">El moderador es del Tema 11 y está en su columna diferida. El stub nos desbloquea sin dejar deuda silenciosa: cuando exista, se prende el flag sin tocar nuestro código.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-06</div>
+      <div class="what">El bloqueo por encuesta pendiente lo aplica el front en el Sprint 1</div>
+      <div class="why">El bloqueo real exige un filtro en el gateway, que es del Tema 01. Queda diseñado y documentado como paso siguiente, no asumido como hecho.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-07</div>
+      <div class="what">El gate de encuesta bloquea que el alumno vea su resultado, no que el profesor archive el curso</div>
+      <div class="why">Evita un deadlock: un alumno con estado <em>abandonó</em> nunca vuelve a entrar y nunca responde. Con la lectura contraria, ese curso no se cierra jamás. Ver diagrama abajo.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-08</div>
+      <div class="what">Toda corrección manual queda auditada con historial: profesor, fecha, nota anterior y nueva, motivo</div>
+      <div class="why">El criterio de release 13 exige auditoría sobre overrides de score académico. Es el mismo estándar que RF-IA-18 aplica al score de IA, y una nota académica lo merece igual.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-09</div>
+      <div class="what">Conversación y debate estructurado quedan fuera del Sprint 1, declarados</div>
+      <div class="why">No encajan en el modelo de responder y enviar: uno es multi-turno, el otro involucra a terceros. Los otros cinco tipos entran completos.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-10</div>
+      <div class="what">El texto de las preguntas de encuesta lo fija la plataforma, versionado y externalizado</div>
+      <div class="why">Si cada profesor redacta la suya, el KPI-02 deja de ser comparable entre cursos — el mismo argumento que RF-CFG-05 usa para que el profesor no toque los parámetros globales.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-11</div>
+      <div class="what">El módulo teoricos implementa anonimización; las respuestas de encuesta están exentas por diseño</div>
+      <div class="why">RF-NFR-10: a los cinco años el ADMIN puede desvincular al titular conservando el registro académico y las series estadísticas. Las respuestas de encuesta ya nacieron sin PII, así que no hay vínculo que cortar.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-11b</div>
+      <div class="what">El marcador de cumplimiento sí se anonimiza, junto con el resto</div>
+      <div class="why">El marcador guarda <code>alumno_id</code> — «María cumplió la encuesta del curso X». No es una respuesta, pero es dato personal, y el mapa de PII del PRD no lo contempla, probablemente por haber sido escrito pensando en repositorios de contenido. Lo cubrimos nosotros en vez de dejarlo en el limbo.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-12</div>
+      <div class="what">Teóricos y encuestas son solo escritorio; en móvil se responde explícitamente, no se degrada</div>
+      <div class="why">Verificado en la Tabla 9 del PRD: ambos marcados ❌ en móvil. RF-NFR-06 exige el aviso expreso — «esta sección requiere una computadora»— en lugar de fallar.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-13</div>
+      <div class="what">Un único microservicio, <code>ms-teoricos-encuestas</code>, con dos módulos internos sin dependencias cruzadas</div>
+      <div class="why">Restricción del reparto de la cátedra: cada grupo entrega un servicio. El aislamiento que daba el despliegue se reemplaza por cuatro esquemas y cuatro roles de base sin permisos cruzados, más un test de arquitectura que prohíbe que un módulo importe al otro. La garantía de anonimato sigue siendo del motor, no del código.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-14</div>
+      <div class="what">El evento de corrección va al Tema 03, no al Tema 10</div>
+      <div class="why">Publicamos <code>TEORICO_CORREGIDO</code> en <code>desafios.resultados</code> y el 03 consolida y emite <code>DESAFIO_RESUELTO</code>. Un desafío puede ser teórico o práctico: quien sabe unificar los dos casos es el dueño del desafío. Nosotros dejamos de conocer al 10.</div>
+    </div>
+    <div class="dec">
+      <div class="tag">D-15</div>
+      <div class="what">La moderación pasa a ser asincrónica por el tópico <code>sistema.moderacion</code></div>
+      <div class="why">Revisión de D-05 ahora que Kafka está definido. El comentario se persiste en estado pendiente y se publica cuando el Tema 11 responde. El puntaje en estrellas cuenta desde el primer momento: lo que se modera es el texto, no la nota.</div>
+    </div>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 880 250" role="img" aria-label="Comparación de dos lecturas del gate de encuesta: si el archivado espera a que todas las encuestas estén cumplidas, un alumno que abandonó bloquea el cierre para siempre; si el gate está sobre el alumno viendo su resultado, el curso cierra igual.">
+          <defs>
+            <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <text class="s-lbl-f" x="14" y="18">LECTURA A — el archivado espera a todos</text>
+          <rect class="s-box" x="14" y="32" width="150" height="46" rx="2"/>
+          <text class="s-t" x="89" y="60" text-anchor="middle">Profesor archiva</text>
+          <rect class="s-box" x="220" y="32" width="180" height="46" rx="2"/>
+          <text class="s-t" x="310" y="52" text-anchor="middle">¿todos cumplieron?</text>
+          <text class="s-sub" x="310" y="69" text-anchor="middle">incluido quien abandonó</text>
+          <g color="var(--ink-2)"><line class="s-line" x1="164" y1="55" x2="216" y2="55" marker-end="url(#ar4)"/></g>
+          <g color="var(--flag)"><line class="s-line" style="stroke:var(--flag)" x1="400" y1="55" x2="452" y2="55" marker-end="url(#ar4)"/></g>
+          <rect x="456" y="32" width="180" height="46" rx="2" style="fill:var(--flag-2);stroke:var(--flag);stroke-width:1.6"/>
+          <text class="s-t-b" x="546" y="60" text-anchor="middle">nunca cierra</text>
+          <text class="s-lbl-f" x="652" y="60">el alumno que abandonó no vuelve</text>
+
+          <line x1="14" y1="112" x2="866" y2="112" style="stroke:var(--rule);stroke-width:1"/>
+
+          <text class="s-lbl-a" x="14" y="146">LECTURA B — el gate está sobre el resultado del alumno</text>
+          <rect class="s-box" x="14" y="160" width="150" height="46" rx="2"/>
+          <text class="s-t" x="89" y="188" text-anchor="middle">Profesor archiva</text>
+          <g color="var(--ink-2)"><line class="s-line" x1="164" y1="183" x2="216" y2="183" marker-end="url(#ar4)"/></g>
+          <rect class="s-ours" x="220" y="160" width="180" height="46" rx="2"/>
+          <text class="s-t-b" x="310" y="188" text-anchor="middle">curso cerrado</text>
+          <g color="var(--accent)"><line class="s-acc" x1="400" y1="183" x2="452" y2="183" marker-end="url(#ar4)"/></g>
+          <rect class="s-box" x="456" y="160" width="196" height="46" rx="2"/>
+          <text class="s-t" x="554" y="180" text-anchor="middle">alumno entra a ver su nota</text>
+          <text class="s-sub" x="554" y="197" text-anchor="middle">modo lectura, RF-CUR-09</text>
+          <g color="var(--accent)"><line class="s-acc" x1="652" y1="183" x2="700" y2="183" marker-end="url(#ar4)"/></g>
+          <rect class="s-box" x="704" y="160" width="150" height="46" rx="2"/>
+          <text class="s-t" x="779" y="180" text-anchor="middle">encuesta primero</text>
+          <text class="s-sub" x="779" y="197" text-anchor="middle">luego el resultado</text>
+        </svg>
+      </div>
+      <figcaption><b>Las dos lecturas son defendibles leyendo el PRD, y solo una funciona.</b> RF-ENC-11 pide la encuesta antes del resultado; RF-RNK-10 pide confirmar el estado final de todos para archivar. Poner el gate sobre el archivado convierte a cualquier alumno que abandonó en un bloqueo permanente. Es la primera pregunta que hay que llevarle al Tema 02.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section id="estructura">
+    <h2><span class="num">03</span> Un servicio, dos módulos aislados</h2>
+    <div class="col">
+      <p>El Tema 04 se despliega como <strong>un único microservicio</strong>, <code>ms-teoricos-encuestas</code>, con dos módulos internos que no comparten ninguna entidad: <code>teoricos</code> y <code>encuestas</code>.</p>
+      <p><strong>Por qué uno solo.</strong> Es la restricción del reparto: cada grupo entrega un microservicio. No es una decisión de diseño nuestra. Lo que sí decidimos es cómo preservar, dentro de un único proceso, las garantías que un despliegue separado nos habría dado gratis.</p>
+      <p><strong>El problema que eso crea.</strong> Los dos subdominios comparten exactamente un concepto —<code>curso_cohorte_id</code>— y ninguna entidad. Pero el anonimato de las encuestas se apoyaba en que vivieran aparte: con todo en un mismo proceso, cualquiera puede inyectar el repositorio equivocado y unir el marcador de cumplimiento con la respuesta anónima. Lo que antes era imposible por despliegue ahora sería un descuido de dos líneas.</p>
+      <p><strong>Cómo lo resolvemos.</strong> El aislamiento baja un nivel: de propiedad del despliegue a propiedad del motor de base de datos, que sigue siendo bastante más fuerte que la disciplina del equipo. Cuatro esquemas y cuatro roles de PostgreSQL sin permisos cruzados, con un origen de datos por rol; migraciones separadas por esquema; y un test de arquitectura que prohíbe las dependencias entre módulos y ata cada repositorio a su origen de datos. El test de reconstrucción sigue valiendo palabra por palabra: se ejecuta con cada rol real y verifica que PostgreSQL rechaza el join por permisos.</p>
+      <p><strong>Lo que sí perdimos.</strong> Con dos servicios, las diez personas eran dos repositorios que no se pisaban en los merges. Ahora son dos paquetes del mismo proyecto, así que la separación de frentes hay que sostenerla con convención y con el test de arquitectura, no con la topología.</p>
+    </div>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section id="datos">
+    <h2><span class="num">04</span> Modelo de datos</h2>
+
+    <h3>Módulo teoricos</h3>
+    <div class="col">
+      <p>El ítem tiene <strong>identidad estable</strong> y <strong>versiones inmutables</strong>. Lo que un alumno responde es siempre una <code>item_version</code>, nunca el ítem: por eso el profesor puede editar un enunciado sin alterar las correcciones ya emitidas.</p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th class="id">Tabla</th><th>Campos relevantes</th><th>Por qué así</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="id">item</td>
+            <td class="path">id · profesor_id · tipo · version_actual · baja_logica</td>
+            <td>Identidad propia para que el banco sea reutilizable entre cursos (RF-DES-02) y para que la analítica de dificultad por ítem sea posible después</td>
+          </tr>
+          <tr>
+            <td class="id">item_version</td>
+            <td class="path">item_id · version · enunciado · payload jsonb · criterio jsonb</td>
+            <td><code>jsonb</code> porque los siete tipos de ítem tienen formas incompatibles; siete tablas con columnas nulas sería peor. <code>criterio</code> nunca viaja a un endpoint de alumno</td>
+          </tr>
+          <tr>
+            <td class="id">desafio_teorico</td>
+            <td class="path">desafio_id · curso_cohorte_id</td>
+            <td>El <code>desafio_id</code> nos lo da el Tema 03; nosotros no inventamos desafíos</td>
+          </tr>
+          <tr>
+            <td class="id">desafio_teorico_item</td>
+            <td class="path">item_version_id · orden · puntaje</td>
+            <td>La versión se <strong>congela al publicar</strong>: es el mecanismo concreto de D-04</td>
+          </tr>
+          <tr>
+            <td class="id">respuesta</td>
+            <td class="path">item_version_id · alumno_id · intento · contenido jsonb</td>
+            <td>El número de intento nos lo informa el 03, para no mezclar correcciones de intentos distintos</td>
+          </tr>
+          <tr>
+            <td class="id">correccion</td>
+            <td class="path">nota · aprobado · corrector · estado · corregida_por</td>
+            <td><code>corrector</code> ∈ AUTOMATICO · LLM · HUMANO es lo que hace intercambiable a D-01</td>
+          </tr>
+          <tr>
+            <td class="id">correccion_historial</td>
+            <td class="path">nota_anterior · nota_nueva · motivo · profesor_id · registrado_en</td>
+            <td>Sin esto, una segunda corrección pisa la primera sin dejar rastro. El criterio de release 13 exige auditoría de overrides académicos (D-08)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lbl">El intento no lleva tope</span>
+      <p>El desafío de recuperación de vida (RF-REC-04/06) se reintenta un número indefinido de veces: no le aplica el límite de RF-DES-07. Si modeláramos el intento con un máximo de cuatro, ese tipo de desafío rompería el modelo. Falta acordar con el Tema 03 quién es dueño del pool y de la selección al azar.</p>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Anonimización · RF-NFR-10</span>
+      <p>Al vencer el plazo de PAR-16 y decidirlo el ADMIN, <code>alumno_id</code> se reemplaza por un subrogado aleatorio irreversible; la nota, el contenido y las series estadísticas se conservan. <em>Residual declarado:</em> si un alumno escribió su nombre dentro de una respuesta abierta, el texto libre no se anonimiza solo.</p>
+    </div>
+
+    <h3>Los siete tipos de ítem no son homogéneos</h3>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Tipo</th><th class="id">Sprint 1</th><th>Nota</th></tr></thead>
+        <tbody>
+          <tr><td>Opción múltiple</td><td class="id">✅</td><td>Autocorregible</td></tr>
+          <tr><td>Verdadero / falso</td><td class="id">✅</td><td>Autocorregible</td></tr>
+          <tr><td>Emparejar conceptos</td><td class="id">✅</td><td>Autocorregible</td></tr>
+          <tr><td>Ordenar secuencias</td><td class="id">✅</td><td>Autocorregible</td></tr>
+          <tr><td>Respuesta abierta</td><td class="id">✅</td><td>Corrección humana; el LLM la toma después como adaptador (D-01)</td></tr>
+          <tr><td><strong>Conversación sobre el contenido</strong></td><td class="id">❌</td><td>Es multi-turno: no encaja en «responder n ítems y enviar» (D-09)</td></tr>
+          <tr><td><strong>Debate estructurado</strong></td><td class="id">❌</td><td>Involucra a otros alumnos en simultáneo, o al Tema 07 (D-09)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <p>Los dos diferidos no son un recorte de ambición: son dos formas de interacción que el modelo de entrega única no soporta, y exigen decisiones de producto que todavía no existen — <em>¿quién arma las parejas de un debate? ¿cuándo termina una conversación?</em> El <code>payload jsonb</code> admite una transcripción cuando se implementen.</p>
+    </div>
+
+    <h3>Módulo encuestas — tres esquemas, tres roles</h3>
+    <div class="col">
+      <p>Acá está el corazón del tema. Tres esquemas más en la misma base, con <strong>roles de PostgreSQL distintos y un origen de datos por rol, ninguno con permisos sobre el esquema del otro</strong>. La imposibilidad de cruzarlos deja de ser una promesa del código y pasa a ser una restricción del motor.</p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th class="id">Esquema</th><th>Campos</th><th>Nota de diseño</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="id">catalogo<br><span class="s-sub">rol app_catalogo</span></td>
+            <td class="path">instrumento: dimension · version · clave_texto · curso_cohorte_id? · periodo</td>
+            <td>La campaña, compartida por todos los respondentes, así que no es canal de correlación. <code>clave_texto</code> es una clave i18n, nunca el literal (D-10, RF-NFR-07). Los otros dos roles solo tienen <code>SELECT</code></td>
+          </tr>
+          <tr>
+            <td class="id">cumplimiento<br><span class="s-sub">rol app_cumplimiento</span></td>
+            <td class="path">alumno_id · instrumento_id · curso_cohorte_id · estado</td>
+            <td>Nominal por diseño: necesita saber quién cumplió, para eso existe. Cero contenido de la respuesta. De acá sale toda la métrica de cobertura por curso</td>
+          </tr>
+          <tr>
+            <td class="id">respuestas<br><span class="s-sub">rol app_respuestas</span></td>
+            <td class="path">id uuid v4 · instrumento_id · curso_cohorte_id? · estrellas · abstencion · comentario · periodo</td>
+            <td>Sin autor y <strong>sin <code>created_at</code></strong>: solo <code>periodo</code>. El id es v4, nunca v7 ni ULID, que llevan el instante embebido</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Detalle del que depende todo lo demás</span>
+      <p><code>instrumento_id</code> es <strong>la campaña</strong> —«encuesta de cierre del curso X, período Y»— y no la encuesta individual del alumno. Si fuera individual, un solo <em>join</em> entre los dos esquemas reconstruye el vínculo y el diseño entero es decorativo. Tiene que ser un valor que comparten todos los respondentes.</p>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Dónde va el curso-cohorte, y dónde no</span>
+      <p><strong>En el marcador, sí.</strong> Es nominal, así que el campo no cuesta nada en anonimato y da la métrica de quién responde y quién no, por curso.</p>
+      <p><strong>En la respuesta de la encuesta de plataforma, no.</strong> Un alumno cursa varias materias — ¿cuál pondríamos? Y cada dimensión extra en una fila anónima reduce el conjunto de posibles autores.</p>
+      <p><strong>En curso y contenido, sí</strong>, porque el KPI-02 es por curso y no hay alternativa. Ahí el trabajo lo hace el umbral de PAR-18.</p>
+    </div>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section id="anonimato">
+    <h2><span class="num">05</span> Anonimato: los cinco canales</h2>
+    <div class="col">
+      <p>RF-ENC-04 no pide ocultar el autor: pide que <strong>no exista forma de reconstruirlo</strong>, ni por consulta, ni por exportación, ni por acceso directo a la base. Y el criterio de release 15b exige <em>demostrarlo</em>. Eso obliga a atacar los cinco canales de correlación, no solo el obvio.</p>
+    </div>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 880 430" role="img" aria-label="El envío de una encuesta se bifurca: el marcador de cumplimiento se escribe en el request, y la respuesta anónima pasa por una cola interna con jitter antes de persistirse en otro esquema con otro rol de base. Ningún join une los dos.">
+          <defs>
+            <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- alumno -->
+          <rect class="s-box" x="16" y="180" width="104" height="46" rx="2"/>
+          <text class="s-t" x="68" y="208" text-anchor="middle">Alumno</text>
+
+          <!-- service -->
+          <rect class="s-ours" x="176" y="166" width="164" height="74" rx="2"/>
+          <text class="s-t-b" x="258" y="197" text-anchor="middle">módulo encuestas</text>
+          <text class="s-sub" x="258" y="216" text-anchor="middle">POST /respuesta</text>
+
+          <g color="var(--ink-2)">
+            <line class="s-line" x1="120" y1="203" x2="172" y2="203" marker-end="url(#ar2)"/>
+          </g>
+
+          <!-- up branch: marcador -->
+          <g color="var(--ink-2)">
+            <path class="s-line" d="M 340 186 L 420 186 L 420 104 L 552 104" marker-end="url(#ar2)"/>
+          </g>
+          <text class="s-lbl" x="428" y="96">en la misma transacción del request</text>
+
+          <rect class="s-box" x="556" y="56" width="300" height="96" rx="2"/>
+          <text class="s-t-b" x="574" y="82">esquema · cumplimiento</text>
+          <text class="s-sub" x="574" y="103">rol app_cumplimiento</text>
+          <text class="s-sub" x="574" y="122">alumno_id · instrumento_id</text>
+          <text class="s-sub" x="574" y="139">curso_cohorte_id · estado</text>
+
+          <!-- down branch: cola -->
+          <g color="var(--ink-2)">
+            <path class="s-line" d="M 258 240 L 258 316 L 348 316" marker-end="url(#ar2)"/>
+          </g>
+          <text class="s-lbl" x="268" y="282">encola</text>
+
+          <rect class="s-box" x="352" y="290" width="148" height="52" rx="2"/>
+          <text class="s-t" x="426" y="311" text-anchor="middle">cola interna</text>
+          <text class="s-sub" x="426" y="329" text-anchor="middle">jitter + lotes</text>
+
+          <g color="var(--ink-2)">
+            <path class="s-line" d="M 500 316 L 552 316" marker-end="url(#ar2)"/>
+          </g>
+
+          <rect class="s-box" x="556" y="262" width="300" height="110" rx="2"/>
+          <text class="s-t-b" x="574" y="288">esquema · respuestas</text>
+          <text class="s-sub" x="574" y="309">rol app_respuestas</text>
+          <text class="s-sub" x="574" y="328">id uuid v4 · instrumento_id</text>
+          <text class="s-sub" x="574" y="345">estrellas · comentario · periodo</text>
+          <text class="s-sub" x="574" y="362">sin autor · sin created_at</text>
+
+          <!-- the wall -->
+          <line class="s-dash" x1="546" y1="207" x2="866" y2="207"/>
+          <path class="s-dash" style="stroke-dasharray:none" d="M 694 176 L 694 238"/>
+          <path class="s-dash" style="stroke-dasharray:none" d="M 682 195 L 706 219"/>
+          <path class="s-dash" style="stroke-dasharray:none" d="M 706 195 L 682 219"/>
+          <text class="s-lbl-f" x="556" y="199">sin FK · sin clave común · sin permisos cruzados</text>
+        </svg>
+      </div>
+      <figcaption><b>Las dos escrituras nunca ocurren en la misma transacción ni en el mismo request.</b> El marcador se persiste al responder; la respuesta anónima entra a una cola y la escribe un consumidor con retardo aleatorio y descarga por lotes. Sin ese desacople, la coincidencia de instantes reconstruye el vínculo aunque no exista ninguna clave que los una.</figcaption>
+    </figure>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Canal de correlación</th><th>Cómo se cierra</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Join por clave</strong></td><td>Esquemas separados, roles separados, sin FK ni id compartido. Lo impide el motor, no el código</td></tr>
+          <tr><td><strong>Correlación temporal</strong></td><td>La respuesta no guarda <code>created_at</code>, solo <code>periodo</code></td></tr>
+          <tr><td><strong>Orden de inserción</strong></td><td>Cola interna, consumidor con jitter aleatorio y flush por lotes. Nunca la misma transacción</td></tr>
+          <tr><td><strong>Secuencias y claves primarias</strong></td><td><code>gen_random_uuid()</code> v4. Nunca autoincremental, nunca v7 ni ULID: codifican el instante</td></tr>
+          <tr><td><strong>Logs y trazas</strong></td><td>El <code>trace_id</code> del gateway no se persiste con la respuesta; el logging no registra el body del POST</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note flag">
+      <span class="lbl">Residual declarado, no tapado</span>
+      <p>Con <code>curso + período</code>, un curso donde responde una sola persona la identifica. Por eso existe PAR-18 —mínimo cinco respuestas— y la publicación recién al cierre. Es k-anonimato, y hay que decirlo.</p>
+      <p>El otro límite es de exposición: RF-ENC-12 establece que el profesor <strong>pierde</strong> la capacidad de saber quién no respondió, y el PO lo aceptó como precio del anonimato (RSK-13). El marcador es per-alumno internamente, porque lo necesitamos para el gate, pero <strong>se expone siempre agregado</strong>. Una lista nominal en un curso chico permite deducir por descarte quién escribió cada comentario.</p>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Cómo se demuestra</span>
+      <p>Un <strong>test de reconstrucción</strong> que intenta cruzar los datos por los cinco canales y <em>afirma que falla</em>, incluido un intento de <em>join</em> con cada rol de base verificando que PostgreSQL lo rechaza por permisos. Ese test es, literalmente, el criterio de release 15b.</p>
+    </div>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section id="contratos">
+    <h2><span class="num">06</span> Contratos</h2>
+
+    <h3>El módulo teoricos expone</h3>
+    <div class="scroller">
+      <table>
+        <thead><tr><th class="id">Método</th><th>Ruta</th><th>Consumidor</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td class="id"><span class="verb">POST</span></td><td class="path">/teoricos/items</td><td>Profesor</td><td>Alta de ítem en el banco</td></tr>
+          <tr><td class="id"><span class="verb">PUT</span></td><td class="path">/teoricos/items/{id}</td><td>Profesor</td><td>Crea versión nueva; no toca las anteriores</td></tr>
+          <tr><td class="id"><span class="verb">POST</span></td><td class="path">/teoricos/desafios</td><td>Tema 03</td><td>Compone ítems y congela <code>item_version_id</code></td></tr>
+          <tr><td class="id"><span class="verb">GET</span></td><td class="path">/teoricos/desafios/{id}</td><td>Alumno</td><td>Enunciados <strong>sin</strong> criterio de corrección</td></tr>
+          <tr><td class="id"><span class="verb">POST</span></td><td class="path">/teoricos/desafios/{id}/respuestas</td><td>Alumno</td><td>Envía el intento completo</td></tr>
+          <tr><td class="id"><span class="verb">GET</span></td><td class="path">/teoricos/correcciones/{desafio}/{alumno}</td><td>Tema 03</td><td>Resultado, que puede venir <code>PENDIENTE</code></td></tr>
+          <tr><td class="id"><span class="verb">POST</span></td><td class="path">/teoricos/correcciones/{id}</td><td>Profesor</td><td>Corrección manual de abiertas (D-01)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 880 210" role="img" aria-label="Un intento entrega nota parcial en estado PENDIENTE cuando incluye ítems abiertos, y solo pasa a FINAL después de la corrección manual del profesor.">
+          <defs>
+            <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect class="s-box" x="14" y="66" width="130" height="54" rx="2"/>
+          <text class="s-t" x="79" y="89" text-anchor="middle">Intento</text>
+          <text class="s-sub" x="79" y="107" text-anchor="middle">n ítems</text>
+
+          <rect class="s-ours" x="196" y="20" width="180" height="52" rx="2"/>
+          <text class="s-t" x="286" y="42" text-anchor="middle">4 tipos autocorregibles</text>
+          <text class="s-sub" x="286" y="60" text-anchor="middle">MC · V/F · emparejar · ordenar</text>
+
+          <rect class="s-box" x="196" y="116" width="180" height="52" rx="2"/>
+          <text class="s-t" x="286" y="138" text-anchor="middle">3 tipos abiertos</text>
+          <text class="s-sub" x="286" y="156" text-anchor="middle">abierta · conversación · debate</text>
+
+          <g color="var(--ink-2)">
+            <path class="s-line" d="M 144 84 L 170 84 L 170 46 L 192 46" marker-end="url(#ar3)"/>
+            <path class="s-line" d="M 144 100 L 170 100 L 170 142 L 192 142" marker-end="url(#ar3)"/>
+          </g>
+
+          <rect class="s-box" x="440" y="66" width="168" height="54" rx="2"/>
+          <text class="s-t-b" x="524" y="89" text-anchor="middle">nota parcial</text>
+          <text class="s-sub" x="524" y="107" text-anchor="middle">estado PENDIENTE</text>
+
+          <g color="var(--ink-2)">
+            <path class="s-line" d="M 376 46 L 410 46 L 410 84 L 436 84" marker-end="url(#ar3)"/>
+          </g>
+          <g color="var(--flag)">
+            <path class="s-line" style="stroke:var(--flag)" d="M 376 142 L 410 142 L 410 100 L 436 100" marker-end="url(#ar3)"/>
+          </g>
+          <text class="s-lbl-f" x="392" y="184">cola del profesor</text>
+
+          <rect class="s-box" x="686" y="66" width="168" height="54" rx="2"/>
+          <text class="s-t-b" x="770" y="89" text-anchor="middle">nota completa</text>
+          <text class="s-sub" x="770" y="107" text-anchor="middle">estado FINAL</text>
+
+          <g color="var(--ink-2)">
+            <line class="s-line" x1="608" y1="93" x2="682" y2="93" marker-end="url(#ar3)"/>
+          </g>
+          <text class="s-lbl" x="612" y="82">corrige</text>
+        </svg>
+      </div>
+      <figcaption><b>Con corrección humana, la corrección parcial es el caso normal, no la excepción.</b> Todo intento que incluya un ítem abierto devuelve nota parcial en estado <code>PENDIENTE</code>. Es el mismo patrón que el PRD ya define para el score de IA diferido en RF-IA-27.</figcaption>
+    </figure>
+
+    <h3>El módulo encuestas expone</h3>
+    <div class="scroller">
+      <table>
+        <thead><tr><th class="id">Método</th><th>Ruta</th><th>Consumidor</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td class="id"><span class="verb">GET</span></td><td class="path">/encuestas/pendientes</td><td>Front</td><td>Encuestas bloqueantes del alumno</td></tr>
+          <tr><td class="id"><span class="verb">POST</span></td><td class="path">/encuestas/{instrumento}/respuesta</td><td>Alumno</td><td>Responde o se abstiene: escribe marcador y encola respuesta</td></tr>
+          <tr><td class="id"><span class="verb">GET</span></td><td class="path">/encuestas/cumplimiento</td><td>Tema 02 / 10</td><td>El gate de RF-ENC-11</td></tr>
+          <tr><td class="id"><span class="verb">GET</span></td><td class="path">/encuestas/kpi</td><td>Profesor · Tema 12</td><td>Agregados por curso. Bajo PAR-18, solo el conteo</td></tr>
+          <tr><td class="id"><span class="verb">GET</span></td><td class="path">/encuestas/kpi/plataforma</td><td>ADMIN · Tema 12</td><td>Consolidado de plataforma</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Invariante de toda lectura</span>
+      <p>Ningún endpoint expone una respuesta individual atribuible, ni la lista nominal de quién cumplió. Solo agregados — y eso vale también para el Backoffice.</p>
+    </div>
+
+    <h3>Eventos que publicamos en Kafka</h3>
+    <div class="col">
+      <p>El bus es <strong>Apache Kafka</strong>, en Docker como infraestructura independiente. Publicamos detrás de un puerto propio, pero no para independizarnos de la tecnología —ya está decidida— sino para tener un adaptador en memoria en los tests y no levantar el broker en cada build.</p>
+      <p>El <strong>envelope es estándar y obligatorio</strong> para todos los microservicios: <code>eventId</code> (UUID), <code>eventType</code>, <code>timestamp</code> (ISO 8601 UTC), <code>producer</code> y <code>payload</code>. El nuestro es <code>tema-04-teoricos-encuestas</code>.</p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th class="id">Evento</th><th>Tópico</th><th>Consumidor</th><th>Payload</th></tr></thead>
+        <tbody>
+          <tr><td class="id">TEORICO_CORREGIDO</td><td class="path">desafios.resultados</td><td><strong>Tema 03</strong></td><td class="path">desafioId · alumnoId · intento · nota · aprobado · estado</td></tr>
+          <tr><td class="id">ENCUESTA_CUMPLIDA</td><td class="path">a definir — proponemos encuestas.cumplimiento</td><td>Tema 02 / 10</td><td class="path">alumnoId · instrumentoId · cursoCohorteId</td></tr>
+          <tr><td class="id">ENCUESTA_PERIODO_CERRADO</td><td class="path">a definir</td><td>Tema 12</td><td class="path">instrumentoId · cursoCohorteId · nRespuestas</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lbl">No le hablamos al Tema 10</span>
+      <p>Publicamos en el tópico del dominio de desafíos; el <strong>Tema 03</strong> lo consume con su <code>groupId</code>, consolida el resultado del desafío —que puede tener parte teórica y parte práctica— y emite <code>DESAFIO_RESUELTO</code>. El 10 y el 11 reaccionan a ese. Si cada productor de notas le avisara al 10 por su cuenta, el 10 tendría que conocerlos a todos.</p>
+    </div>
+
+    <div class="note flag">
+      <span class="lbl">Dos cosas para acordar en la integración</span>
+      <p><strong>Filtrado por <code>eventType</code>.</strong> El 10 y el 11 escuchan <code>desafios.resultados</code>. Tienen que reaccionar solo a <code>DESAFIO_RESUELTO</code>; si alguno escuchara el tópico entero, un mismo intento aprobado sumaría XP dos veces —una por nuestro evento y otra por el del 03—. Es el tipo de falla que aparece en la demo y no en desarrollo.</p>
+      <p><strong>Falta un tópico para encuestas.</strong> Los cuatro acordados son <code>cursos.ciclo-vida</code>, <code>desafios.resultados</code>, <code>sistema.notificaciones</code> y <code>sistema.moderacion</code>. El cumplimiento de una encuesta no es un resultado de desafío ni una notificación.</p>
+    </div>
+
+    <div class="note flag">
+      <span class="lbl">Residual nuevo: Kafka retiene los mensajes</span>
+      <p><code>ENCUESTA_CUMPLIDA</code> lleva <code>alumno_id</code>, y con razón: el marcador es nominal por diseño. Pero el log del bus pasa a ser <strong>otro almacén de datos personales</strong>, y anonimizar nuestra base a los cinco años (RF-NFR-10) no borra lo que quedó publicado. O se acuerda una política de retención por tópico, o se declara como residual. Probablemente le pase lo mismo a todos los temas que publiquen datos personales.</p>
+    </div>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section id="supuestos">
+    <h2><span class="num">07</span> Supuestos vigentes</h2>
+    <div class="col">
+      <p>Avanzamos con estos hasta que la sesión de integración diga otra cosa. Cada uno apunta a su pregunta en el documento de integración.</p>
+    </div>
+
+    <ul class="asum">
+      <li class="risk"><span class="n">00</span><span><strong>El archivado del curso no espera a las encuestas pendientes.</strong> Si el Tema 02 lo lee al revés, ningún curso con un alumno que abandonó se cierra jamás</span><span class="q">pregunta 17b</span></li>
+      <li class="risk"><span class="n">01</span><span>El Tema 03 acepta correcciones en estado <code>PENDIENTE</code> — si modelaron la entrega asumiendo nota completa al momento, se les rompe el flujo</span><span class="q">pregunta 4</span></li>
+      <li><span class="n">02</span><span>Invocamos al corrector nosotros por el gateway; el 03 no actúa de conducto</span><span class="q">pregunta 2</span></li>
+      <li><span class="n">03</span><span>El 03 nos informa el número de intento en el request</span><span class="q">pregunta 5</span></li>
+      <li><span class="n">04</span><span>No bloqueamos al 03 ni al 05 por encuesta</span><span class="q">pregunta 6</span></li>
+      <li><span class="n">05</span><span>El Tema 07 no toma la corrección semántica de abiertas en el Sprint 1</span><span class="q">pregunta 7</span></li>
+      <li><span class="n">06</span><span>No hay moderador disponible: stub que aprueba todo</span><span class="q">pregunta 10</span></li>
+      <li><span class="n">07</span><span>La pertenencia a cohorte se consulta sincrónicamente al Tema 02</span><span class="q">pregunta 16</span></li>
+      <li><span class="n">08</span><span>El bloqueo por encuesta pendiente lo aplica el front</span><span class="q">pregunta 25</span></li>
+      <li class="risk"><span class="n">09</span><span>El Tema 03 consume <code>TEORICO_CORREGIDO</code> y se hace cargo de emitir <code>DESAFIO_RESUELTO</code> hacia el 10</span><span class="q">Kafka</span></li>
+      <li class="risk"><span class="n">10</span><span>El Tema 10 y el Tema 11 filtran por <code>eventType</code> — si no, el intento suma XP dos veces</span><span class="q">Kafka</span></li>
+      <li><span class="n">11</span><span>Se habilita un tópico para los eventos de encuesta; proponemos <code>encuestas.cumplimiento</code></span><span class="q">Kafka</span></li>
+    </ul>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section id="todos">
+    <h2><span class="num">08</span> Tareas del Sprint 1</h2>
+    <div class="col">
+      <p>Dos frentes paralelos que no comparten código, más un tercero transversal — todo dentro del mismo servicio. La separación ya no la da el despliegue, así que la sostienen el test de arquitectura de C-08 y la convención de paquetes.</p>
+      <p><strong>Después del scaffolding, B-02 conviene hacerla primero de todo:</strong> los esquemas con roles separados son la base de lo demás en encuestas, y si se definen tarde hay que revisar todo lo escrito encima.</p>
+    </div>
+
+    <div class="board">
+      <div class="track">
+        <h3>Frente A · módulo teoricos <span class="cnt">17 tareas</span></h3>
+        <ul class="todo">
+          <li class="crit"><span class="k">A-02</span><span class="t">Modelo de ítem y versionado inmutable<span class="dep">← C-00</span></span></li>
+          <li><span class="k">A-03</span><span class="t">CRUD del banco de ítems, con baja lógica<span class="dep">← A-02</span></span></li>
+          <li><span class="k">A-04</span><span class="t">Payload y criterio de los 4 tipos autocorregibles<span class="dep">← A-02</span></span></li>
+          <li><span class="k">A-05</span><span class="t">Payload de los 3 tipos de corrección humana<span class="dep">← A-02</span></span></li>
+          <li class="crit"><span class="k">A-06</span><span class="t">Composición de desafío y congelado de versiones<span class="dep">← A-03</span></span></li>
+          <li><span class="k">A-07</span><span class="t">Lectura para el alumno sin criterio de corrección<span class="dep">← A-06</span></span></li>
+          <li class="crit"><span class="k">A-08</span><span class="t">Recepción de respuestas de un intento<span class="dep">← A-06</span></span></li>
+          <li class="crit"><span class="k">A-09</span><span class="t">Corrector automático de los 4 tipos<span class="dep">← A-04, A-08</span></span></li>
+          <li><span class="k">A-10</span><span class="t">Puerto de corrección con adaptadores AUTOMATICO y HUMANO<span class="dep">← A-09</span></span></li>
+          <li><span class="k">A-11</span><span class="t">Cola de corrección manual del profesor<span class="dep">← A-10</span></span></li>
+          <li><span class="k">A-12</span><span class="t">Corrección mixta: nota parcial y estado PENDIENTE<span class="dep">← A-09, A-11</span></span></li>
+          <li><span class="k">A-13</span><span class="t">Evento <code>TEORICO_CORREGIDO</code> en <code>desafios.resultados</code><span class="dep">← A-12, C-01</span></span></li>
+          <li><span class="k">A-14</span><span class="t">Autorización: banco propio, respuestas propias<span class="dep">← A-03, A-08</span></span></li>
+          <li><span class="k">A-15</span><span class="t">Tests: corrección, inmutabilidad, no fuga del criterio<span class="dep">← A-09, A-12</span></span></li>
+          <li><span class="k">A-16</span><span class="t">Historial auditado de correcciones, con motivo obligatorio<span class="dep">← A-11</span></span></li>
+          <li><span class="k">A-17</span><span class="t">Intento sin tope, para recuperación de vida<span class="dep">← A-08</span></span></li>
+          <li><span class="k">A-18</span><span class="t">Camino de anonimización con subrogado irreversible<span class="dep">← A-02</span></span></li>
+        </ul>
+      </div>
+
+      <div class="track">
+        <h3>Frente B · módulo encuestas <span class="cnt">18 tareas</span></h3>
+        <ul class="todo">
+          <li class="crit"><span class="k">B-02</span><span class="t">Cuatro esquemas y cuatro roles de base sin permisos cruzados, un origen de datos por rol<span class="dep">← C-00</span></span></li>
+          <li><span class="k">B-03</span><span class="t">Modelo de instrumento y campaña<span class="dep">← B-02</span></span></li>
+          <li><span class="k">B-04</span><span class="t">Marcador de cumplimiento con curso-cohorte<span class="dep">← B-02, B-03</span></span></li>
+          <li><span class="k">B-05</span><span class="t">Almacén de respuestas: uuid v4, sin created_at<span class="dep">← B-02, B-03</span></span></li>
+          <li class="crit"><span class="k">B-06</span><span class="t">Escritura desacoplada: cola, jitter y flush por lotes<span class="dep">← B-04, B-05</span></span></li>
+          <li><span class="k">B-07</span><span class="t">Endpoint de respuesta con abstención explícita<span class="dep">← B-06</span></span></li>
+          <li><span class="k">B-08</span><span class="t">Comentario obligatorio en 1 y 5, opcional en 2 a 4<span class="dep">← B-07</span></span></li>
+          <li><span class="k">B-09</span><span class="t">Moderación asincrónica: estado pendiente y stub tras feature flag<span class="dep">← B-07, C-01</span></span></li>
+          <li><span class="k">B-10</span><span class="t">Endpoint de pendientes para el bloqueo del front<span class="dep">← B-04</span></span></li>
+          <li><span class="k">B-11</span><span class="t">Endpoint de cumplimiento — el gate de RF-ENC-11<span class="dep">← B-04</span></span></li>
+          <li><span class="k">B-12</span><span class="t">Cálculo de KPI-01 y KPI-02 con tasa de abstención<span class="dep">← B-05</span></span></li>
+          <li><span class="k">B-13</span><span class="t">Umbral PAR-18: bajo el mínimo, solo el conteo<span class="dep">← B-12</span></span></li>
+          <li><span class="k">B-14</span><span class="t">Disparo a los 30 días y una vez por período<span class="dep">← B-03</span></span></li>
+          <li><span class="k">B-15</span><span class="t">Supresión de trazas: sin trace_id, sin body en logs<span class="dep">← B-06</span></span></li>
+          <li><span class="k">B-16</span><span class="t">Test de reconstrucción de los 5 canales<span class="dep">← B-06, B-15</span></span></li>
+          <li><span class="k">B-17</span><span class="t">Evento <code>ENCUESTA_CUMPLIDA</code> — falta acordar el tópico<span class="dep">← B-04, C-01</span></span></li>
+          <li><span class="k">B-18</span><span class="t">Esquema de catálogo: instrumento versionado con clave i18n<span class="dep">← B-02</span></span></li>
+          <li><span class="k">B-19</span><span class="t">Anonimización del marcador; las respuestas no la necesitan<span class="dep">← B-04</span></span></li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Frente C · transversal</h3>
+    <ul class="todo">
+      <li class="crit"><span class="k">C-00</span><span class="t">Scaffolding único: Spring Boot, Eureka, health, Postgres, migraciones por esquema</span></li>
+      <li class="crit"><span class="k">C-08</span><span class="t">Test de arquitectura: dependencias cruzadas entre módulos prohibidas, cada repositorio atado a su origen de datos<span class="dep">← C-00</span></span></li>
+      <li><span class="k">C-01</span><span class="t">Productor de Kafka con el envelope estándar, detrás de un puerto con adaptador en memoria<span class="dep">← C-00</span></span></li>
+      <li><span class="k">C-02</span><span class="t">Cliente hacia el Tema 02 con timeout y fallback</span></li>
+      <li><span class="k">C-03</span><span class="t">Baja lógica verificada en todas las entidades (RF-NFR-01)<span class="dep">← A-02, B-03</span></span></li>
+      <li><span class="k">C-04</span><span class="t">OpenAPI publicado para los otros grupos<span class="dep">← A, B</span></span></li>
+      <li><span class="k">C-05</span><span class="t">Llevar las 30 preguntas a la sesión de integración</span></li>
+      <li><span class="k">C-06</span><span class="t">Externalización de textos: cero literales embebidos (RF-NFR-07)<span class="dep">← C-00</span></span></li>
+      <li><span class="k">C-07</span><span class="t">Respuesta explícita en móvil: «esta sección requiere una computadora»<span class="dep">← A-07, B-07</span></span></li>
+    </ul>
+  </section>
+
+  <!-- ============ 09 ============ -->
+  <section id="backlog">
+    <h2><span class="num">09</span> Diseñado, no implementado</h2>
+    <div class="col">
+      <p>El reparto es explícito: <em>«más adelante no significa no lo pienso: significa que se diseña ahora y se implementa después»</em>. Esto es lo que el modelo actual ya soporta sin migración.</p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Diferido</th><th>Qué habilita el modelo actual</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Corrección de abiertas por LLM</strong></td><td>Un adaptador nuevo del puerto de A-10. Ninguna otra pieza cambia</td></tr>
+          <tr><td><strong>Resultados al profesor con umbral de 5</strong></td><td>B-13 ya lo implementa; falta la vista</td></tr>
+          <tr><td><strong>Tipos de ítem adicionales</strong></td><td><code>payload</code> en <code>jsonb</code> los admite sin migración</td></tr>
+          <tr><td><strong>Agregados por cohorte</strong></td><td>B-12 ya calcula por curso</td></tr>
+          <tr><td><strong>Banco con etiquetado por tema</strong></td><td>Una tabla de etiquetas sobre <code>item</code></td></tr>
+          <tr><td><strong>Analítica de dificultad por ítem</strong></td><td>Posible porque el ítem tiene identidad propia y versionada (D-04). Duplicando ítems dentro de cada desafío, habría sido imposible</td></tr>
+          <tr><td><strong>Conversación y debate estructurado</strong></td><td>El <code>payload jsonb</code> guarda una transcripción sin migración. Falta la decisión de producto, no el modelo (D-09)</td></tr>
+          <tr><td><strong>Segundo idioma</strong></td><td>Todo texto sale de una clave, incluido el de las preguntas de encuesta. Incorporar un idioma es contenido, no refactor (RF-NFR-07)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <span>Grupo 4 · Tema 04</span>
+    <span>Sprint 1 · documento de diseño</span>
+    <span>Complementa: PREGUNTAS-INTEGRACION-G04.md</span>
+  </footer>
+
+</div>
+

@@ -1,0 +1,260 @@
+<title>Definition of Done G04</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+:root {
+  --bg:      #EDF1F3;
+  --surface: #FFFFFF;
+  --sunk:    #F3F6F8;
+  --ink:     #14181C;
+  --muted:   #5A6672;
+  --faint:   #8896A2;
+  --rule:    #DAE1E6;
+  --accent:  #0E5C6E;
+  --accent-s:#E1EEF1;
+  --warn:    #96470F;
+  --warn-s:  #F8EDE2;
+  --good:    #2B6A4E;
+  --sans: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --cond: 'IBM Plex Sans Condensed', 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:      #0F1215;
+    --surface: #171B1F;
+    --sunk:    #12161A;
+    --ink:     #E1E7EB;
+    --muted:   #96A2AD;
+    --faint:   #6E7C88;
+    --rule:    #293037;
+    --accent:  #58BDD3;
+    --accent-s:#122A31;
+    --warn:    #E0A468;
+    --warn-s:  #2B211A;
+    --good:    #74C29A;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:      #0F1215;
+  --surface: #171B1F;
+  --sunk:    #12161A;
+  --ink:     #E1E7EB;
+  --muted:   #96A2AD;
+  --faint:   #6E7C88;
+  --rule:    #293037;
+  --accent:  #58BDD3;
+  --accent-s:#122A31;
+  --warn:    #E0A468;
+  --warn-s:  #2B211A;
+  --good:    #74C29A;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.64;
+  -webkit-font-smoothing: antialiased;
+}
+
+main { padding: 0 clamp(20px, 5vw, 48px) 100px; }
+main > * { max-width: 70ch; margin-left: auto; margin-right: auto; }
+
+/* ---------- masthead ---------- */
+
+.masthead { padding: 72px 0 30px; border-bottom: 3px solid var(--ink); }
+.kicker {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 20px;
+}
+.masthead h1 {
+  font-family: var(--cond); font-weight: 700; font-size: clamp(34px, 5.5vw, 52px);
+  line-height: 1.04; letter-spacing: -.015em; margin: 0; text-wrap: balance;
+}
+.masthead .sub {
+  font-family: var(--cond); font-weight: 600; font-size: clamp(18px, 2.6vw, 24px);
+  color: var(--accent); margin: 10px 0 0;
+}
+
+.intro { padding: 30px 0 6px; font-size: 17px; }
+.intro p:first-child { color: var(--muted); }
+
+/* ---------- indice ---------- */
+
+.toc {
+  background: var(--sunk); border: 1px solid var(--rule); border-radius: 8px;
+  padding: 20px 26px 22px; margin: 26px auto 10px;
+}
+.tocl {
+  font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--faint); margin: 0 0 10px;
+}
+.toc ol { margin: 0; padding-left: 1.3em; }
+.toc li { margin: 0 0 3px; font-size: 14.5px; }
+.toc a { color: var(--ink); text-decoration: none; }
+.toc a:hover { color: var(--accent); text-decoration: underline; }
+
+/* ---------- tipografia ---------- */
+
+h2, h3, h4 { font-family: var(--cond); font-weight: 600; letter-spacing: -.005em; text-wrap: balance; }
+h2 { font-size: 30px; line-height: 1.12; margin: 0 0 16px; }
+h3 { font-size: 19px; margin: 34px 0 10px; }
+h4 { font-size: 16px; margin: 24px 0 8px; color: var(--muted); }
+p { margin: 0 0 15px; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+code {
+  font-family: var(--mono); font-size: .87em;
+  background: var(--accent-s); color: var(--accent);
+  padding: .08em .35em; border-radius: 3px;
+}
+h1 code, h2 code, h3 code, .toc code { background: none; padding: 0; color: inherit; }
+
+ul, ol { margin: 0 0 15px; padding-left: 1.4em; }
+li { margin: 0 0 8px; }
+li > ul, li > ol { margin-top: 8px; }
+
+blockquote {
+  margin: 18px 0; padding: 14px 18px; background: var(--sunk);
+  border-left: 3px solid var(--accent); color: var(--muted); font-size: 15px;
+}
+
+/* ---------- secciones ---------- */
+
+.sec { padding: 44px 0 8px; border-top: 1px solid var(--rule); margin-top: 34px; }
+.sec:first-of-type { border-top: none; }
+
+/* la lista ordenada lleva numeros porque el orden es real */
+ol.pasos { list-style: none; counter-reset: paso; padding-left: 0; margin: 6px 0 18px; }
+ol.pasos > li {
+  counter-increment: paso; position: relative; padding-left: 36px; margin: 0 0 16px;
+}
+ol.pasos > li::before {
+  content: counter(paso); position: absolute; left: 0; top: .16em;
+  font-family: var(--mono); font-size: 11.5px; font-weight: 600; line-height: 21px;
+  width: 23px; height: 21px; text-align: center;
+  color: var(--accent); background: var(--accent-s); border-radius: 3px;
+}
+
+.lbl {
+  font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--faint);
+  margin: 26px 0 10px; padding-top: 12px; border-top: 1px solid var(--rule);
+}
+.done { border-left: 3px solid var(--good); padding: 2px 0 2px 14px; margin: 18px 0 0; }
+.done strong { color: var(--good); }
+.trap {
+  background: var(--warn-s); border-left: 3px solid var(--warn);
+  padding: 14px 18px; margin: 20px 0 0; font-size: 15px;
+}
+.trap strong:first-child { color: var(--warn); }
+
+/* ---------- tablas ---------- */
+
+.tablewrap {
+  overflow-x: auto; margin: 8px 0 20px;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 8px;
+}
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--faint); border-bottom-width: 2px; white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:last-child td strong { color: var(--accent); }
+td:first-child { font-variant-numeric: tabular-nums; }
+
+/* ---------- codigo ---------- */
+
+.codewrap { position: relative; margin: 8px 0 20px; }
+.codewrap .lang {
+  position: absolute; top: 9px; right: 12px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--faint);
+}
+pre.code {
+  margin: 0; padding: 17px 20px; overflow-x: auto;
+  background: var(--sunk); border: 1px solid var(--rule); border-radius: 6px;
+  font-family: var(--mono); font-size: 13px; line-height: 1.65;
+  color: var(--ink); white-space: pre; tab-size: 2;
+}
+
+.pie {
+  margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--rule);
+  color: var(--faint); font-size: 13.5px;
+}
+
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+:target { scroll-margin-top: 16px; }
+
+</style>
+<main>
+  <header class="masthead">
+    <p class="kicker">Grupo 4 · Programación IV · <code>ms-teoricos-encuestas</code></p>
+    <h1>Tema 04 — Teóricos y Encuestas</h1>
+    <p class="sub">Definition of Done — Sprint 1</p>
+  </header>
+  <section class="intro"></section>
+  <nav class="toc"><p class="tocl">En este documento</p><ol><li><a href="#s1">Para qué sirve esto</a></li><li><a href="#s2">El presupuesto real</a></li><li><a href="#s3">Definition of Ready — antes de tomar una historia</a></li><li><a href="#s4">Definition of Done — las ocho líneas</a></li><li><a href="#s5">DoD reforzado — nueve historias</a></li><li><a href="#s6">Definition of Done del Sprint</a></li><li><a href="#s7">Lo que deliberadamente NO está en el DoD</a></li><li><a href="#s8">Cuando una historia no llega</a></li><li><a href="#s9">Cómo se ve esto en un PR</a></li><li><a href="#s10">El número que no cierra</a></li></ol></nav>
+  <section class="sec" id="s1"><h2>Para qué sirve esto</h2><p>Un Definition of Done es el acuerdo sobre qué significa que una historia esté terminada, para que nadie tenga que preguntarlo y para que «terminada» quiera decir lo mismo en boca de los diez.</p>
+<p>Este no es un DoD de manual. Está calibrado contra tres cosas concretas: <strong>el tiempo que tenemos</strong>, <strong>lo que el equipo ya sabe hacer</strong> y <strong>lo que la cátedra va a mirar</strong>. Un DoD que no se cumple es peor que no tener ninguno, porque enseña que las reglas del equipo son decorativas.</p></section><section class="sec" id="s2"><h2>El presupuesto real</h2><div class="tablewrap"><table><tbody><tr><td>Personas</td><td>10</td></tr><tr><td>Duración del Sprint 1</td><td>2 semanas</td></tr><tr><td>Dedicación por persona</td><td>3 a 4 horas semanales</td></tr><tr><td><strong>Capacidad total del equipo</strong></td><td><strong>≈ 70 horas</strong></td></tr><tr><td>Experiencia con Spring Boot, JPA, Docker, JUnit y tests contra base real</td><td>sí, hay gente que ya lo hizo</td></tr><tr><td>Flujo de trabajo</td><td>rama por historia, PR, revisión de otro integrante</td></tr><tr><td>Lo que mira la cátedra</td><td>tablero con historias cerradas, demo funcionando, repositorio y documentación</td></tr></tbody></table></div>
+<p><strong>De ahí sale el criterio de diseño de este documento:</strong> el equipo sabe hacer todo lo que el plan técnico pide; lo que no tiene es tiempo. Entonces el DoD no baja la vara técnica —los tests contra base real quedan, porque hay quien sabe escribirlos y son justo los que sostienen el anonimato—, sino que <strong>recorta el trabajo administrativo alrededor de cada historia</strong>.</p>
+<p><strong>El presupuesto concreto: cerrar una historia no puede costar más de 30 minutos</strong> por encima de escribir el código y sus tests. Todo lo que se propuso para este DoD y no entraba en ese presupuesto quedó afuera, y está listado más abajo con su motivo.</p></section><section class="sec" id="s3"><h2>Definition of Ready — antes de tomar una historia</h2><p>Con 3 horas por semana, empezar una historia que no estaba lista quema la semana entera de esa persona. Tres condiciones, treinta segundos de verificación:</p>
+<ol class="pasos"><li><strong>Sus dependencias están mergeadas</strong>, no «casi listas». El plan técnico dice, para cada historia, qué tiene que estar en verde antes de tomarla.</li><li><strong>Los criterios de aceptación se entienden sin preguntarle a nadie.</strong> Si hay que preguntar, se pregunta en el grupo <em>antes</em> de tomarla, no a mitad de camino.</li><li><strong>Entra en una sesión de trabajo.</strong> Si a ojo son más de 3 horas, se parte en dos historias antes de empezar. Una historia que cruza dos semanas no se termina nunca.</li></ol></section><section class="sec" id="s4"><h2>Definition of Done — las ocho líneas</h2><p>Aplica a <strong>todas</strong> las historias. Está ordenado por el momento en que ocurre cada cosa.</p>
+<div class="tablewrap"><table><thead><tr><th>#</th><th>Criterio</th><th>Costo</th></tr></thead><tbody><tr><td>1</td><td>Los <strong>criterios de aceptación del backlog están tildados uno por uno</strong> en el tablero, por quien hizo la historia</td><td>5 min</td></tr><tr><td>2</td><td><strong>Hay al menos un test automatizado por criterio de aceptación</strong></td><td>ya está en el código</td></tr><tr><td>3</td><td><strong><code>mvn verify</code> pasa en limpio</strong>, y lo corrió alguien que no es quien escribió la historia</td><td>5 min</td></tr><tr><td>4</td><td><strong>Levanta desde cero:</strong> <code>docker compose down -v &amp;&amp; docker compose up</code> y la historia se puede ejercitar</td><td>10 min</td></tr><tr><td>5</td><td><strong>Un PR aprobado por otra persona del grupo</strong>, que corrió los puntos 3 y 4</td><td>incluido arriba</td></tr><tr><td>6</td><td><strong>Sin literales de usuario</strong> y <strong>sin <code>TODO</code> huérfano</strong>: un <code>TODO</code> lleva nombre e historia, o no va</td><td>2 min</td></tr><tr><td>7</td><td><strong>Mergeado a la rama principal.</strong> No existe «listo pero sin mergear»</td><td>1 min</td></tr><tr><td>8</td><td><strong>Rama borrada y tarjeta movida</strong> en el tablero</td><td>1 min</td></tr></tbody></table></div>
+<h3>Por qué cada uno está</h3>
+<p><strong>1 — Los CA tildados en el tablero.</strong> Es lo primero que va a mirar la cátedra, y además es la única forma de que «terminada» signifique lo mismo para los diez: la definición ya está escrita en el backlog, historia por historia. Tildar es leer el CA y verificar que se cumple, no marcar una casilla.</p>
+<p><strong>2 — Un test por criterio de aceptación.</strong> No pedimos «tests»: pedimos <strong>uno por CA</strong>, que es verificable de un vistazo y no admite interpretación. Unitario cuando alcanza; contra base real solo cuando el CA habla de la base, de los permisos o de un endpoint. El plan técnico ya nombra, para cada historia, cuáles son.</p>
+<p>Este es el punto donde un DoD genérico pondría «cobertura mínima del 80 %». No lo hacemos: la cobertura se sube escribiendo tests de lo fácil, y lo que necesitamos cubierto es lo difícil.</p>
+<p><strong>3 — <code>mvn verify</code> en la máquina de otro.</strong> «En la mía andaba» es el problema que más horas cuesta en un equipo de diez con poco tiempo. Que lo corra el revisor cierra eso por dos pesos.</p>
+<p><strong>4 — Levanta desde cero.</strong> Es el punto más caro del DoD y el que igual dejamos, porque <strong>la cátedra pide demo</strong>. Una demo se arma con lo que levanta desde cero; si cada historia se probó sobre una base que ya tenía datos de la anterior, la demo se rompe en vivo. El <code>down -v</code> es literal: borra los volúmenes.</p>
+<p><strong>5 — Revisión de otro.</strong> Ya trabajan así, y en este proyecto hay tres historias donde la revisión es lo único que atrapa el error —<code>HU06</code>, <code>HU29</code> y <code>HU44</code>—, porque el código compila, los tests pasan y la garantía de anonimato igual se perdió.</p>
+<p><strong>6 — Sin literales ni <code>TODO</code> huérfano.</strong> <code>HU04</code> ya pone un test que atrapa los literales, así que esto es casi gratis. El <code>TODO</code> con nombre e historia (<code>// TODO(Sofía, G04-HU33): …</code>) es la diferencia entre deuda declarada y deuda perdida.</p>
+<p><strong>7 y 8 — Mergeado y movido.</strong> Una historia sin mergear no existe: no está en la demo, no está en el repositorio y no se puede construir encima. Y con diez personas sobre un repo, una rama que sobrevive una semana es un conflicto garantizado.</p></section><section class="sec" id="s5"><h2>DoD reforzado — nueve historias</h2><p>Nueve historias tienen tres requisitos extra, porque son las que sostienen garantías que no se ven fallar: el código compila y los tests pasan igual cuando la garantía ya se perdió.</p>
+<p><strong>Cuáles son:</strong> <code>HU06</code>, <code>HU07</code>, <code>HU08</code>, <code>HU10</code>, <code>HU18</code>, <code>HU21</code>, <code>HU22</code>, <code>HU29</code>, <code>HU44</code>.</p>
+<div class="tablewrap"><table><thead><tr><th>#</th><th>Criterio extra</th><th>Costo</th></tr></thead><tbody><tr><td>9</td><td><strong>El test afirma el mecanismo, no el síntoma.</strong> Un rechazo por permisos se verifica por su <code>SQLState</code>, no por «lanzó una excepción»; una inmutabilidad se verifica intentando mutar por JDBC, no solo por la API</td><td>ya está en el plan técnico</td></tr><tr><td>10</td><td><strong>Lo revisa alguien del otro frente.</strong> Quien viene de teóricos mira la de encuestas, y al revés. Una mirada de afuera es lo que ve el supuesto que el autor da por obvio</td><td>10 min</td></tr><tr><td>11</td><td><strong>Queda una línea en <code>docs/ANONIMATO.md</code> o <code>docs/DECISIONES.md</code></strong> diciendo qué garantiza y qué no</td><td>5 min</td></tr></tbody></table></div>
+<p><strong>Por qué solo estas nueve.</strong> Aplicar esto a las 46 costaría unas 11 horas de las 70 que tenemos, un 15 % de la capacidad del equipo en revisión cruzada. En estas nueve el costo se justifica; en <code>HU03</code> o <code>HU26</code>, si algo está mal, se ve enseguida.</p></section><section class="sec" id="s6"><h2>Definition of Done del Sprint</h2><p>Además de las historias, el sprint tiene su propio cierre. Son las tres cosas que mira la cátedra, y ninguna se improvisa el día anterior.</p>
+<ol class="pasos"><li><strong>La demo está guionada y ensayada una vez.</strong> Un documento de una carilla: qué se muestra, en qué orden, quién habla. Ensayada de verdad, contra el compose levantado desde cero. Se hace el anteúltimo día, no el último.</li><li><strong>El tablero está al día</strong>, con las historias cerradas cerradas y las no tomadas en el backlog. Una historia a medias <strong>no</strong> se muestra como cerrada: eso es lo único que no se puede arreglar después.</li><li><strong>El README lo siguió alguien que no lo escribió</strong>, en una máquina limpia, y funcionó. Ya es el CA3 de <code>HU03</code>; acá se repite porque es lo que hace creíble al repositorio.</li><li><strong>Los supuestos vigentes están actualizados</strong> con lo que haya salido de la sesión de integración, o marcados como todavía sin respuesta. Un supuesto sin estado es peor que uno pendiente.</li><li><strong>Lo que no se terminó está declarado</strong>, con una línea por historia diciendo hasta dónde se llegó. Se entrega igual: lo que hunde una entrega no es lo que falta, es lo que falta y no se dijo.</li></ol>
+<h3>Una decisión del día 1</h3>
+<p><strong>Poner a andar la integración continua el primer día</strong>, aunque cueste media hora. Con 3 horas semanales por persona, nadie quiere gastar 20 minutos verificando a mano el PR de otro. Con <code>mvn verify</code> corriendo solo en cada PR, los puntos 3 y 6 del DoD se verifican sin que nadie los mire, y el revisor puede dedicar su tiempo a lo que una máquina no ve.</p>
+<p>Es la única inversión de este documento que se paga sola dentro del mismo sprint.</p></section><section class="sec" id="s7"><h2>Lo que deliberadamente NO está en el DoD</h2><p>Un DoD se define tanto por lo que exige como por lo que decide no exigir. Esto se dejó afuera a propósito, y no por olvido:</p>
+<div class="tablewrap"><table><thead><tr><th>Lo que no exigimos</th><th>Por qué</th><th>Cuándo sí</th></tr></thead><tbody><tr><td><strong>Cobertura mínima de tests (%)</strong></td><td>se sube cubriendo lo fácil; lo que necesitamos cubierto es el motor de corrección y el aislamiento, y eso lo garantiza el punto 2</td><td>Sprint 2, y solo sobre <code>..teoricos.dominio.correccion..</code></td></tr><tr><td><strong>OpenAPI actualizado por historia</strong></td><td>son 46 actualizaciones de un documento que se genera solo. <code>HU41</code> lo hace una vez, bien</td><td>está en <code>HU41</code></td></tr><tr><td><strong>Documentación por historia</strong></td><td>escribir un <code>.md</code> por historia cuesta más que la historia</td><td>solo en las nueve reforzadas, una línea</td></tr><tr><td><strong>Pruebas de rendimiento o de carga</strong></td><td>no hay requisito de carga en el Sprint 1 y no tenemos con qué compararlo</td><td>cuando haya un número que cumplir</td></tr><tr><td><strong>Accesibilidad</strong></td><td>somos back end; no entregamos interfaz</td><td>cuando haya front</td></tr><tr><td><strong>Aprobación del Product Owner por historia</strong></td><td>agrega un cuello de botella de una persona sobre 46 historias, con 3 horas semanales</td><td>la aprobación es del sprint completo, en la demo</td></tr><tr><td><strong>Traducción completa al segundo idioma</strong></td><td><code>HU04</code> pide que el mecanismo funcione, no que el catálogo esté completo. Traducir es contenido, no código</td><td>cuando exista el requisito de un segundo idioma real</td></tr><tr><td><strong>Refactor de lo que quedó feo</strong></td><td>con 70 horas, refactorizar es tiempo que sale de una historia sin hacer</td><td>se anota como <code>TODO</code> con nombre, que el punto 6 obliga</td></tr></tbody></table></div></section><section class="sec" id="s8"><h2>Cuando una historia no llega</h2><p>Va a pasar, y conviene tener la regla escrita antes de que pase, cuando todavía no duele.</p>
+<ul><li><strong>No existe la historia «al 90 %».</strong> Si al cierre del sprint no cumple el DoD, vuelve al backlog <strong>entera</strong> y se declara en el punto 5 del cierre. No se muestra como cerrada en el tablero.</li><li><strong>El código a medias se mergea igual si no rompe nada</strong>, detrás de un flag apagado o sin exponerse. Es preferible a una rama de dos semanas que después nadie puede integrar.</li><li><strong>Una historia en curso por persona.</strong> Con 3 horas semanales, tener dos abiertas significa terminar cero.</li><li><strong>Si una historia se traba más de una semana, se avisa al grupo.</strong> No para que alguien la rescate, sino para que las que dependían de ella se reordenen a tiempo.</li></ul></section><section class="sec" id="s9"><h2>Cómo se ve esto en un PR</h2><p>Para que el DoD se cumpla sin tener que recordarlo, va como plantilla del pull request. Tildar seis casillas cuesta menos que discutir si algo estaba terminado:</p>
+<div class="codewrap"><span class="lang">markdown</span><pre class="code">## G04-HUxx — &lt;título de la historia&gt;
+
+### Criterios de aceptación
+- [ ] CA1 — &lt;texto del backlog&gt;       · test: `NombreDelTest`
+- [ ] CA2 — &lt;texto del backlog&gt;       · test: `NombreDelTest`
+- [ ] CA3 — &lt;texto del backlog&gt;       · test: `NombreDelTest`
+
+### Definition of Done
+- [ ] `mvn verify` pasa
+- [ ] `docker compose down -v &amp;&amp; docker compose up` y la historia se ejercita
+- [ ] sin literales de usuario, sin TODO sin dueño
+- [ ] tablero actualizado
+
+### Para el revisor
+&lt;qué mirar con atención, en una línea&gt;</pre></div>
+<p>La línea <strong>«para el revisor»</strong> es la más útil de la plantilla: con poco tiempo, dirigir la atención vale más que pedir una revisión completa.</p></section><section class="sec" id="s10"><h2>El número que no cierra</h2><p>Esto no es parte del DoD, pero un DoD sobre un alcance imposible no se cumple igual, así que conviene decirlo:</p>
+<p><strong>70 horas de equipo contra 209 puntos y 46 historias.</strong> Aun con estimaciones optimistas —una hora y media por punto—, el backlog completo son unas 300 horas. <strong>Entra alrededor de un quinto.</strong></p>
+<p>No es un problema del backlog: fue escrito como el trabajo del tema, no como el trabajo de dos semanas. Lo que hay que hacer es elegir qué entra en el Sprint 1 y declarar el resto, en vez de tomar 46 historias y terminar 9 sin haber decidido cuáles.</p>
+<p><strong>Un recorte posible, de 44 puntos, que da una demo mostrable:</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Bloque</th><th>Historias</th><th>Puntos</th></tr></thead><tbody><tr><td>Cimientos</td><td><code>HU01</code>, <code>HU03</code></td><td>8</td></tr><tr><td>Aislamiento de datos</td><td><code>HU06</code></td><td>8</td></tr><tr><td>Banco de ítems</td><td><code>HU10</code>, <code>HU11</code></td><td>13</td></tr><tr><td>Catálogo y cumplimiento</td><td><code>HU24</code>, <code>HU25</code></td><td>10</td></tr><tr><td>Almacén anónimo</td><td><code>HU29</code></td><td>5</td></tr><tr><td></td><td><strong>Total</strong></td><td><strong>44</strong></td></tr></tbody></table></div>
+<p><strong>Qué se puede demostrar con eso:</strong> el servicio levanta desde cero y aparece en Eureka; un profesor da de alta un ítem, lo edita y se ve que la versión anterior quedó intacta; y —lo más vistoso— se muestra en vivo que PostgreSQL <strong>rechaza</strong> el join entre el marcador de cumplimiento y la respuesta de encuesta, que es la garantía central del tema y no se parece a lo que va a mostrar ningún otro grupo.</p>
+<p>Quedan afuera del Sprint 1 el motor de corrección entero (<code>E-05</code>), los KPIs (<code>E-08</code>) y los eventos de Kafka (<code>E-09</code>). Es mucho, y está bien que se vea: es preferible a una demo donde nada anda del todo.</p>
+<p><strong>Esto es una propuesta, no una decisión.</strong> La decisión de alcance es del equipo, y conviene tomarla en la primera reunión del sprint, no descubrirla en la última.</p></section>
+  <footer class="pie">
+    <p>Generado desde <code>DOD-G04-SPRINT1.md</code>. Acompaña a
+    <code>BACKLOG-G04-SPRINT1.md</code> y <code>PLAN-TECNICO-G04-SPRINT1.md</code>.</p>
+  </footer>
+</main>

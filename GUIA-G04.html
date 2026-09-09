@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>Grupo 4 — Guía rápida: qué decidimos y qué preguntar</title>
+
+<style>
+  :root {
+    --bg:        #f3f4f1;
+    --card:      #ffffff;
+    --ink:       #1a1f1c;
+    --ink-2:     #4d5852;
+    --muted:     #78847e;
+    --rule:      #dfe3de;
+    --rule-soft: #ebeee9;
+
+    --ok:        #1f6b4a;   /* decidido */
+    --ok-bg:     #e6f0ea;
+    --ask:       #9a6a10;   /* pregunta abierta */
+    --ask-bg:    #f8f0dd;
+    --stop:      #a33f28;   /* riesgo */
+    --stop-bg:   #f9e9e4;
+
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: Georgia, "Iowan Old Style", serif;
+    --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#141714; --card:#1d221f; --ink:#e7ebe7; --ink-2:#b3bfb8;
+      --muted:#8b978f; --rule:#2f3733; --rule-soft:#252b28;
+      --ok:#79c39c; --ok-bg:#172b22; --ask:#dcae5b; --ask-bg:#2d2416;
+      --stop:#e0866c; --stop-bg:#2f1c17;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:#141714; --card:#1d221f; --ink:#e7ebe7; --ink-2:#b3bfb8;
+    --muted:#8b978f; --rule:#2f3733; --rule-soft:#252b28;
+    --ok:#79c39c; --ok-bg:#172b22; --ask:#dcae5b; --ask-bg:#2d2416;
+    --stop:#e0866c; --stop-bg:#2f1c17;
+  }
+  :root[data-theme="light"] {
+    --bg:#f3f4f1; --card:#ffffff; --ink:#1a1f1c; --ink-2:#4d5852;
+    --muted:#78847e; --rule:#dfe3de; --rule-soft:#ebeee9;
+    --ok:#1f6b4a; --ok-bg:#e6f0ea; --ask:#9a6a10; --ask-bg:#f8f0dd;
+    --stop:#a33f28; --stop-bg:#f9e9e4;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 clamp(1rem,4vw,2rem) 5rem; }
+
+  /* ---- hero ---- */
+  .hero { padding: 3.5rem 0 2rem; }
+  .kicker {
+    font-family: var(--mono); font-size: .74rem; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;
+  }
+  h1 {
+    font-size: clamp(2rem,5.5vw,2.9rem); line-height: 1.08; letter-spacing: -.03em;
+    font-weight: 750; text-wrap: balance; margin-bottom: 1rem;
+  }
+  .lead { font-size: 1.16rem; color: var(--ink-2); max-width: 56ch; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1.8rem;
+  }
+  .chip {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .04em;
+    padding: .32rem .7rem; border-radius: 100px; border: 1px solid;
+  }
+  .chip.ok   { color: var(--ok);   border-color: var(--ok);   background: var(--ok-bg); }
+  .chip.ask  { color: var(--ask);  border-color: var(--ask);  background: var(--ask-bg); }
+  .chip.stop { color: var(--stop); border-color: var(--stop); background: var(--stop-bg); }
+
+  /* ---- sections ---- */
+  section { margin-top: 3.5rem; scroll-margin-top: 1.5rem; }
+  h2 {
+    font-size: 1.62rem; letter-spacing: -.02em; font-weight: 750;
+    line-height: 1.15; text-wrap: balance; margin-bottom: .5rem;
+  }
+  .sub { color: var(--ink-2); max-width: 62ch; margin-bottom: 1.8rem; }
+  h3 { font-size: 1.06rem; font-weight: 700; margin: 2rem 0 .7rem; letter-spacing: -.01em; }
+  p { margin-bottom: 1rem; max-width: 64ch; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ---- plain cards ---- */
+  .cards { display: grid; gap: 1rem; }
+  @media (min-width: 700px) { .cards.two { grid-template-columns: 1fr 1fr; } }
+
+  .card {
+    background: var(--card); border: 1px solid var(--rule);
+    border-radius: 8px; padding: 1.35rem 1.4rem;
+  }
+  .card h4 { font-size: 1.02rem; font-weight: 700; margin-bottom: .6rem; }
+  .card p { font-size: .95rem; color: var(--ink-2); margin-bottom: .7rem; }
+  .card p strong { color: var(--ink); }
+  .card ul { margin: 0; padding-left: 1.15rem; font-size: .93rem; color: var(--ink-2); }
+  .card li { margin-bottom: .4rem; }
+  .card li::marker { color: var(--muted); }
+
+  /* ---- decision cards ---- */
+  .dcard {
+    background: var(--card); border: 1px solid var(--rule);
+    border-left: 4px solid var(--ok); border-radius: 6px;
+    padding: 1.2rem 1.35rem; margin-bottom: .85rem;
+  }
+  .dcard .top {
+    display: flex; align-items: baseline; gap: .7rem; flex-wrap: wrap; margin-bottom: .55rem;
+  }
+  .dcard .code {
+    font-family: var(--mono); font-size: .7rem; color: var(--ok);
+    background: var(--ok-bg); border-radius: 3px; padding: .15rem .42rem; flex: none;
+  }
+  .dcard .title { font-weight: 700; font-size: 1.02rem; line-height: 1.35; }
+  .dcard .why {
+    font-family: var(--serif); font-size: .96rem; color: var(--ink-2);
+    line-height: 1.55; margin-bottom: .6rem;
+  }
+  .dcard .cons {
+    font-size: .87rem; color: var(--ink-2);
+    border-top: 1px dashed var(--rule); padding-top: .6rem;
+  }
+  .dcard .cons b {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--muted); display: block; margin-bottom: .2rem;
+  }
+
+  /* ---- question cards ---- */
+  .qcard {
+    background: var(--card); border: 1px solid var(--rule);
+    border-left: 4px solid var(--ask); border-radius: 6px;
+    padding: 1.2rem 1.35rem; margin-bottom: .85rem;
+  }
+  .qcard.urgent { border-left-color: var(--stop); }
+  .qcard .top { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; margin-bottom: .6rem; }
+  .qcard .to {
+    font-family: var(--mono); font-size: .69rem; letter-spacing: .05em;
+    color: var(--ask); background: var(--ask-bg);
+    border-radius: 3px; padding: .18rem .48rem;
+  }
+  .qcard.urgent .to { color: var(--stop); background: var(--stop-bg); }
+  .qcard .ref { font-family: var(--mono); font-size: .69rem; color: var(--muted); }
+  .qcard .q { font-weight: 700; font-size: 1.04rem; line-height: 1.35; margin-bottom: .55rem; }
+  .qcard .body { font-size: .94rem; color: var(--ink-2); margin-bottom: .7rem; }
+  .qcard .body:last-child { margin-bottom: 0; }
+  .qcard .ours {
+    font-size: .89rem; background: var(--bg); border-radius: 5px;
+    padding: .65rem .8rem; color: var(--ink-2);
+  }
+  .qcard .ours b {
+    font-family: var(--mono); font-size: .66rem; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--muted); display: block; margin-bottom: .22rem;
+  }
+
+  /* ---- figures ---- */
+  figure { margin: 1.8rem 0; }
+  .figbox {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 8px;
+    padding: 1.4rem 1.2rem 1rem; overflow-x: auto;
+  }
+  figure svg { display: block; width: 100%; height: auto; }
+  figcaption { font-size: .87rem; color: var(--ink-2); margin-top: .85rem; max-width: 62ch; }
+  figcaption b { color: var(--ink); }
+
+  .s-t   { font-family: var(--sans); font-size: 13.5px; fill: var(--ink); }
+  .s-tb  { font-family: var(--sans); font-size: 13.5px; font-weight: 700; fill: var(--ink); }
+  .s-s   { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+  .s-ok  { font-family: var(--mono); font-size: 11px; fill: var(--ok); }
+  .s-bad { font-family: var(--mono); font-size: 11px; fill: var(--stop); }
+  .b-n   { fill: var(--card); stroke: var(--ink-2); stroke-width: 1.3; }
+  .b-ok  { fill: var(--ok-bg); stroke: var(--ok); stroke-width: 1.7; }
+  .b-bad { fill: var(--stop-bg); stroke: var(--stop); stroke-width: 1.7; }
+  .ln    { stroke: var(--ink-2); stroke-width: 1.3; fill: none; }
+  .ln-bad{ stroke: var(--stop); stroke-width: 1.7; fill: none; }
+
+  /* ---- glossary ---- */
+  .gloss { display: grid; gap: .75rem; }
+  .gitem {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 6px;
+    padding: .9rem 1.1rem;
+  }
+  .gitem dt { font-weight: 700; font-size: .97rem; margin-bottom: .2rem; }
+  .gitem dd { margin: 0; font-size: .93rem; color: var(--ink-2); }
+
+  /* ---- checklist ---- */
+  .check { background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 1.5rem 1.6rem; }
+  .check ol { margin: 0; padding-left: 1.3rem; }
+  .check li { margin-bottom: .8rem; font-size: .97rem; }
+  .check li:last-child { margin-bottom: 0; }
+  .check li b { display: block; }
+  .check li span { color: var(--ink-2); font-size: .92rem; }
+
+  code {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--bg); border: 1px solid var(--rule-soft);
+    border-radius: 3px; padding: .06em .32em;
+  }
+  em { font-family: var(--serif); }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: .74rem; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: .4rem 1.8rem;
+  }
+  a { color: var(--ok); }
+  a:focus-visible { outline: 2px solid var(--ok); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { * { animation:none!important; transition:none!important } }
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">Grupo 4 · Tema 04 · Guía rápida</div>
+  <h1>Qué ya decidimos y qué tenemos que preguntar</h1>
+  <p class="lead">Una lectura de diez minutos para entender qué le toca al grupo, por qué tomamos cada decisión y qué hay que llevarle a los otros equipos. El documento técnico está aparte.</p>
+  <div class="legend">
+    <span class="chip ok">verde · decidido</span>
+    <span class="chip ask">ámbar · hay que preguntar</span>
+    <span class="chip stop">óxido · urgente o riesgoso</span>
+  </div>
+</header>
+
+<!-- ============================================= -->
+<section>
+  <h2>Primero: qué hace nuestro grupo</h2>
+  <p class="sub">Nos tocaron dos trabajos que casi no se tocan entre sí. Conviene entenderlos por separado, porque se van a desarrollar por separado.</p>
+
+  <div class="cards two">
+    <div class="card">
+      <h4>1 · Los desafíos teóricos</h4>
+      <p>Un profesor arma preguntas —multiple choice, verdadero o falso, emparejar conceptos, respuesta abierta—. El alumno las responde. <strong>Nosotros las corregimos y devolvemos una nota.</strong></p>
+      <p>Lo que <em>no</em> hacemos: no somos dueños del desafío. El desafío, sus fechas, sus estados y sus entregas son del <strong>Grupo 03</strong>. Nosotros ponemos las preguntas adentro y la corrección.</p>
+      <p>Tampoco damos XP ni monedas. Avisamos que alguien aprobó; el <strong>Grupo 10</strong> decide cuánto vale eso.</p>
+    </div>
+    <div class="card">
+      <h4>2 · Las encuestas de satisfacción</h4>
+      <p>Al terminar un curso, el alumno puntúa con estrellas el curso, el contenido y la plataforma. De ahí salen <strong>dos de los siete indicadores de éxito</strong> del producto entero (KPI-01 y KPI-02).</p>
+      <p>La complicación: el PRD exige que sean <strong>100% anónimas</strong>, y que el anonimato sea imposible de romper. Ni siquiera un administrador con acceso a la base puede saber quién respondió qué.</p>
+      <p>Eso convierte algo que parecía un formulario en el problema técnico más interesante del tema.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================= -->
+<section>
+  <h2>El problema difícil, explicado</h2>
+  <p class="sub">Si entendés esto, entendés el 80% de por qué el diseño de encuestas es como es. Es también lo que más conviene saber explicar en la defensa.</p>
+
+  <p>La idea intuitiva de «encuesta anónima» es <strong>no guardar el nombre</strong>. Y no alcanza, ni de cerca.</p>
+
+  <p>El PRD nos obliga a dos cosas que parecen contradictorias. Por un lado, la encuesta es <strong>obligatoria</strong>: el sistema tiene que saber si María ya respondió, para poder exigírsela. Por otro lado, la respuesta es <strong>anónima</strong>: nadie puede saber qué puso María.</p>
+
+  <p>O sea que necesitamos guardar las dos cosas: «María cumplió» y «alguien puso 4 estrellas». El truco está en guardarlas de forma que <strong>no se puedan volver a unir</strong>. Y ahí aparece el problema que casi nadie ve la primera vez:</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 860 300" role="img" aria-label="Aunque no se guarde el nombre junto a la respuesta, si el registro de cumplimiento y la respuesta tienen la misma hora, se puede deducir quién respondió qué comparando los relojes.">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <text class="s-bad" x="10" y="16">EL ERROR TÍPICO — guardar las dos cosas con su hora</text>
+
+        <rect class="b-n" x="10" y="30" width="330" height="104" rx="5"/>
+        <text class="s-tb" x="26" y="54">Quién cumplió</text>
+        <text class="s-t" x="26" y="80">María González</text>
+        <text class="s-s" x="230" y="80">14:32:07</text>
+        <text class="s-t" x="26" y="104">Juan Pérez</text>
+        <text class="s-s" x="230" y="104">14:35:41</text>
+
+        <rect class="b-n" x="500" y="30" width="350" height="104" rx="5"/>
+        <text class="s-tb" x="516" y="54">Respuestas “anónimas”</text>
+        <text class="s-t" x="516" y="80">★★★★☆ “faltó práctica”</text>
+        <text class="s-s" x="770" y="80">14:32:08</text>
+        <text class="s-t" x="516" y="104">★★☆☆☆ “muy denso”</text>
+        <text class="s-s" x="770" y="104">14:35:42</text>
+
+        <g color="var(--stop)">
+          <path class="ln-bad" d="M 344 76 L 494 76" marker-end="url(#a1)"/>
+          <path class="ln-bad" d="M 344 100 L 494 100" marker-end="url(#a1)"/>
+        </g>
+        <text class="s-bad" x="352" y="68">un segundo de diferencia</text>
+        <text class="s-bad" x="352" y="126">= María puso 4 estrellas</text>
+
+        <line x1="10" y1="166" x2="850" y2="166" style="stroke:var(--rule);stroke-width:1"/>
+
+        <text class="s-ok" x="10" y="196">LO QUE HACEMOS — la respuesta no tiene reloj</text>
+
+        <rect class="b-n" x="10" y="210" width="330" height="76" rx="5"/>
+        <text class="s-tb" x="26" y="234">Quién cumplió</text>
+        <text class="s-t" x="26" y="258">María González</text>
+        <text class="s-s" x="230" y="258">14:32:07</text>
+
+        <rect class="b-ok" x="500" y="210" width="350" height="76" rx="5"/>
+        <text class="s-tb" x="516" y="234">Respuestas</text>
+        <text class="s-t" x="516" y="258">★★★★☆ “faltó práctica”</text>
+        <text class="s-s" x="770" y="258">2026-2C</text>
+
+        <g color="var(--muted)">
+          <path class="ln" style="stroke-dasharray:5 4" d="M 344 248 L 494 248"/>
+        </g>
+        <path d="M 407 236 L 431 260 M 431 236 L 407 260" style="stroke:var(--stop);stroke-width:1.8;fill:none"/>
+        <text class="s-ok" x="352" y="282">solo el cuatrimestre</text>
+      </svg>
+    </div>
+    <figcaption><b>El reloj delata aunque el nombre no esté.</b> Por eso la respuesta no guarda la hora, sino el cuatrimestre; y por eso además se escribe con demora aleatoria, para que ni siquiera el orden en que entran a la base permita ordenarlas junto a los cumplimientos.</figcaption>
+  </figure>
+
+  <p>Con la misma lógica hay otros cuatro caminos por los que se filtra la identidad: una clave común entre las dos tablas, el número correlativo del registro (si sos el registro 41 y el cumplimiento 41 es tuyo, listo), y los logs del servidor. Los cerramos todos, y escribimos un test que <strong>intenta romper el anonimato y verifica que no puede</strong>.</p>
+
+  <p>Queda un límite que no se puede resolver con tecnología y conviene decirlo en voz alta: si en un curso de cinco personas responde una sola, esa persona es identificable por descarte. Por eso el PRD exige un mínimo de cinco respuestas antes de mostrarle nada al profesor.</p>
+</section>
+
+<!-- ============================================= -->
+<section>
+  <h2>Las decisiones que ya tomamos</h2>
+  <p class="sub">Doce. Cada una resuelve un lugar donde el PRD o la propuesta de la cátedra dejaban margen para que cada uno interpretara distinto. Si alguien del grupo no está de acuerdo con alguna, este es el momento.</p>
+
+  <h3>Sobre el alcance: qué entra y qué no</h3>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-01</span><span class="title">Las respuestas abiertas las corrige el profesor, no la IA</span></div>
+    <div class="why">La meta sigue siendo que las corrija un modelo de lenguaje contra el material del curso. Pero para este sprint lo hace una persona.</div>
+    <div class="cons"><b>Cómo lo dejamos preparado</b>El corrector es una pieza intercambiable. Sumar la IA después es agregar una implementación nueva, no rehacer el sistema.</div>
+  </div>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-02</span><span class="title">No hay encuesta después de cada desafío</span></div>
+    <div class="why">La propuesta de la cátedra lo insinuaba, pero el PRD define solo tres encuestas y ninguna por desafío.</div>
+    <div class="cons"><b>Si lo hiciéramos igual</b>Preguntarle a un alumno qué le pareció cada ejercicio, de forma obligatoria, termina en que todos eligen «prefiero no responder» por cansancio. El propio PRD usa ese argumento para no agregarle ni una pregunta más a la encuesta final.</div>
+  </div>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-09</span><span class="title">Dos de los siete tipos de pregunta quedan afuera del sprint</span></div>
+    <div class="why">«Conversación sobre el contenido» y «debate estructurado» no son preguntas: son charlas. Una es de ida y vuelta, la otra involucra a varios alumnos a la vez.</div>
+    <div class="cons"><b>Qué falta antes de poder hacerlas</b>Decisiones de producto que nadie tomó: quién arma las parejas de un debate, cuándo se da por terminada una conversación, cómo se puntúa. Entran los otros cinco tipos, completos.</div>
+  </div>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-12</span><span class="title">Teóricos y encuestas son solo para computadora</span></div>
+    <div class="why">Lo verificamos en la tabla del PRD: ambas cosas están marcadas como no disponibles en celular.</div>
+    <div class="cons"><b>Qué implica</b>Desde el celular hay que mostrar un mensaje claro —«esta sección requiere una computadora»— en vez de dejar que la pantalla se rompa. Es un requisito explícito, no una omisión.</div>
+  </div>
+
+  <h3>Sobre cómo lo construimos</h3>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-04</span><span class="title">Las preguntas se versionan y no se pueden modificar una vez respondidas</span></div>
+    <div class="why">El profesor puede editar un desafío que ya está en uso. Si edita el enunciado de una pregunta que veinte alumnos ya respondieron, esas correcciones quedarían evaluando otra cosa.</div>
+    <div class="cons"><b>Cómo funciona</b>Editar crea una versión nueva. Lo ya corregido queda apuntando a la versión vieja y no se recalcula. Es el mismo criterio que el PRD usa para sus propios cambios de rúbrica y de parámetros.</div>
+  </div>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-08</span><span class="title">Toda corrección manual queda registrada con su historial</span></div>
+    <div class="why">Quién corrigió, cuándo, qué nota había antes, cuál puso y por qué. El motivo es obligatorio.</div>
+    <div class="cons"><b>Por qué no es opcional</b>Es uno de los criterios de aprobación del producto: auditoría sobre cualquier cambio de nota académica. Sin historial, una segunda corrección pisa la primera y no queda rastro.</div>
+  </div>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-10</span><span class="title">El texto de las preguntas de la encuesta lo fija la plataforma</span></div>
+    <div class="why">No lo redacta cada profesor.</div>
+    <div class="cons"><b>Si cada uno escribiera la suya</b>Un profesor pregunta «¿te gustó el curso?» y otro «¿recomendarías esta materia?». Los porcentajes dejan de ser comparables entre cursos, y el indicador global del producto pierde sentido.</div>
+  </div>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-11</span><span class="title">A los cinco años hay que poder cortar el vínculo entre un alumno y lo que produjo</span></div>
+    <div class="why">La plataforma nunca borra la producción académica, pero tampoco la guarda para siempre. A los cinco años de archivado el curso, el administrador decide: extender el plazo, o anonimizar. Si no decide nada, se conserva.</div>
+    <div class="cons"><b>Anonimizar no es borrar</b>La respuesta del alumno sigue ahí, la nota sigue ahí, las estadísticas del curso dan lo mismo. Lo único que se pierde, y para siempre, es poder decir que eso fue de María. En vez de su identificador queda uno aleatorio sin vuelta atrás.</div>
+    <div class="cons"><b>Dónde aplica y dónde no</b>Los teóricos lo necesitan, porque guardan el identificador del alumno junto a su respuesta. Las <strong>respuestas de encuesta están exentas</strong>: nunca tuvieron un dato personal, así que no hay vínculo que cortar. Es el premio por haber pagado el costo del anonimato.</div>
+  </div>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-11b</span><span class="title">El marcador de cumplimiento sí se anonimiza</span></div>
+    <div class="why">El marcador guarda el identificador del alumno: dice «María cumplió la encuesta del curso X». No es una respuesta, pero sigue siendo un dato personal.</div>
+    <div class="cons"><b>Por qué lo agregamos nosotros</b>El PRD enumera dónde vive el dato personal y no menciona el marcador — probablemente porque esa lista fue escrita pensando en repositorios de contenido. Preferimos resolverlo antes que dejarlo en un limbo.</div>
+  </div>
+
+  <h3>Sobre los límites con otros grupos</h3>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-03</span><span class="title">La encuesta bloquea la nota final del curso, no cada nota suelta</span></div>
+    <div class="why">El alumno no ve su resultado académico final hasta responder la encuesta de cierre. Pero las notas de cada desafío las ve normalmente.</div>
+    <div class="cons"><b>Consecuencia</b>No bloqueamos a los grupos 03 ni 05. Nuestro interlocutor en ese bloqueo pasa a ser el grupo 02, que es quien cierra el curso.</div>
+  </div>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-07</span><span class="title">Que el curso se archive no espera a las encuestas pendientes</span></div>
+    <div class="why">Sin esta decisión, un curso puede quedar imposible de cerrar para siempre. Está explicada en detalle más abajo, en la primera pregunta urgente.</div>
+    <div class="cons"><b>Estado</b>Es nuestra postura, todavía no acordada con el grupo 02. Es lo primero que hay que llevar a la reunión.</div>
+  </div>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-05</span><span class="title">La moderación de comentarios: contrato cerrado y una pieza de reemplazo</span></div>
+    <div class="why">Los comentarios de la encuesta tienen que pasar por un moderador antes de guardarse, y ese moderador es del grupo 11, que lo tiene para más adelante.</div>
+    <div class="cons"><b>Cómo salimos</b>Acordamos ahora cómo va a ser la comunicación y mientras tanto usamos una pieza de reemplazo que aprueba todo. Cuando el moderador real exista, se activa sin tocar nuestro código.</div>
+  </div>
+
+  <div class="dcard">
+    <div class="top"><span class="code">D-06</span><span class="title">El bloqueo de la encuesta lo hace la pantalla, por ahora</span></div>
+    <div class="why">La encuesta de plataforma impide seguir usando el sistema hasta responderla o abstenerse.</div>
+    <div class="cons"><b>El límite honesto</b>Si el bloqueo lo hace solo la interfaz, alguien que llame al servidor directamente lo saltea. El bloqueo de verdad hay que hacerlo en la puerta de entrada del sistema, que es del grupo 01. Lo dejamos propuesto, no asumido.</div>
+  </div>
+</section>
+
+<!-- ============================================= -->
+<section>
+  <h2>Las tres preguntas urgentes</h2>
+  <p class="sub">Hay treinta preguntas en el documento de integración. Estas tres son las que, si no se contestan, nos hacen construir algo que después hay que rehacer.</p>
+
+  <div class="qcard urgent">
+    <div class="top"><span class="to">→ Grupo 02 · Cursos</span><span class="ref">pregunta 17b</span></div>
+    <div class="q">¿Un curso puede cerrarse si quedan encuestas sin responder?</div>
+    <div class="body">Hay dos reglas del PRD que, juntas, pueden trabar todo. Una dice que el alumno responde la encuesta antes de ver su nota final. La otra dice que el profesor tiene que confirmar el estado final <strong>de todos</strong> los alumnos para poder archivar el curso.</div>
+    <div class="body">Ahora pensá en alguien que abandonó la materia en mayo y no entró nunca más. No va a responder la encuesta. Si el sistema espera que todos cumplan para archivar, <strong>ese curso no se cierra nunca</strong>.</div>
+    <div class="ours"><b>Lo que proponemos</b>Que el bloqueo esté sobre el alumno viendo su nota, no sobre el profesor archivando. El curso se cierra igual; el que no respondió se encuentra la encuesta cuando entre a mirar su resultado, porque un curso archivado sigue siendo visible para consultar.</div>
+  </div>
+
+  <div class="qcard urgent">
+    <div class="top"><span class="to">→ Grupo 03 · Motor de desafíos</span><span class="ref">pregunta 4</span></div>
+    <div class="q">¿Aceptan una nota que todavía está incompleta?</div>
+    <div class="body">Como las respuestas abiertas las corrige una persona, un examen con preguntas abiertas <strong>no tiene nota en el momento de entregarlo</strong>. Le devolvemos la parte automática y le avisamos que falta el resto.</div>
+    <div class="body">Si ellos modelaron la entrega asumiendo que la nota llega completa y cerrada, se les rompe el flujo. Y no es un caso raro: es lo que va a pasar la mayoría de las veces.</div>
+    <div class="ours"><b>El antecedente a nuestro favor</b>El PRD ya define exactamente este patrón para otra cosa: cuando el evaluador de IA no está disponible, la entrega se acepta igual y el puntaje se calcula después. No estamos inventando nada.</div>
+  </div>
+
+  <div class="qcard urgent">
+    <div class="top"><span class="to">→ Grupo 07 · Evaluación LLM</span><span class="ref">pregunta 7</span></div>
+    <div class="q">¿Alguien se hace cargo de corregir respuestas abiertas con IA?</div>
+    <div class="body">Este es un agujero del reparto, no una duda nuestra. El grupo 07 está definido como el que evalúa <em>cómo el alumno usó la IA</em> mientras resolvía. Eso es otra cosa distinta de leer una respuesta teórica y decidir si está bien.</div>
+    <div class="body"><strong>Corregir respuestas abiertas no está asignado a ningún grupo.</strong> O lo toman ellos, o lo tomamos nosotros con nuestra propia invocación a un modelo.</div>
+    <div class="ours"><b>Mientras tanto</b>Para el sprint 1 no nos bloquea, porque corrige el profesor. Pero conviene resolverlo ahora y no cuando queramos automatizarlo.</div>
+  </div>
+</section>
+
+<!-- ============================================= -->
+<section>
+  <h2>El resto de las preguntas, por grupo</h2>
+  <p class="sub">Ordenadas por con quién hay que hablar. Todas están desarrolladas en el documento de integración; acá va lo mínimo para saber de qué se trata cada una.</p>
+
+  <div class="cards two">
+    <div class="card">
+      <h4>Grupo 01 · Identidad y gateway</h4>
+      <ul>
+        <li>¿Quién aplica el bloqueo real de la encuesta: la pantalla o la puerta de entrada del sistema?</li>
+        <li>¿Qué datos trae el token y con qué vigencia?</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Grupo 02 · Cursos y matrícula</h4>
+      <ul>
+        <li>¿Cómo sabemos si un alumno pertenece al curso: se lo preguntamos cada vez, o nos avisan y lo guardamos?</li>
+        <li>¿Nos avisan cuándo arranca el cierre de un curso?</li>
+        <li>Un alumno que se va a mitad de cuatrimestre, ¿tiene que responder igual?</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Grupo 03 · Motor de desafíos</h4>
+      <ul>
+        <li>¿Quién guarda qué? Ellos la entrega, nosotros las respuestas — hay que trazar la línea fina.</li>
+        <li>¿Quién llama al corrector: nosotros directo, o pasando por ellos?</li>
+        <li>¿Nos dicen qué número de intento es cada respuesta?</li>
+        <li>El desafío para recuperar una vida se reintenta sin límite. ¿De quién es ese pool?</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Grupo 11 · Social y notificaciones</h4>
+      <ul>
+        <li>¿Existe el moderador en este sprint? ¿Cómo lo llamamos?</li>
+        <li>¿Qué formato tienen los eventos y qué tecnología usa el bus?</li>
+        <li>Las notificaciones que necesitamos disparar, ¿las pedimos o las publicamos?</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Grupo 12 · Backoffice</h4>
+      <ul>
+        <li>Los indicadores de satisfacción salen de nosotros: ¿qué les exponemos y con qué forma?</li>
+        <li>Aviso importante: por debajo de cinco respuestas <strong>no les damos puntajes ni comentarios</strong>, solo el conteo. No es negociable, es el anonimato.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Cátedra</h4>
+      <ul>
+        <li>¿Se confirma que no hay encuesta por desafío?</li>
+        <li>¿Quién redacta las preguntas de la encuesta?</li>
+        <li>¿Se acepta dejar afuera los dos tipos de pregunta conversacionales?</li>
+        <li>La encuesta de plataforma no pertenece a ningún curso: ¿se acepta como excepción?</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================= -->
+<section>
+  <h2>Diccionario mínimo</h2>
+  <p class="sub">Cinco términos que aparecen todo el tiempo y que conviene tener claros antes de la reunión.</p>
+
+  <dl class="gloss">
+    <div class="gitem"><dt>Curso-cohorte</dt><dd>No es «la materia», es <em>esta</em> cursada concreta: Programación IV, comisión 3, segundo cuatrimestre 2026. Casi todo en la plataforma vive adentro de una. Las monedas que ganás en una no sirven en otra.</dd></div>
+    <div class="gitem"><dt>Gateway</dt><dd>La única puerta de entrada al sistema. Ningún servicio le habla a otro directamente: todo sale y vuelve a entrar por ahí. Es la regla que más se viola sin querer.</dd></div>
+    <div class="gitem"><dt>Marcador de cumplimiento</dt><dd>Un registro que dice «María ya respondió», sin una sola letra de lo que respondió. Es lo que nos permite exigir la encuesta sin romper el anonimato.</dd></div>
+    <div class="gitem"><dt>Abstención explícita</dt><dd>El botón «prefiero no responder». Cuenta como encuesta cumplida y desbloquea, pero no entra en el cálculo del indicador. Se reporta aparte, porque cuánta gente se abstiene también dice algo.</dd></div>
+    <div class="gitem"><dt>Ítem versionado</dt><dd>Una pregunta con historial. Si el profesor le cambia el enunciado, no se pisa la anterior: se crea una versión nueva y lo ya corregido sigue apuntando a la vieja.</dd></div>
+  </dl>
+</section>
+
+<!-- ============================================= -->
+<section>
+  <h2>Para llevar a la reunión</h2>
+  <p class="sub">El orden importa: las primeras tres cambian lo que construimos.</p>
+
+  <div class="check">
+    <ol>
+      <li><b>Grupo 02 — el cierre de curso</b><span>Acordar que archivar no espera a las encuestas pendientes. Si se van con una sola cosa acordada, que sea esta.</span></li>
+      <li><b>Grupo 03 — la nota incompleta</b><span>Confirmar que aceptan un resultado parcial mientras el profesor corrige las abiertas.</span></li>
+      <li><b>Grupo 07 — quién corrige las abiertas con IA</b><span>Dejar por escrito de quién es, aunque se implemente más adelante.</span></li>
+      <li><b>Grupo 11 — el formato de los eventos</b><span>Sin esto no podemos cerrar nada de lo asincrónico. Es corto pero bloquea.</span></li>
+      <li><b>Grupo 12 — avisar el límite del anonimato</b><span>Que sepan desde ahora que por debajo de cinco respuestas solo reciben el conteo, para que no diseñen una pantalla que después no podemos alimentar.</span></li>
+      <li><b>Cátedra — validar las decisiones de alcance</b><span>Sin encuesta por desafío, dos tipos de pregunta diferidos, y las preguntas de la encuesta escritas por la plataforma.</span></li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <span>Grupo 4 · Tema 04</span>
+  <span>Guía de lectura rápida</span>
+  <span>Detalle técnico: DISENIO-G04-SPRINT1</span>
+  <span>Preguntas completas: PREGUNTAS-INTEGRACION-G04</span>
+</footer>
+
+</div>
+
+</body>
+</html>

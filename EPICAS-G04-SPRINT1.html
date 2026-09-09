@@ -1,0 +1,1051 @@
+<title>Teóricos y Encuestas · Sprint 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,500;0,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ground:#F7F8F7;
+  --surface:#FFFFFF;
+  --surface-2:#EFF2F1;
+  --ink:#161A1C;
+  --ink-2:#3D4749;
+  --muted:#6A7573;
+  --line:#DCE1DF;
+  --line-strong:#C3CBC8;
+  --teoricos:#1B4B5A;
+  --encuestas:#6B3F5C;
+  --transversal:#454F55;
+  --risk:#8A6410;
+  --risk-bg:#F6F0DF;
+  --chip-bg:#EAEEEC;
+  --shadow:0 1px 2px rgba(22,26,28,.05), 0 8px 24px -18px rgba(22,26,28,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#11151A;
+    --surface:#171C21;
+    --surface-2:#1D242A;
+    --ink:#E6EAE8;
+    --ink-2:#B9C2BF;
+    --muted:#879491;
+    --line:#283137;
+    --line-strong:#3A464C;
+    --teoricos:#7FBBCE;
+    --encuestas:#C795B4;
+    --transversal:#9EAAB0;
+    --risk:#D9AE55;
+    --risk-bg:#2A2417;
+    --chip-bg:#222A30;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#11151A;
+  --surface:#171C21;
+  --surface-2:#1D242A;
+  --ink:#E6EAE8;
+  --ink-2:#B9C2BF;
+  --muted:#879491;
+  --line:#283137;
+  --line-strong:#3A464C;
+  --teoricos:#7FBBCE;
+  --encuestas:#C795B4;
+  --transversal:#9EAAB0;
+  --risk:#D9AE55;
+  --risk-bg:#2A2417;
+  --chip-bg:#222A30;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -18px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size:16px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:"Newsreader", Georgia, "Times New Roman", serif; font-weight:500; text-wrap:balance; margin:0}
+code,.mono{font-family:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--teoricos); outline-offset:3px; border-radius:2px}
+
+.shell{max-width:1240px; margin:0 auto; padding:0 24px 96px}
+
+/* ---------- masthead ---------- */
+.masthead{
+  padding:64px 0 40px;
+  border-bottom:1px solid var(--line-strong);
+  display:grid; gap:22px;
+}
+.eyebrow{
+  font-family:"IBM Plex Mono", monospace; font-size:11.5px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted);
+  display:flex; flex-wrap:wrap; gap:8px 18px;
+}
+.masthead h1{font-size:clamp(38px,6.4vw,68px); line-height:1.04; letter-spacing:-.018em; max-width:15ch}
+.masthead h1 em{font-style:italic; color:var(--ink-2)}
+.standfirst{font-size:18px; color:var(--ink-2); max-width:62ch; margin:0}
+.stackline{
+  font-family:"IBM Plex Mono", monospace; font-size:12.5px; color:var(--muted);
+  display:flex; flex-wrap:wrap; gap:6px 14px;
+}
+
+.tally{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr));
+  border:1px solid var(--line); border-radius:3px; background:var(--surface);
+  overflow:hidden; box-shadow:var(--shadow); margin-top:6px;
+}
+.tally div{padding:16px 18px; border-right:1px solid var(--line)}
+.tally div:last-child{border-right:0}
+.tally b{
+  display:block; font-family:"Newsreader",serif; font-weight:500;
+  font-size:34px; line-height:1.1; font-variant-numeric:tabular-nums; letter-spacing:-.01em;
+}
+.tally span{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--muted);
+}
+
+/* ---------- layout ---------- */
+.body-grid{display:grid; gap:56px; align-items:start; padding-top:52px}
+@media (min-width:1080px){ .body-grid{grid-template-columns:214px minmax(0,1fr)} }
+
+nav.rail{display:none}
+@media (min-width:1080px){
+  nav.rail{
+    display:block; position:sticky; top:28px;
+    border-left:1px solid var(--line); padding-left:0;
+  }
+  nav.rail a{
+    display:grid; grid-template-columns:38px 1fr; gap:8px; align-items:baseline;
+    text-decoration:none; padding:7px 10px 7px 14px;
+    border-left:2px solid transparent; margin-left:-1px;
+    font-size:13.5px; color:var(--ink-2); line-height:1.3;
+  }
+  nav.rail a:hover{border-left-color:var(--svc,var(--line-strong)); color:var(--ink); background:var(--surface-2)}
+  nav.rail a .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--svc,var(--muted)); font-weight:500}
+  nav.rail .rail-head{
+    font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted); padding:0 0 10px 14px;
+  }
+}
+
+/* ---------- kickoff order ---------- */
+.order{
+  border:1px solid var(--line); background:var(--surface); border-radius:3px;
+  padding:26px 26px 22px; box-shadow:var(--shadow); margin-bottom:56px;
+}
+.order h2{font-size:24px; letter-spacing:-.01em}
+.order p{color:var(--ink-2); max-width:66ch; font-size:15px}
+.order-figure{overflow-x:auto; margin-top:20px; padding-bottom:4px}
+.order-figure svg{display:block; min-width:660px}
+.legend{
+  display:flex; flex-wrap:wrap; gap:8px 20px; margin-top:16px;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.06em; color:var(--muted);
+}
+.legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:7px; vertical-align:baseline}
+
+/* ---------- epic ---------- */
+.epic{
+  border-top:2px solid var(--svc);
+  background:var(--surface);
+  border-radius:0 0 3px 3px;
+  box-shadow:var(--shadow);
+  padding:30px 30px 8px;
+  margin-bottom:44px;
+  scroll-margin-top:24px;
+}
+.epic-head{display:grid; gap:14px; padding-bottom:22px; border-bottom:1px solid var(--line)}
+.epic-code{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600;
+  letter-spacing:.1em; color:var(--svc);
+}
+.epic h2{font-size:clamp(26px,3.2vw,34px); line-height:1.14; letter-spacing:-.016em; max-width:22ch}
+.meta{display:flex; flex-wrap:wrap; gap:8px}
+.chip{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.05em;
+  background:var(--chip-bg); color:var(--ink-2);
+  padding:3px 9px; border-radius:2px; white-space:nowrap;
+}
+.chip.svc{background:transparent; border:1px solid var(--svc); color:var(--svc)}
+.rationale{padding:22px 0 4px; max-width:68ch}
+.rationale p{margin:0 0 14px; color:var(--ink-2)}
+.rationale strong{color:var(--ink); font-weight:600}
+.rationale em{font-style:italic}
+
+.stories{display:grid; gap:0; margin:14px 0 26px; border-top:1px solid var(--line)}
+.story{
+  display:grid; gap:10px;
+  grid-template-columns:52px minmax(0,1fr);
+  padding:20px 0; border-bottom:1px solid var(--line);
+}
+.story .sid{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted);
+  padding-top:3px; letter-spacing:.04em;
+}
+.story .sbody{display:grid; gap:9px; min-width:0}
+.story h3{font-size:17.5px; font-weight:600; font-family:"IBM Plex Sans",sans-serif; line-height:1.42; letter-spacing:-.005em}
+.story h3 .as{color:var(--svc); font-weight:600}
+.ac{margin:0; padding:0; list-style:none; display:grid; gap:6px}
+.ac li{
+  position:relative; padding-left:17px; font-size:14.5px; color:var(--ink-2); line-height:1.55;
+}
+.ac li::before{
+  content:""; position:absolute; left:0; top:.62em;
+  width:6px; height:1px; background:var(--line-strong);
+}
+.ac li strong{color:var(--ink); font-weight:600}
+.ac li code{font-size:12.6px; background:var(--surface-2); padding:1px 5px; border-radius:2px}
+.todos{display:flex; flex-wrap:wrap; gap:6px; padding-top:2px}
+.todo{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.07em;
+  border:1px solid var(--line-strong); color:var(--muted);
+  padding:2px 7px; border-radius:2px;
+}
+
+.bands{display:grid; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:3px; margin-bottom:30px; overflow:hidden}
+@media (min-width:720px){ .bands{grid-template-columns:1fr 1fr} }
+.band{background:var(--surface-2); padding:16px 18px; display:grid; gap:6px}
+.band .lbl{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+}
+.band p{margin:0; font-size:14.5px; color:var(--ink-2); line-height:1.55}
+.band.risk{background:var(--risk-bg)}
+.band.risk .lbl{color:var(--risk)}
+
+.note{
+  border-left:2px solid var(--svc); background:var(--surface-2);
+  padding:15px 18px; margin:0 0 30px; border-radius:0 3px 3px 0;
+}
+.note p{margin:0; font-size:14.5px; color:var(--ink-2)}
+.note strong{color:var(--ink)}
+
+/* ---------- closing ---------- */
+.closing{margin-top:72px; border-top:1px solid var(--line-strong); padding-top:44px; display:grid; gap:44px}
+.closing h2{font-size:30px; letter-spacing:-.015em}
+.tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:3px; background:var(--surface); box-shadow:var(--shadow)}
+table{border-collapse:collapse; width:100%; min-width:600px; font-size:14.5px}
+th,td{text-align:left; padding:11px 16px; border-bottom:1px solid var(--line)}
+thead th{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--muted); font-weight:500;
+  border-bottom:1px solid var(--line-strong);
+}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums; font-family:"IBM Plex Mono",monospace; font-size:13px}
+td .dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:8px; vertical-align:middle}
+tr.total td{font-weight:600; background:var(--surface-2)}
+
+.crew{display:grid; gap:14px}
+@media (min-width:760px){ .crew{grid-template-columns:repeat(3,1fr)} }
+.crew article{
+  border:1px solid var(--line); border-top:2px solid var(--svc); background:var(--surface);
+  border-radius:0 0 3px 3px; padding:18px 20px; display:grid; gap:8px; box-shadow:var(--shadow);
+}
+.crew h3{font-family:"Newsreader",serif; font-weight:500; font-size:21px; letter-spacing:-.01em}
+.crew .count{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--svc)}
+.crew p{margin:0; font-size:14.5px; color:var(--ink-2)}
+.crew .path{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink)}
+
+.outlist{display:grid; gap:12px; margin:0; padding:0; list-style:none; max-width:74ch}
+.outlist li{padding-left:19px; position:relative; font-size:15px; color:var(--ink-2)}
+.outlist li::before{content:"—"; position:absolute; left:0; color:var(--muted)}
+.outlist strong{color:var(--ink); font-weight:600}
+
+footer{
+  margin-top:64px; padding-top:22px; border-top:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted);
+  display:flex; flex-wrap:wrap; gap:6px 20px;
+}
+</style>
+
+<div class="shell">
+
+<header class="masthead">
+  <div class="eyebrow"><span>Grupo 4</span><span>Tema 04</span><span>Programación IV · Back End</span></div>
+  <h1>Teóricos y <em>Encuestas</em></h1>
+  <p class="standfirst">Épicas del Sprint 1. Diez frentes de trabajo derivados de los 44 TO-DOs del documento de diseño, con la historia, el criterio de aceptación y el requisito del PRD que justifica cada uno.</p>
+  <div class="stackline"><span>Spring Boot</span><span>·</span><span>Eureka</span><span>·</span><span>Spring Cloud Gateway</span><span>·</span><span>PostgreSQL</span><span>·</span><span>bus a definir</span></div>
+  <div class="tally">
+    <div><b>10</b><span>Épicas</span></div>
+    <div><b>44</b><span>TO-DOs</span></div>
+    <div><b>2</b><span>Microservicios</span></div>
+    <div><b>157</b><span>Puntos</span></div>
+    <div><b>10</b><span>Personas</span></div>
+  </div>
+</header>
+
+<div class="body-grid">
+
+  <nav class="rail" aria-label="Épicas">
+    <div class="rail-head">Épicas</div>
+    <a href="#e01" style="--svc:var(--transversal)"><span class="n">E-01</span><span>Cimientos</span></a>
+    <a href="#e02" style="--svc:var(--encuestas)"><span class="n">E-02</span><span>Aislamiento de datos</span></a>
+    <a href="#e03" style="--svc:var(--teoricos)"><span class="n">E-03</span><span>Banco de ítems</span></a>
+    <a href="#e04" style="--svc:var(--teoricos)"><span class="n">E-04</span><span>Composición y entrega</span></a>
+    <a href="#e05" style="--svc:var(--teoricos)"><span class="n">E-05</span><span>Motor de corrección</span></a>
+    <a href="#e06" style="--svc:var(--encuestas)"><span class="n">E-06</span><span>Instrumentos y cumplimiento</span></a>
+    <a href="#e07" style="--svc:var(--encuestas)"><span class="n">E-07</span><span>Respuesta anónima</span></a>
+    <a href="#e08" style="--svc:var(--encuestas)"><span class="n">E-08</span><span>KPIs y umbral</span></a>
+    <a href="#e09" style="--svc:var(--transversal)"><span class="n">E-09</span><span>Integración</span></a>
+    <a href="#e10" style="--svc:var(--transversal)"><span class="n">E-10</span><span>Privacidad y normativa</span></a>
+    <a href="#cierre" style="--svc:var(--transversal)"><span class="n">§</span><span>Reparto</span></a>
+  </nav>
+
+  <main>
+
+    <section class="order">
+      <h2>Por dónde se arranca</h2>
+      <p><strong>E-02 va primero, antes que cualquier funcionalidad.</strong> Los dos esquemas y los roles de PostgreSQL sin permisos cruzados son la base sobre la que se apoya todo el subsistema de encuestas: si salen mal, cada endpoint escrito encima hay que auditarlo de nuevo. E-01 corre en paralelo para desbloquear a los otros dos frentes el mismo día.</p>
+      <div class="order-figure">
+        <svg viewBox="0 0 700 210" role="img" aria-label="Diagrama de orden de arranque: E-02 primero, luego E-01 abre dos cadenas paralelas que convergen en E-09 y E-10">
+          <defs>
+            <marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <g font-family="IBM Plex Mono, monospace" font-size="12">
+
+            <!-- E-02 primero -->
+            <g color="var(--encuestas)">
+              <rect x="8" y="14" width="72" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="44" y="33" text-anchor="middle" fill="currentColor" font-weight="600">E-02</text>
+              <line x1="44" y1="44" x2="44" y2="84" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+            </g>
+            <text x="92" y="33" fill="var(--muted)" font-size="11">aislamiento de datos · sin dependencias</text>
+
+            <!-- E-01 -->
+            <g color="var(--transversal)">
+              <rect x="8" y="90" width="72" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="44" y="109" text-anchor="middle" fill="currentColor" font-weight="600">E-01</text>
+              <path d="M80,105 H110 V60 H140" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+              <path d="M80,105 H110 V152 H140" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+            </g>
+
+            <!-- cadena teoricos -->
+            <g color="var(--teoricos)">
+              <rect x="146" y="45" width="72" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="182" y="64" text-anchor="middle" fill="currentColor" font-weight="600">E-03</text>
+              <line x1="218" y1="60" x2="246" y2="60" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+              <rect x="252" y="45" width="72" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="288" y="64" text-anchor="middle" fill="currentColor" font-weight="600">E-04</text>
+              <line x1="324" y1="60" x2="352" y2="60" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+              <rect x="358" y="45" width="72" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="394" y="64" text-anchor="middle" fill="currentColor" font-weight="600">E-05</text>
+              <path d="M430,60 H466 V100 H492" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+            </g>
+
+            <!-- cadena encuestas -->
+            <g color="var(--encuestas)">
+              <rect x="146" y="137" width="72" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="182" y="156" text-anchor="middle" fill="currentColor" font-weight="600">E-06</text>
+              <line x1="218" y1="152" x2="246" y2="152" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+              <rect x="252" y="137" width="72" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="288" y="156" text-anchor="middle" fill="currentColor" font-weight="600">E-07</text>
+              <line x1="324" y1="152" x2="352" y2="152" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+              <rect x="358" y="137" width="72" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="394" y="156" text-anchor="middle" fill="currentColor" font-weight="600">E-08</text>
+              <path d="M430,152 H466 V112 H492" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+            </g>
+
+            <!-- convergencia -->
+            <g color="var(--transversal)">
+              <rect x="498" y="91" width="72" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="534" y="110" text-anchor="middle" fill="currentColor" font-weight="600">E-09</text>
+              <line x1="570" y1="106" x2="598" y2="106" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+              <rect x="604" y="91" width="72" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="640" y="110" text-anchor="middle" fill="currentColor" font-weight="600">E-10</text>
+            </g>
+
+            <text x="182" y="30" fill="var(--muted)" font-size="10.5" letter-spacing=".08em">FRENTE TEÓRICOS</text>
+            <text x="182" y="192" fill="var(--muted)" font-size="10.5" letter-spacing=".08em">FRENTE ENCUESTAS</text>
+          </g>
+        </svg>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--teoricos)"></i>ms-teoricos</span>
+        <span><i style="background:var(--encuestas)"></i>ms-encuestas</span>
+        <span><i style="background:var(--transversal)"></i>transversal</span>
+      </div>
+    </section>
+
+    <!-- ══════════ E-01 ══════════ -->
+    <section class="epic" id="e01" style="--svc:var(--transversal)">
+      <div class="epic-head">
+        <div class="epic-code">E-01</div>
+        <h2>Cimientos de los dos servicios</h2>
+        <div class="meta">
+          <span class="chip svc">transversal</span>
+          <span class="chip">13 puntos</span>
+          <span class="chip">A-01 · B-01 · C-06 · C-07</span>
+        </div>
+      </div>
+      <div class="rationale">
+        <p>Levantar los dos microservicios hasta el punto en que un compañero clona, corre <code>docker compose up</code> y ve ambos registrados en Eureka respondiendo <code>/health</code>. Nada de dominio todavía. Esta épica existe para que las otras nueve arranquen el mismo día y no en cascada.</p>
+        <p>Se incluyen acá la externalización de textos y el aviso de móvil porque son decisiones del primer commit: si los literales entran embebidos, sacarlos después es un barrido por todo el código.</p>
+      </div>
+      <div class="stories">
+        <div class="story"><div class="sid">H-01</div><div class="sbody">
+          <h3><span class="as">Como equipo,</span> quiero <code>ms-teoricos</code> levantado y registrado en Eureka, para que los demás grupos puedan descubrirlo</h3>
+          <ul class="ac">
+            <li>Responde <code>/actuator/health</code> con <code>UP</code> y aparece en el dashboard de Eureka</li>
+            <li>Conecta a Postgres y las migraciones corren solas al arrancar</li>
+          </ul>
+          <div class="todos"><span class="todo">A-01</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-02</div><div class="sbody">
+          <h3><span class="as">Como equipo,</span> quiero <code>ms-encuestas</code> levantado con el mismo esqueleto</h3>
+          <ul class="ac"><li>Ídem H-01, con base de datos propia y separada</li></ul>
+          <div class="todos"><span class="todo">B-01</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-03</div><div class="sbody">
+          <h3><span class="as">Como equipo,</span> quiero el entorno local reproducible en un comando, para no perder horas de sprint en setup</h3>
+          <ul class="ac">
+            <li><code>docker compose up</code> levanta Eureka, gateway, las dos bases y los dos servicios</li>
+            <li>README con los pasos, verificado por alguien que no escribió el compose</li>
+          </ul>
+          <div class="todos"><span class="todo">A-01</span><span class="todo">B-01</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-04</div><div class="sbody">
+          <h3><span class="as">Como alumno que no habla español,</span> quiero que todo texto salga de una clave i18n, para poder usar la plataforma en mi idioma</h3>
+          <ul class="ac">
+            <li><strong>Cero literales de usuario</strong> en el código: un test falla si aparece un mensaje embebido en un <code>throw</code> o en un DTO</li>
+            <li>El idioma se resuelve por preferencia del usuario, no por el <code>Accept-Language</code> del navegador — <strong>RF-NFR-07</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">C-06</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-05</div><div class="sbody">
+          <h3><span class="as">Como alumno que abre un teórico en el celular,</span> quiero un aviso claro de que necesito una computadora, para no perder el intento a mitad de camino</h3>
+          <ul class="ac">
+            <li>Los endpoints de lectura devuelven código y clave i18n de «requiere escritorio» cuando el cliente es móvil</li>
+            <li><strong>No</strong> hay degradación parcial de la vista — <strong>D-12, RF-NFR-06</strong>, Tabla 9 del PRD</li>
+          </ul>
+          <div class="todos"><span class="todo">C-07</span></div>
+        </div></div>
+      </div>
+      <div class="bands">
+        <div class="band"><span class="lbl">Hecho cuando</span><p>Un integrante que no tocó el repo lo levanta entero en menos de 15 minutos siguiendo el README.</p></div>
+        <div class="band risk"><span class="lbl">Riesgo si no se hace</span><p>Ninguna otra épica puede empezar. Es el único bloqueo total del sprint.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ E-02 ══════════ -->
+    <section class="epic" id="e02" style="--svc:var(--encuestas)">
+      <div class="epic-head">
+        <div class="epic-code">E-02</div>
+        <h2>Aislamiento de datos para el anonimato</h2>
+        <div class="meta">
+          <span class="chip svc">ms-encuestas</span>
+          <span class="chip">21 puntos</span>
+          <span class="chip">B-02 · B-15 · B-16</span>
+          <span class="chip">arranca primero</span>
+        </div>
+      </div>
+      <div class="rationale">
+        <p><strong>Es la épica más importante del sprint y va primero.</strong> Todo el diseño de encuestas descansa en una afirmación: <em>no existe consulta que reconstruya el vínculo entre un alumno y su respuesta</em>. Esa afirmación tiene que ser una propiedad del motor de base de datos, no una promesa del equipo.</p>
+        <p>El entregable no es una funcionalidad: es una <strong>garantía verificable</strong>. Por eso la historia central es un test que intenta romper el anonimato por los cinco canales conocidos y afirma que falla en los cinco.</p>
+      </div>
+      <div class="stories">
+        <div class="story"><div class="sid">H-01</div><div class="sbody">
+          <h3><span class="as">Como responsable de privacidad,</span> quiero tres esquemas con tres roles de Postgres sin permisos cruzados, para que el aislamiento lo imponga el motor</h3>
+          <ul class="ac">
+            <li>Existen <code>cumplimiento</code>, <code>catalogo</code> y <code>respuestas</code></li>
+            <li><code>app_cumplimiento</code> y <code>app_respuestas</code> no tienen <strong>ningún</strong> permiso sobre el esquema del otro; ambos tienen <code>SELECT</code> sobre <code>catalogo</code></li>
+            <li>No existe una sola FK que cruce esquemas</li>
+          </ul>
+          <div class="todos"><span class="todo">B-02</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-02</div><div class="sbody">
+          <h3><span class="as">Como responsable de privacidad,</span> quiero que ni los logs ni las trazas persistan el vínculo, para cerrar el canal más fácil de olvidar</h3>
+          <ul class="ac">
+            <li>El <code>trace_id</code> del gateway no se guarda junto a la respuesta</li>
+            <li>El body del <code>POST</code> de encuesta nunca se escribe en log, ni siquiera en <code>DEBUG</code>; verificado con un test que inspecciona el appender</li>
+          </ul>
+          <div class="todos"><span class="todo">B-15</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-03</div><div class="sbody">
+          <h3><span class="as">Como equipo,</span> quiero un test de reconstrucción que ataque los cinco canales y falle en los cinco, para poder afirmar el anonimato con evidencia</h3>
+          <ul class="ac">
+            <li>Intenta join por clave, correlación temporal, orden de inserción, secuencia de PK y correlación por trazas — y <strong>afirma que cada uno falla</strong></li>
+            <li>El join se ejecuta con cada rol real y se verifica que Postgres lo <strong>rechaza por permisos</strong>, no que devuelva vacío — <strong>criterio de release 15b</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">B-16</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-04</div><div class="sbody">
+          <h3><span class="as">Como auditor,</span> quiero el residual documentado en el código y no solo en el diseño, para que nadie lo descubra en producción</h3>
+          <ul class="ac">
+            <li>Un caso del test documenta el residual de k-anonimato (<code>curso + período</code> con un solo respondente) y lo enlaza con el umbral <strong>PAR-18</strong> que lo mitiga en E-08</li>
+          </ul>
+          <div class="todos"><span class="todo">B-16</span></div>
+        </div></div>
+      </div>
+      <div class="bands">
+        <div class="band"><span class="lbl">Hecho cuando</span><p>El test de reconstrucción corre en CI y es bloqueante. Si alguien agrega una FK entre esquemas, el build se cae.</p></div>
+        <div class="band risk"><span class="lbl">Riesgo si no se hace</span><p><strong>RSK-13.</strong> El diseño de anonimato queda decorativo y el compromiso con el alumno es falso. No es un riesgo técnico, es un riesgo de confianza.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ E-03 ══════════ -->
+    <section class="epic" id="e03" style="--svc:var(--teoricos)">
+      <div class="epic-head">
+        <div class="epic-code">E-03</div>
+        <h2>Banco de ítems versionado</h2>
+        <div class="meta">
+          <span class="chip svc">ms-teoricos</span>
+          <span class="chip">21 puntos</span>
+          <span class="chip">A-02 · A-03 · A-04 · A-05</span>
+        </div>
+      </div>
+      <div class="rationale">
+        <p>El profesor necesita una colección reutilizable de preguntas (RF-DES-02). La sutileza está en el versionado: RF-CUR-05 permite editar un desafío en uso, pero un ítem que alguien ya respondió no puede cambiar bajo sus pies. La solución es la que el PRD aplica a <code>rubric_version</code>: identidad estable, contenido inmutable y versionado. Editar crea una versión nueva.</p>
+        <p>Los siete tipos de ítem tienen formas incompatibles entre sí, por eso <code>payload</code> y <code>criterio</code> van en <code>jsonb</code>. Siete tablas con columnas nulas sería peor y cerraría la puerta a los tipos que vengan después.</p>
+      </div>
+      <div class="stories">
+        <div class="story"><div class="sid">H-01</div><div class="sbody">
+          <h3><span class="as">Como profesor,</span> quiero que mis ítems tengan identidad estable y contenido versionado, para poder corregir una pregunta sin invalidar lo ya respondido</h3>
+          <ul class="ac">
+            <li>Tablas <code>item</code> e <code>item_version</code>; editar crea una versión nueva y <strong>no toca</strong> las anteriores</li>
+            <li>Un test intenta modificar una <code>item_version</code> ya respondida y verifica que se rechaza — <strong>D-04</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">A-02</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-02</div><div class="sbody">
+          <h3><span class="as">Como profesor,</span> quiero dar de alta, listar, editar y dar de baja ítems de mi banco, para reutilizarlos entre cursos</h3>
+          <ul class="ac">
+            <li><code>POST/GET/PUT /teoricos/items</code>, filtrable por tipo</li>
+            <li>La baja es <strong>lógica</strong>, nunca <code>DELETE</code> físico — <strong>RF-NFR-01</strong></li>
+            <li>El listado devuelve solo los ítems del profesor autenticado</li>
+          </ul>
+          <div class="todos"><span class="todo">A-03</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-03</div><div class="sbody">
+          <h3><span class="as">Como profesor,</span> quiero cargar los cuatro tipos autocorregibles con su clave de corrección, para que el sistema corrija solo</h3>
+          <ul class="ac">
+            <li><code>payload</code> y <code>criterio</code> definidos para opción múltiple, verdadero/falso, emparejar conceptos y ordenar secuencias</li>
+            <li>Cada tipo tiene su validador de forma y rechaza un payload mal armado con un mensaje útil</li>
+          </ul>
+          <div class="todos"><span class="todo">A-04</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-04</div><div class="sbody">
+          <h3><span class="as">Como profesor,</span> quiero cargar ítems de respuesta abierta, para evaluar comprensión y no solo memoria</h3>
+          <ul class="ac">
+            <li><code>payload</code> con enunciado y consigna; se marca como de corrección humana</li>
+            <li><strong>Conversación y debate estructurado</strong> quedan en el enum pero se rechazan al crearse, con un mensaje que dice que están diferidos — <strong>D-09</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">A-05</span></div>
+        </div></div>
+      </div>
+      <div class="bands">
+        <div class="band"><span class="lbl">Hecho cuando</span><p>Un profesor carga los cinco tipos habilitados desde Postman y los recupera filtrados por tipo.</p></div>
+        <div class="band risk"><span class="lbl">Riesgo si no se hace</span><p>Sin banco no hay desafío teórico. Bloquea E-04 y E-05 completas.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ E-04 ══════════ -->
+    <section class="epic" id="e04" style="--svc:var(--teoricos)">
+      <div class="epic-head">
+        <div class="epic-code">E-04</div>
+        <h2>Composición y entrega del desafío teórico</h2>
+        <div class="meta">
+          <span class="chip svc">ms-teoricos</span>
+          <span class="chip">13 puntos</span>
+          <span class="chip">A-06 · A-07 · A-08 · A-17</span>
+        </div>
+      </div>
+      <div class="rationale">
+        <p>Acá se cruza la frontera con el Tema 03. Ellos son dueños del ciclo de vida del desafío — estados, fechas, versionado, entrega. Nosotros somos dueños del <strong>contenido teórico</strong> de ese desafío: nos mandan un <code>desafio_id</code> y componemos los ítems.</p>
+        <p>Dos cuidados. Al publicar se <strong>congela</strong> la <code>item_version_id</code>: si el profesor edita la pregunta mañana, el alumno de hoy sigue viendo la que respondió. Y el endpoint que consume el alumno <strong>nunca</strong> devuelve el campo <code>criterio</code>: es la clave de corrección.</p>
+      </div>
+      <div class="stories">
+        <div class="story"><div class="sid">H-01</div><div class="sbody">
+          <h3><span class="as">Como Tema 03,</span> quiero componer un desafío teórico con ítems del banco, para que el alumno tenga qué responder</h3>
+          <ul class="ac">
+            <li><code>POST /teoricos/desafios</code> recibe <code>desafio_id</code> y <code>curso_cohorte_id</code></li>
+            <li>Congela <code>item_version_id</code> por ítem con su orden y puntaje; recomponer después no altera los desafíos ya publicados — <strong>D-04</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">A-06</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-02</div><div class="sbody">
+          <h3><span class="as">Como alumno,</span> quiero ver los enunciados de mi desafío teórico, para poder resolverlo</h3>
+          <ul class="ac">
+            <li><code>GET /teoricos/desafios/{id}</code> devuelve enunciados, opciones y orden</li>
+            <li><strong>Sin</strong> el campo <code>criterio</code> en ninguna rama del JSON; hay un test que serializa la respuesta y afirma que la clave no aparece</li>
+          </ul>
+          <div class="todos"><span class="todo">A-07</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-03</div><div class="sbody">
+          <h3><span class="as">Como alumno,</span> quiero enviar mi intento completo de una vez, para no perder respuestas a mitad de camino</h3>
+          <ul class="ac">
+            <li><code>POST /teoricos/desafios/{id}/respuestas</code> recibe todas las respuestas del intento en un request y las persiste atómicamente</li>
+            <li>El número de intento lo informa el Tema 03 — <strong>supuesto 3</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">A-08</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-04</div><div class="sbody">
+          <h3><span class="as">Como alumno que perdió una vida,</span> quiero reintentar el desafío de recuperación sin tope, para no quedarme trabado</h3>
+          <ul class="ac">
+            <li><code>intento</code> no tiene máximo en el modelo ni en la validación; un test reintenta 10 veces y las 10 se persisten</li>
+            <li><strong>RF-REC-04/06</strong>; el límite de RF-DES-07 <strong>no</strong> aplica a este tipo de desafío</li>
+          </ul>
+          <div class="todos"><span class="todo">A-17</span></div>
+        </div></div>
+      </div>
+      <div class="bands">
+        <div class="band"><span class="lbl">Hecho cuando</span><p>El ciclo componer → leer como alumno → responder funciona punta a punta, y el test de no-fuga del criterio está en CI.</p></div>
+        <div class="band risk"><span class="lbl">Riesgo si no se hace</span><p>La fuga del <code>criterio</code> es la falla más grave posible de esta épica: convierte todo teórico en un examen con las respuestas al dorso.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ E-05 ══════════ -->
+    <section class="epic" id="e05" style="--svc:var(--teoricos)">
+      <div class="epic-head">
+        <div class="epic-code">E-05</div>
+        <h2>Motor de corrección</h2>
+        <div class="meta">
+          <span class="chip svc">ms-teoricos</span>
+          <span class="chip">21 puntos</span>
+          <span class="chip">A-09 · A-10 · A-11 · A-12 · A-15 · A-16</span>
+        </div>
+      </div>
+      <div class="rationale">
+        <p>El objetivo declarado del PRD es que las respuestas abiertas las corrija un LLM. En el MVP las corrige el profesor (D-01). La decisión que importa no es <em>quién corrige</em>: es que el contrato se escribe <strong>asincrónico e intercambiable desde el día uno</strong>, para que incorporar el LLM sea agregar un adaptador y no rehacer el flujo.</p>
+        <p>De ahí sale la parte delicada: un desafío mixto — tres opciones múltiples y una abierta — tiene nota parcial y estado <code>PENDIENTE</code>. <strong>El Tema 03 tiene que saber convivir con eso</strong>, y es el mismo patrón que el PRD ya define para el score de IA diferido en RF-IA-27.</p>
+      </div>
+      <div class="stories">
+        <div class="story"><div class="sid">H-01</div><div class="sbody">
+          <h3><span class="as">Como alumno,</span> quiero que los ítems objetivos se corrijan al instante, para saber cómo me fue sin esperar</h3>
+          <ul class="ac">
+            <li>Corrector automático para los cuatro tipos autocorregibles; nota 0–100 y <code>aprobado</code> según el umbral</li>
+            <li>El detalle devuelve puntaje obtenido por ítem</li>
+          </ul>
+          <div class="todos"><span class="todo">A-09</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-02</div><div class="sbody">
+          <h3><span class="as">Como equipo,</span> quiero la corrección detrás de un puerto con adaptadores intercambiables, para que sumar el LLM sea un adaptador y no un refactor</h3>
+          <ul class="ac">
+            <li>Interfaz de corrección con implementaciones <code>AUTOMATICO</code> y <code>HUMANO</code></li>
+            <li>El flujo es asincrónico aunque el adaptador automático responda al instante; sumar <code>LLM</code> no requiere tocar el llamador — <strong>D-01</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">A-10</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-03</div><div class="sbody">
+          <h3><span class="as">Como profesor,</span> quiero una cola con las respuestas abiertas que me esperan, para corregirlas sin perseguir alumnos</h3>
+          <ul class="ac">
+            <li><code>GET /teoricos/correcciones/pendientes</code> devuelve solo lo del profesor autenticado</li>
+            <li><code>POST /teoricos/correcciones/{id}</code> asienta la nota</li>
+          </ul>
+          <div class="todos"><span class="todo">A-11</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-04</div><div class="sbody">
+          <h3><span class="as">Como Tema 03,</span> quiero recibir una corrección parcial en estado <code>PENDIENTE</code>, para no quedarme esperando una nota que todavía no existe</h3>
+          <ul class="ac">
+            <li>Un desafío mixto devuelve <code>estado: PENDIENTE</code> con <code>nota: null</code> y el detalle de lo ya corregido</li>
+            <li>Al cerrarse la última abierta pasa a <code>FINAL</code> y se emite el evento — <strong>supuesto 2, RF-IA-27</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">A-12</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-05</div><div class="sbody">
+          <h3><span class="as">Como coordinador de carrera,</span> quiero que toda corrección manual quede auditada con motivo, para poder revisar un reclamo de nota</h3>
+          <ul class="ac">
+            <li><code>correccion_historial</code> guarda profesor, fecha, nota anterior, nota nueva y <strong>motivo obligatorio</strong></li>
+            <li>Sin motivo el endpoint devuelve 400; el historial no se puede editar ni borrar — <strong>D-08, criterio de release 13</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">A-16</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-06</div><div class="sbody">
+          <h3><span class="as">Como equipo,</span> quiero la batería de tests del motor, para poder tocarlo sin miedo</h3>
+          <ul class="ac">
+            <li>Corrección correcta de los cuatro tipos autocorregibles</li>
+            <li>Inmutabilidad de la versión respondida y no fuga del criterio en ninguna respuesta de la API</li>
+          </ul>
+          <div class="todos"><span class="todo">A-15</span></div>
+        </div></div>
+      </div>
+      <div class="bands">
+        <div class="band"><span class="lbl">Hecho cuando</span><p>Un desafío mixto recorre el ciclo completo — parcial automático, cola del profesor, cierre a <code>FINAL</code>, evento emitido — con el historial de auditoría poblado.</p></div>
+        <div class="band risk"><span class="lbl">Riesgo si no se hace</span><p>Sin corrección no hay nota, sin nota el Tema 10 no reparte XP, y la gamificación entera queda sin insumo.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ E-06 ══════════ -->
+    <section class="epic" id="e06" style="--svc:var(--encuestas)">
+      <div class="epic-head">
+        <div class="epic-code">E-06</div>
+        <h2>Instrumentos de encuesta y cumplimiento</h2>
+        <div class="meta">
+          <span class="chip svc">ms-encuestas</span>
+          <span class="chip">13 puntos</span>
+          <span class="chip">B-03 · B-04 · B-10 · B-11 · B-14 · B-18</span>
+        </div>
+      </div>
+      <div class="rationale">
+        <p>El marcador de cumplimiento es el único lugar del subsistema donde el alumno aparece con nombre y apellido, y es deliberado: registra <strong>que</strong> cumplió, nunca <strong>qué</strong> respondió (RF-ENC-12).</p>
+        <p>El <code>instrumento_id</code> es la <strong>campaña</strong>, no la encuesta individual. Si fuera individual, un join entre esquemas reconstruiría el vínculo y E-02 sería decorativa. Tiene que ser un valor que comparten todos los respondentes de la misma campaña.</p>
+        <p>El texto de las preguntas lo fija la plataforma, versionado (D-10): si cada profesor redacta la suya, el KPI-02 deja de ser comparable entre cursos — el mismo argumento de RF-CFG-05.</p>
+      </div>
+      <div class="stories">
+        <div class="story"><div class="sid">H-01</div><div class="sbody">
+          <h3><span class="as">Como plataforma,</span> quiero un catálogo de instrumentos versionados con clave i18n, para que el KPI sea comparable entre cursos y traducible</h3>
+          <ul class="ac">
+            <li>Esquema <code>catalogo</code> con <code>instrumento</code> y las tres dimensiones <code>CURSO</code>, <code>CONTENIDO</code>, <code>PLATAFORMA</code></li>
+            <li>El campo es <code>clave_texto</code>, <strong>no</strong> el literal — <strong>D-10, RF-NFR-07</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">B-03</span><span class="todo">B-18</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-02</div><div class="sbody">
+          <h3><span class="as">Como plataforma,</span> quiero registrar por alumno e instrumento si cumplió, para poder aplicar el gate sin guardar su opinión</h3>
+          <ul class="ac">
+            <li>Esquema <code>cumplimiento</code> con <code>marcador</code>, PK <code>(alumno_id, instrumento_id)</code> y <code>curso_cohorte_id</code></li>
+            <li>Estados <code>PENDIENTE</code> / <code>CUMPLIDA</code> y <strong>ningún</strong> campo de contenido de la respuesta</li>
+          </ul>
+          <div class="todos"><span class="todo">B-04</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-03</div><div class="sbody">
+          <h3><span class="as">Como alumno,</span> quiero ver qué encuestas tengo pendientes, para saber qué me está bloqueando el resultado</h3>
+          <ul class="ac">
+            <li><code>GET /encuestas/pendientes?alumno={id}</code> devuelve las bloqueantes</li>
+            <li>El bloqueo lo aplica el front en el Sprint 1, con el filtro de gateway documentado como paso siguiente — <strong>D-06, supuesto 8</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">B-10</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-04</div><div class="sbody">
+          <h3><span class="as">Como Tema 02/10,</span> quiero consultar si un alumno cumplió, para poder liberar su resultado académico</h3>
+          <ul class="ac">
+            <li><code>GET /encuestas/cumplimiento</code> devuelve <code>{cumplida: bool}</code> y nada más</li>
+            <li><strong>Nunca</strong> una lista nominal de quién cumplió — <strong>RF-ENC-11, RSK-13</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">B-11</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-05</div><div class="sbody">
+          <h3><span class="as">Como plataforma,</span> quiero disparar la encuesta de plataforma a los 30 días y una por período, para medir satisfacción global sin fatigar</h3>
+          <ul class="ac">
+            <li>La campaña <code>PLATAFORMA</code> se genera a los 30 días del alta del alumno y una vez por período</li>
+            <li>No se duplica si el job corre dos veces</li>
+          </ul>
+          <div class="todos"><span class="todo">B-14</span></div>
+        </div></div>
+      </div>
+      <div class="note">
+        <p><strong>Supuesto de mayor impacto (D-07, supuesto 0).</strong> El gate bloquea que <strong>el alumno vea su resultado</strong>, no que el profesor <strong>archive el curso</strong>. Con la lectura contraria, un alumno en estado «abandonó» que nunca responde deja el curso sin cerrar para siempre. Hay que confirmarlo con el Tema 02 en la sesión de integración.</p>
+      </div>
+      <div class="bands">
+        <div class="band"><span class="lbl">Hecho cuando</span><p>El gate de RF-ENC-11 responde correctamente y no existe endpoint que devuelva una lista nominal de cumplimiento.</p></div>
+        <div class="band risk"><span class="lbl">Riesgo si no se hace</span><p>Sin marcador no hay gate y RF-ENC-11 queda sin implementar. Es la única palanca real de tasa de respuesta.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ E-07 ══════════ -->
+    <section class="epic" id="e07" style="--svc:var(--encuestas)">
+      <div class="epic-head">
+        <div class="epic-code">E-07</div>
+        <h2>Respuesta anónima de encuesta</h2>
+        <div class="meta">
+          <span class="chip svc">ms-encuestas</span>
+          <span class="chip">21 puntos</span>
+          <span class="chip">B-05 · B-06 · B-07 · B-08 · B-09</span>
+        </div>
+      </div>
+      <div class="rationale">
+        <p>La épica donde el anonimato se gana o se pierde en tiempo de ejecución. E-02 puso las paredes; acá se escribe adentro sin abrir ventanas.</p>
+        <p>El punto no obvio: el marcador y la respuesta <strong>no pueden escribirse en la misma transacción ni en el mismo request</strong>. Si lo hicieran, el orden de inserción correlaciona los dos lados aunque no compartan ninguna clave. Por eso la respuesta se encola y la escribe un consumidor con jitter y flush por lotes. Y por eso la PK es <code>gen_random_uuid()</code> y no UUIDv7 ni ULID: esos codifican el instante de creación dentro del propio identificador.</p>
+      </div>
+      <div class="stories">
+        <div class="story"><div class="sid">H-01</div><div class="sbody">
+          <h3><span class="as">Como alumno,</span> quiero que mi respuesta se guarde sin nada que la fije en el tiempo, para que no se me pueda identificar por cuándo respondí</h3>
+          <ul class="ac">
+            <li><code>respuesta_encuesta</code> con PK <code>gen_random_uuid()</code></li>
+            <li><strong>No existe</strong> columna <code>created_at</code>, solo <code>periodo</code>; sin <code>alumno_id</code> ni FK hacia cumplimiento</li>
+          </ul>
+          <div class="todos"><span class="todo">B-05</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-02</div><div class="sbody">
+          <h3><span class="as">Como responsable de privacidad,</span> quiero que marcador y respuesta se escriban desacoplados, para cerrar el canal de orden de inserción</h3>
+          <ul class="ac">
+            <li>El <code>POST</code> escribe el marcador y <strong>encola</strong> la respuesta; un consumidor la persiste con jitter aleatorio y flush por lotes</li>
+            <li>Nunca en la misma transacción ni en el mismo request; hay test que verifica que el orden de las filas de respuesta no coincide con el de los marcadores</li>
+          </ul>
+          <div class="todos"><span class="todo">B-06</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-03</div><div class="sbody">
+          <h3><span class="as">Como alumno,</span> quiero poder abstenerme explícitamente, para no tener que inventar una nota que no siento</h3>
+          <ul class="ac">
+            <li>El endpoint acepta <code>abstencion: true</code> con <code>estrellas: null</code></li>
+            <li>La abstención marca cumplimiento igual que una respuesta — <strong>RF-ENC-09</strong> — y se registra como métrica propia</li>
+          </ul>
+          <div class="todos"><span class="todo">B-07</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-04</div><div class="sbody">
+          <h3><span class="as">Como profesor,</span> quiero que los extremos vengan con comentario, para saber qué mejorar y no solo cuánto</h3>
+          <ul class="ac">
+            <li>Comentario <strong>obligatorio</strong> con 1 y con 5 estrellas, opcional entre 2 y 4</li>
+            <li>Sin comentario en un extremo, 400 con clave i18n — <strong>RF-ENC-05</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">B-08</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-05</div><div class="sbody">
+          <h3><span class="as">Como plataforma,</span> quiero los comentarios moderados antes de publicarse, sin que eso bloquee el sprint</h3>
+          <ul class="ac">
+            <li>Puerto de moderación definido contra el contrato del Tema 11</li>
+            <li><strong>Stub tras feature flag</strong> que aprueba todo, apagado por defecto en producción y con el TODO visible en el código — <strong>D-05, supuesto 6</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">B-09</span></div>
+        </div></div>
+      </div>
+      <div class="bands">
+        <div class="band"><span class="lbl">Hecho cuando</span><p>50 respuestas concurrentes se persisten sin que el orden de las filas permita reconstruir el orden de los respondentes.</p></div>
+        <div class="band risk"><span class="lbl">Riesgo si no se hace</span><p>RSK-13 otra vez. Todo lo construido en E-02 se anula con un solo <code>save()</code> en la misma transacción.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ E-08 ══════════ -->
+    <section class="epic" id="e08" style="--svc:var(--encuestas)">
+      <div class="epic-head">
+        <div class="epic-code">E-08</div>
+        <h2>KPIs y umbral de publicación</h2>
+        <div class="meta">
+          <span class="chip svc">ms-encuestas</span>
+          <span class="chip">8 puntos</span>
+          <span class="chip">B-12 · B-13</span>
+        </div>
+      </div>
+      <div class="rationale">
+        <p>Las encuestas existen para producir dos números: KPI-01, satisfacción de plataforma, y KPI-02, satisfacción por curso. Sin esta épica todo lo anterior es un buzón donde nadie lee.</p>
+        <p>El umbral PAR-18 es la mitigación del residual declarado en E-02: con <code>curso + período</code>, un curso donde respondió una sola persona la identifica. Bajo el mínimo de 5 se devuelve únicamente el conteo. Y no es solo privacidad: un promedio sobre dos respuestas tampoco es información, es ruido.</p>
+      </div>
+      <div class="stories">
+        <div class="story"><div class="sid">H-01</div><div class="sbody">
+          <h3><span class="as">Como profesor,</span> quiero el CSAT de mi curso con su desglose, para saber qué ajustar el período que viene</h3>
+          <ul class="ac">
+            <li><code>GET /encuestas/kpi?curso&amp;periodo</code> devuelve CSAT, % de satisfechos, % de detractores y tasa de abstención</li>
+            <li>La abstención <strong>no</strong> contamina el promedio: se informa aparte — <strong>KPI-01, KPI-02</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">B-12</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-02</div><div class="sbody">
+          <h3><span class="as">Como ADMIN,</span> quiero el consolidado de plataforma por período, para seguir la salud global del producto</h3>
+          <ul class="ac">
+            <li><code>GET /encuestas/kpi/plataforma?periodo</code> con los mismos indicadores sobre la dimensión <code>PLATAFORMA</code></li>
+          </ul>
+          <div class="todos"><span class="todo">B-12</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-03</div><div class="sbody">
+          <h3><span class="as">Como alumno de un curso chico,</span> quiero que no se publiquen agregados que me identifiquen, para poder responder con sinceridad</h3>
+          <ul class="ac">
+            <li>Con menos de 5 respuestas el endpoint devuelve <strong>solo el conteo</strong> y una clave i18n de «muestra insuficiente»</li>
+            <li>Nunca el promedio ni los comentarios; los resultados se publican recién al cierre del período — <strong>PAR-18</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">B-13</span></div>
+        </div></div>
+      </div>
+      <div class="bands">
+        <div class="band"><span class="lbl">Hecho cuando</span><p>Un curso con 4 respuestas devuelve el conteo y nada más; con 5, el agregado completo. Ambos casos con test.</p></div>
+        <div class="band risk"><span class="lbl">Riesgo si no se hace</span><p>El KPI-02 no existe y el ciclo de mejora del PRD queda abierto. Sin H-03, además, se reabre el residual de k-anonimato justo en el endpoint público.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ E-09 ══════════ -->
+    <section class="epic" id="e09" style="--svc:var(--transversal)">
+      <div class="epic-head">
+        <div class="epic-code">E-09</div>
+        <h2>Integración con los otros temas</h2>
+        <div class="meta">
+          <span class="chip svc">transversal</span>
+          <span class="chip">13 puntos</span>
+          <span class="chip">A-13 · B-17 · C-01 · C-02 · C-04 · C-05</span>
+        </div>
+      </div>
+      <div class="rationale">
+        <p>Somos un tema de nueve, no un producto aislado. Esta épica es todo lo que cruza nuestra frontera: lo que publicamos, lo que consumimos y lo que documentamos para que otros nos usen.</p>
+        <p>El bus de eventos <strong>no está definido todavía</strong>. La respuesta a eso no es esperar: se escribe contra un <strong>puerto propio</strong> con un envelope nuestro, y el adaptador llega cuando el Tema 11 defina la tecnología. Es la misma jugada que con la moderación y con el LLM — tres veces el mismo patrón, que es exactamente lo que uno quiere en un sistema con dependencias que todavía no aterrizaron.</p>
+      </div>
+      <div class="stories">
+        <div class="story"><div class="sid">H-01</div><div class="sbody">
+          <h3><span class="as">Como equipo,</span> quiero un envelope de eventos propio detrás de un puerto, para no quedar bloqueados por una decisión que no es nuestra</h3>
+          <ul class="ac">
+            <li>Envelope con <code>eventId</code>, <code>tipo</code>, <code>ocurridoEn</code> y <code>payload</code></li>
+            <li>Puerto de publicación con adaptador en memoria para tests; a revisar con el Tema 11</li>
+          </ul>
+          <div class="todos"><span class="todo">C-01</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-02</div><div class="sbody">
+          <h3><span class="as">Como Tema 10,</span> quiero enterarme de que un teórico se corrigió, para poder repartir XP y monedas</h3>
+          <ul class="ac">
+            <li>Se publica <code>teorico.corregido</code> con <code>{desafioId, alumnoId, intento, nota, aprobado, estado}</code> al pasar a <code>FINAL</code></li>
+            <li><strong>No</strong> se publica mientras está en <code>PENDIENTE</code></li>
+          </ul>
+          <div class="todos"><span class="todo">A-13</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-03</div><div class="sbody">
+          <h3><span class="as">Como Tema 02/10,</span> quiero enterarme de que un alumno cumplió una encuesta, para liberar lo que dependa del gate</h3>
+          <ul class="ac">
+            <li>Se publican <code>encuesta.cumplida</code> y <code>encuesta.periodo_cerrado</code></li>
+            <li>Ningún evento lleva contenido de respuesta</li>
+          </ul>
+          <div class="todos"><span class="todo">B-17</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-04</div><div class="sbody">
+          <h3><span class="as">Como equipo,</span> quiero consultar pertenencia a cohorte al Tema 02 sin acoplarme a su disponibilidad, para que su caída no nos tire</h3>
+          <ul class="ac">
+            <li>Cliente sincrónico por gateway con timeout explícito y fallback declarado</li>
+            <li>El comportamiento ante timeout está definido y testeado, no improvisado — <strong>supuesto 7</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">C-02</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-05</div><div class="sbody">
+          <h3><span class="as">Como los otros ocho grupos,</span> quiero el contrato del Tema 04 publicado, para poder integrarme sin reunión</h3>
+          <ul class="ac">
+            <li>OpenAPI de ambos servicios publicado y accesible</li>
+            <li>Incluye el caso <code>estado: PENDIENTE</code> con <code>nota: null</code> documentado como respuesta normal, no como error</li>
+          </ul>
+          <div class="todos"><span class="todo">C-04</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-06</div><div class="sbody">
+          <h3><span class="as">Como grupo,</span> quiero llevar nuestras preguntas a la sesión de integración, para cerrar los 8 supuestos vigentes</h3>
+          <ul class="ac">
+            <li><code>PREGUNTAS-INTEGRACION-G04.md</code> presentado</li>
+            <li>Cada supuesto queda confirmado o corregido, con el diseño actualizado en consecuencia</li>
+          </ul>
+          <div class="todos"><span class="todo">C-05</span></div>
+        </div></div>
+      </div>
+      <div class="bands">
+        <div class="band"><span class="lbl">Hecho cuando</span><p>Los ocho supuestos vigentes están confirmados o corregidos, y el OpenAPI está publicado donde los otros grupos lo encuentran.</p></div>
+        <div class="band risk"><span class="lbl">Riesgo si no se hace</span><p>Los supuestos se descubren falsos en la semana de integración. El supuesto 0 es el caro: si el Tema 02 lo lee al revés, ningún curso cierra jamás.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ E-10 ══════════ -->
+    <section class="epic" id="e10" style="--svc:var(--transversal)">
+      <div class="epic-head">
+        <div class="epic-code">E-10</div>
+        <h2>Privacidad, autorización y normativa</h2>
+        <div class="meta">
+          <span class="chip svc">transversal</span>
+          <span class="chip">13 puntos</span>
+          <span class="chip">A-14 · A-18 · B-19 · C-03</span>
+        </div>
+      </div>
+      <div class="rationale">
+        <p>Los requisitos no funcionales que atraviesan todo. Van al final del sprint no por menos importantes, sino porque se verifican sobre código que ya existe. Lo único que <strong>no</strong> puede esperar es el aislamiento de encuestas — y por eso salió de acá y es la épica E-02, primera de todas.</p>
+        <p>Un hallazgo propio que vale registrar: el mapa de PII del PRD <strong>no contempla el marcador de cumplimiento</strong>. El marcador guarda <code>alumno_id</code>, es decir, dice «María cumplió la encuesta del curso X». No es una respuesta, pero es dato personal. Probablemente la omisión viene de que el mapa se escribió pensando en repositorios de contenido. Lo resolvemos nosotros en vez de dejarlo en el limbo.</p>
+      </div>
+      <div class="stories">
+        <div class="story"><div class="sid">H-01</div><div class="sbody">
+          <h3><span class="as">Como alumno,</span> quiero que nadie más vea mis respuestas — y como profesor, que nadie edite mi banco</h3>
+          <ul class="ac">
+            <li>El profesor accede solo a su propio banco; el alumno solo a sus respuestas y correcciones</li>
+            <li>Cada regla tiene su test de <strong>acceso denegado</strong>, no solo el de acceso permitido — <strong>RF-USR-07/08</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">A-14</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-02</div><div class="sbody">
+          <h3><span class="as">Como ADMIN,</span> quiero desvincular al titular a los 5 años conservando el registro académico, para cumplir sin destruir historia</h3>
+          <ul class="ac">
+            <li>Al vencer PAR-16, <code>respuesta.alumno_id</code> y <code>correccion.alumno_id</code> se reemplazan por un subrogado aleatorio <strong>irreversible</strong></li>
+            <li>Nota, contenido y series estadísticas se conservan — <strong>RF-NFR-10, D-11</strong></li>
+            <li>El texto libre de una abierta que contenga un nombre se declara <strong>residual conocido</strong>, igual que el PRD declara los suyos</li>
+          </ul>
+          <div class="todos"><span class="todo">A-18</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-03</div><div class="sbody">
+          <h3><span class="as">Como ADMIN,</span> quiero que el marcador de cumplimiento también se anonimice, para no dejar un dato personal fuera del proceso</h3>
+          <ul class="ac">
+            <li>El marcador entra en el mismo camino de anonimización que los teóricos</li>
+            <li>Las <strong>respuestas</strong> de encuesta están exentas por diseño: nacieron sin PII y no hay vínculo que cortar — <strong>D-11b</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">B-19</span></div>
+        </div></div>
+        <div class="story"><div class="sid">H-04</div><div class="sbody">
+          <h3><span class="as">Como plataforma,</span> quiero que ninguna entidad se borre físicamente, para poder auditar y revertir</h3>
+          <ul class="ac">
+            <li>Baja lógica verificada en <strong>todas</strong> las entidades de ambos servicios</li>
+            <li>Un test recorre el modelo y falla si encuentra una entidad sin campo de baja o un <code>DELETE</code> físico en un repositorio — <strong>RF-NFR-01</strong></li>
+          </ul>
+          <div class="todos"><span class="todo">C-03</span></div>
+        </div></div>
+      </div>
+      <div class="bands">
+        <div class="band"><span class="lbl">Hecho cuando</span><p>La anonimización corre sobre datos de prueba y se verifica que el registro académico sobrevive intacto y que el vínculo no se puede reconstruir.</p></div>
+        <div class="band risk"><span class="lbl">Riesgo si no se hace</span><p>Incumplimiento normativo (RF-NFR-10) y fuga de datos entre roles (RF-USR-07/08). H-03 es la que nadie va a reclamar porque no está en el PRD, y es justamente por eso que hay que hacerla.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ cierre ══════════ -->
+    <section class="closing" id="cierre">
+
+      <div>
+        <h2>Resumen</h2>
+        <div class="tablewrap" style="margin-top:18px">
+          <table>
+            <thead>
+              <tr><th>Épica</th><th>Servicio</th><th>Puntos</th><th>TO-DOs</th><th>Depende de</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="dot" style="background:var(--encuestas)"></span><b>E-02</b> · Aislamiento de datos</td><td>encuestas</td><td class="num">21</td><td class="num">3</td><td class="num">—</td></tr>
+              <tr><td><span class="dot" style="background:var(--transversal)"></span><b>E-01</b> · Cimientos</td><td>transversal</td><td class="num">13</td><td class="num">4</td><td class="num">—</td></tr>
+              <tr><td><span class="dot" style="background:var(--teoricos)"></span><b>E-03</b> · Banco de ítems</td><td>teóricos</td><td class="num">21</td><td class="num">4</td><td class="num">E-01</td></tr>
+              <tr><td><span class="dot" style="background:var(--teoricos)"></span><b>E-04</b> · Composición y entrega</td><td>teóricos</td><td class="num">13</td><td class="num">4</td><td class="num">E-03</td></tr>
+              <tr><td><span class="dot" style="background:var(--teoricos)"></span><b>E-05</b> · Motor de corrección</td><td>teóricos</td><td class="num">21</td><td class="num">6</td><td class="num">E-04</td></tr>
+              <tr><td><span class="dot" style="background:var(--encuestas)"></span><b>E-06</b> · Instrumentos y cumplimiento</td><td>encuestas</td><td class="num">13</td><td class="num">6</td><td class="num">E-01, E-02</td></tr>
+              <tr><td><span class="dot" style="background:var(--encuestas)"></span><b>E-07</b> · Respuesta anónima</td><td>encuestas</td><td class="num">21</td><td class="num">5</td><td class="num">E-06</td></tr>
+              <tr><td><span class="dot" style="background:var(--encuestas)"></span><b>E-08</b> · KPIs y umbral</td><td>encuestas</td><td class="num">8</td><td class="num">2</td><td class="num">E-07</td></tr>
+              <tr><td><span class="dot" style="background:var(--transversal)"></span><b>E-09</b> · Integración</td><td>transversal</td><td class="num">13</td><td class="num">6</td><td class="num">E-05, E-07</td></tr>
+              <tr><td><span class="dot" style="background:var(--transversal)"></span><b>E-10</b> · Privacidad y normativa</td><td>transversal</td><td class="num">13</td><td class="num">4</td><td class="num">E-03, E-06</td></tr>
+              <tr class="total"><td>Total</td><td></td><td class="num">157</td><td class="num">44</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h2>Reparto para diez personas</h2>
+        <p style="max-width:68ch; color:var(--ink-2); margin:12px 0 20px">Los dos frentes de dominio no comparten una sola línea de código: dos servicios, dos bases, dos frentes de merge. Es la ventaja concreta de haber partido el tema en dos.</p>
+        <div class="crew">
+          <article style="--svc:var(--teoricos)">
+            <span class="count">4 personas</span>
+            <h3>Teóricos</h3>
+            <p class="path">E-03 → E-04 → E-05</p>
+            <p>Arrancan en cuanto E-01/H-01 responde <code>UP</code>.</p>
+          </article>
+          <article style="--svc:var(--encuestas)">
+            <span class="count">4 personas</span>
+            <h3>Encuestas</h3>
+            <p class="path">E-02 → E-06 → E-07 → E-08</p>
+            <p>Empiezan por E-02 sin esperar a nadie.</p>
+          </article>
+          <article style="--svc:var(--transversal)">
+            <span class="count">2 personas</span>
+            <h3>Plataforma</h3>
+            <p class="path">E-01 → E-09 → E-10</p>
+            <p>Entregan E-01 primero para desbloquear a los otros dos frentes.</p>
+          </article>
+        </div>
+      </div>
+
+      <div>
+        <h2>Lo que este sprint deja afuera</h2>
+        <p style="max-width:68ch; color:var(--ink-2); margin:12px 0 20px">Declarado, no olvidado. Todo está contemplado en el modelo y en la sección 7 del documento de diseño.</p>
+        <ul class="outlist">
+          <li><strong>Corrección de abiertas por LLM.</strong> Es un adaptador nuevo del puerto de E-05/H-02; ninguna otra pieza cambia.</li>
+          <li><strong>Conversación y debate estructurado.</strong> Falta la decisión de producto, no el modelo: <code>payload jsonb</code> ya admite una transcripción.</li>
+          <li><strong>Filtro de bloqueo por encuesta en el gateway.</strong> Requiere al Tema 01; en el Sprint 1 lo aplica el front.</li>
+          <li><strong>Moderación real de comentarios.</strong> El puerto está; el adaptador espera a que el Tema 11 defina la tecnología.</li>
+          <li><strong>Vista del profesor sobre resultados de encuesta.</strong> E-08/H-03 ya calcula con umbral; falta la pantalla.</li>
+        </ul>
+      </div>
+
+    </section>
+
+    <footer>
+      <span>Grupo 4 · Tema 04</span>
+      <span>Deriva de DISENIO-G04-SPRINT1.md</span>
+      <span>Supuestos abiertos en PREGUNTAS-INTEGRACION-G04.md</span>
+    </footer>
+
+  </main>
+</div>
+</div>

@@ -1,0 +1,498 @@
+<title>Quién arma el desafío</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+  :root {
+    --paper:      #EEF1F3;
+    --surface:    #FFFFFF;
+    --surface-2:  #E4E9EC;
+    --ink:        #131A20;
+    --ink-soft:   #4E5C68;
+    --ink-faint:  #7C8894;
+    --rule:       #CFD7DD;
+    --rule-soft:  #DDE3E8;
+    --accent:     #0C6F78;
+    --accent-ink: #0A5A62;
+    --accent-wash:#DCEDEF;
+    --warn:       #8E5108;
+    --warn-wash:  #F6EBD9;
+    --no:         #97382B;
+
+    --f-display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+    --f-body:    "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --f-mono:    "IBM Plex Mono", "Consolas", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #10161B;
+      --surface:    #182027;
+      --surface-2:  #212B33;
+      --ink:        #E8EDF1;
+      --ink-soft:   #A9B6C1;
+      --ink-faint:  #77848F;
+      --rule:       #2E3A44;
+      --rule-soft:  #262F37;
+      --accent:     #56BFC7;
+      --accent-ink: #7FD4DA;
+      --accent-wash:#163336;
+      --warn:       #D9A54E;
+      --warn-wash:  #322A18;
+      --no:         #D98374;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #10161B;
+    --surface:    #182027;
+    --surface-2:  #212B33;
+    --ink:        #E8EDF1;
+    --ink-soft:   #A9B6C1;
+    --ink-faint:  #77848F;
+    --rule:       #2E3A44;
+    --rule-soft:  #262F37;
+    --accent:     #56BFC7;
+    --accent-ink: #7FD4DA;
+    --accent-wash:#163336;
+    --warn:       #D9A54E;
+    --warn-wash:  #322A18;
+    --no:         #D98374;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 52px;
+  }
+
+  /* ---- hero ---- */
+
+  .hero { display: flex; flex-direction: column; gap: 18px; }
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+  }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(38px, 7vw, 58px);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .lead {
+    font-size: 20px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 34em;
+  }
+
+  .hero-rule {
+    height: 3px;
+    width: 64px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* ---- sections ---- */
+
+  section { display: flex; flex-direction: column; gap: 18px; }
+
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 27px;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  p { margin: 0; max-width: 66ch; }
+
+  .quiet { color: var(--ink-soft); }
+
+  strong { font-weight: 600; }
+
+  /* ---- the pivotal question ---- */
+
+  .pregunta {
+    background: var(--accent-wash);
+    border-left: 4px solid var(--accent);
+    padding: 26px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .pregunta .q {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 1.25;
+    color: var(--ink);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .pregunta p { color: var(--ink-soft); }
+
+  /* ---- numbered steps ---- */
+
+  ol.pasos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    counter-reset: paso;
+  }
+
+  ol.pasos li {
+    counter-increment: paso;
+    background: var(--surface);
+    border: 1px solid var(--rule-soft);
+    padding: 20px 24px 20px 66px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  ol.pasos li::before {
+    content: counter(paso);
+    position: absolute;
+    left: 24px;
+    top: 20px;
+    font-family: var(--f-mono);
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  ol.pasos li:first-child { border-radius: 8px 8px 0 0; }
+  ol.pasos li:last-child  { border-radius: 0 0 8px 8px; }
+
+  .paso-t {
+    font-weight: 600;
+    font-size: 17px;
+  }
+
+  .paso-d {
+    color: var(--ink-soft);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .paso-quien {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 3px;
+  }
+
+  /* ---- the ficha ---- */
+
+  .ficha {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .ficha-head {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+    padding: 13px 22px;
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .ficha dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 168px 1fr;
+  }
+
+  .ficha dt {
+    font-family: var(--f-mono);
+    font-size: 14px;
+    color: var(--accent-ink);
+    padding: 16px 16px 16px 22px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .ficha dd {
+    margin: 0;
+    padding: 16px 22px 16px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    color: var(--ink-soft);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .ficha dt:last-of-type,
+  .ficha dd:last-of-type { border-bottom: none; }
+
+  @media (max-width: 560px) {
+    .ficha dl { grid-template-columns: 1fr; }
+    .ficha dt { padding: 16px 22px 0; border-bottom: none; }
+    .ficha dd { padding: 4px 22px 16px; }
+  }
+
+  /* ---- comparison pair ---- */
+
+  .pruebas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .pruebas { grid-template-columns: 1fr; }
+  }
+
+  .prueba {
+    background: var(--surface);
+    border: 1px solid var(--rule-soft);
+    border-radius: 10px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .prueba-q {
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+
+  .rta { display: flex; flex-direction: column; gap: 5px; }
+
+  .rta-l {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .rta.si .rta-l { color: var(--accent); }
+  .rta.no .rta-l { color: var(--no); }
+
+  .rta p { font-size: 15.5px; line-height: 1.5; color: var(--ink-soft); }
+
+  /* ---- objection ---- */
+
+  .objecion {
+    background: var(--warn-wash);
+    border-radius: 10px;
+    padding: 24px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .objecion .cita {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 19px;
+    line-height: 1.35;
+    color: var(--warn);
+    margin: 0;
+  }
+
+  .objecion p { color: var(--ink-soft); }
+
+  /* ---- closing checklist ---- */
+
+  ul.pedimos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  ul.pedimos li {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule-soft);
+    line-height: 1.5;
+  }
+
+  ul.pedimos li:last-child { border-bottom: none; padding-bottom: 0; }
+
+  ul.pedimos li::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 22px;
+    font-size: 14.5px;
+    color: var(--ink-faint);
+    max-width: 60ch;
+  }
+</style>
+
+<div class="page">
+
+  <header class="hero">
+    <div class="eyebrow">Grupo 04 · Teóricos y Encuestas → Grupo 03</div>
+    <h1>Quién arma el desafío</h1>
+    <div class="hero-rule"></div>
+    <p class="lead">Proponemos que el Motor de Desafíos nunca reciba el contenido de un desafío, sino una ficha que lo señala. Sirve igual para los teóricos y para los prácticos, y le saca trabajo al Motor en vez de agregarle.</p>
+  </header>
+
+  <section>
+    <h2>Hay una sola pregunta que decidir</h2>
+    <div class="pregunta">
+      <p class="q">¿El Motor de Desafíos quiere ser dueño del contenido de los desafíos?</p>
+      <p>Si la respuesta es que no —y creemos que es que no, porque el reparto ya pone el contenido en los grupos 04 y 05—, todo lo demás se deduce solo. No les estamos proponiendo una arquitectura: les estamos mostrando qué implica su propia respuesta.</p>
+    </div>
+    <p class="quiet">La regla que sale de ahí es una sola, y resuelve casi todas las dudas que vienen después: <strong>el Motor guarda una referencia al contenido y nunca la abre.</strong> Un servicio que transporta algo que no entiende no queda atado a eso.</p>
+  </section>
+
+  <section>
+    <h2>Cómo quedaría el armado</h2>
+    <ol class="pasos">
+      <li>
+        <span class="paso-t">El profesor elige el material</span>
+        <span class="paso-d">Está parado adentro de una unidad del curso y tilda los documentos que quiere usar: el material teórico, la guía de ejercicios, un anexo.</span>
+        <span class="paso-quien">Pantalla del curso</span>
+      </li>
+      <li>
+        <span class="paso-t">Arma el contenido con el grupo dueño del tipo</span>
+        <span class="paso-d">Si es teórico, con nosotros: elige las preguntas y decide cómo se corrige cada una. Si es práctico, con el 05. El grupo le devuelve un número que identifica ese contenido.</span>
+        <span class="paso-quien">Grupo 04 o Grupo 05</span>
+      </li>
+      <li>
+        <span class="paso-t">Crea el desafío en el Motor</span>
+        <span class="paso-d">Le pone título, fechas, dificultad, reintentos, si es obligatorio — y le pasa ese número. El Motor lo guarda y no lo abre nunca.</span>
+        <span class="paso-quien">Grupo 03</span>
+      </li>
+    </ol>
+    <p class="quiet">El Motor no aparece en los dos primeros pasos. No consulta, no reenvía, no espera. Cuando le toca, recibe todo junto.</p>
+  </section>
+
+  <section>
+    <h2>Lo único que recibe el Motor</h2>
+    <div class="ficha">
+      <div class="ficha-head">La ficha del contenido — cinco campos</div>
+      <dl>
+        <dt>tipo</dt>
+        <dd>Teórico o Práctico. Es lo único de la ficha que el Motor interpreta, y el enum es de ustedes.</dd>
+
+        <dt>contenidoId</dt>
+        <dd>Un identificador. No se lee, no se arma a mano, no se le saca información.</dd>
+
+        <dt>version</dt>
+        <dd>Para que editar el contenido más adelante no cambie lo que los alumnos ya respondieron.</dd>
+
+        <dt>resumen</dt>
+        <dd>Un texto listo para mostrar: <em>«10 preguntas · 100 puntos»</em>. Se pinta en pantalla, no se interpreta. El 05 mandaría <em>«3 casos de prueba · Python»</em>.</dd>
+
+        <dt>correccion</dt>
+        <dd>Inmediata o Diferida. Les avisa si el resultado va a estar al instante o si tienen que mostrar «en corrección» y esperar.</dd>
+      </dl>
+    </div>
+    <p class="quiet">Ese último campo es el que más les importa y es también el que mejor muestra la idea. Que una pregunta abierta la corrija el profesor o la corrija la IA es asunto nuestro y no les cambia nada. Lo que sí les cambia la pantalla es tener que esperar. <strong>Les damos la consecuencia, no la causa.</strong></p>
+  </section>
+
+  <section>
+    <h2>Dos preguntas para probarlo</h2>
+    <div class="pruebas">
+
+      <div class="prueba">
+        <div class="prueba-q">Mañana aparece un tipo de desafío nuevo. ¿Cuánto código del Motor hay que tocar?</div>
+        <div class="rta si">
+          <span class="rta-l">Con la ficha</span>
+          <p>Un valor más en el enum de tipo. Nada más: el Motor guarda otra ficha igual a las que ya guarda.</p>
+        </div>
+        <div class="rta no">
+          <span class="rta-l">Si el Motor arma</span>
+          <p>Un camino nuevo adentro del Motor, con su manejo de errores y su vuelta atrás.</p>
+        </div>
+      </div>
+
+      <div class="prueba">
+        <div class="prueba-q">El servicio de Teóricos está caído. ¿Puede un profesor crear un desafío práctico?</div>
+        <div class="rta si">
+          <span class="rta-l">Con la ficha</span>
+          <p>Sí, obviamente. Son dos servicios que no se conocen entre ellos.</p>
+        </div>
+        <div class="rta no">
+          <span class="rta-l">Si el Motor arma</span>
+          <p>Depende de cómo esté escrito el Motor. Y eso se descubre el día de la demo.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>La objeción, y por qué es barata</h2>
+    <div class="objecion">
+      <p class="cita">«Entonces el front hace dos llamadas y puede quedar contenido armado a medias.»</p>
+      <p>Es cierto, y pasa. Ese contenido queda en borrador, que es un estado que el Motor ya maneja para sus propios desafíos. Comparen ese costo con el de sostener una operación repartida entre dos servicios que puede fallar por la mitad.</p>
+      <p>Además el front de la plataforma es uno solo. La coordinación es una conversación con un equipo, no un contrato entre servicios que hay que versionar y mantener.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Lo que les pedimos confirmar</h2>
+    <ul class="pedimos">
+      <li>El Motor guarda una ficha, nunca el contenido.</li>
+      <li>El tipo de desafío lo define el Motor; el identificador del contenido lo define el grupo dueño de ese tipo.</li>
+      <li>El Motor acepta que un resultado llegue como «en corrección» y se complete más tarde. Con preguntas abiertas, ese es el caso normal y no el excepcional.</li>
+      <li>El desafío teórico y el práctico le entran al Motor por el mismo camino, con la misma ficha.</li>
+    </ul>
+    <p class="quiet">Y si el Motor prefiere ser el que arma, lo hacemos sin problema — pero entonces el contenido de los desafíos pasa a ser conocimiento suyo, y eso hay que asumirlo de entrada.</p>
+  </section>
+
+  <footer>
+    Grupo 04 — Teóricos y Encuestas. Propuesta para la sesión de integración. Se apoya en la Lámina 3 de la propuesta de arquitectura: «teórico y práctico no son dos cosas distintas, son dos tipos de desafío».
+  </footer>
+
+</div>

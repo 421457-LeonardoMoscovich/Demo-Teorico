@@ -1,0 +1,410 @@
+<title>Nueve momentos, siete mensajes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+
+<style>
+  :root {
+    --paper:      #F1F0ED;
+    --surface:    #FFFFFF;
+    --ink:        #16191C;
+    --ink-soft:   #545C64;
+    --ink-faint:  #8B9298;
+    --rule:       #D6D8D6;
+    --rule-soft:  #E4E5E3;
+    --accent:     #1F5C7A;
+    --accent-ink: #17495F;
+    --accent-soft:#DBE8ED;
+    --gone:       #866413;
+    --gone-soft:  #F0E7CF;
+
+    --f-display: "Archivo", "Helvetica Neue", sans-serif;
+    --f-body:    "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    --f-mono:    "JetBrains Mono", "Consolas", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #12161A;
+      --surface:    #1A2026;
+      --ink:        #E6EBEF;
+      --ink-soft:   #A3AEB6;
+      --ink-faint:  #737E86;
+      --rule:       #2C363E;
+      --rule-soft:  #232C33;
+      --accent:     #6FB6D4;
+      --accent-ink: #93CBE3;
+      --accent-soft:#17313D;
+      --gone:       #D2A93F;
+      --gone-soft:  #2C2616;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #12161A;
+    --surface:    #1A2026;
+    --ink:        #E6EBEF;
+    --ink-soft:   #A3AEB6;
+    --ink-faint:  #737E86;
+    --rule:       #2C363E;
+    --rule-soft:  #232C33;
+    --accent:     #6FB6D4;
+    --accent-ink: #93CBE3;
+    --accent-soft:#17313D;
+    --gone:       #D2A93F;
+    --gone-soft:  #2C2616;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 52px 26px 88px;
+    display: flex;
+    flex-direction: column;
+    gap: 54px;
+  }
+
+  /* hero */
+
+  .hero { display: flex; flex-direction: column; gap: 16px; }
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+  }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(36px, 6.5vw, 54px);
+    line-height: 1.03;
+    letter-spacing: -0.03em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .regla {
+    font-size: 21px;
+    line-height: 1.45;
+    color: var(--ink);
+    margin: 0;
+    max-width: 30em;
+    border-left: 3px solid var(--accent);
+    padding-left: 18px;
+  }
+
+  .regla em { font-style: normal; color: var(--accent-ink); font-weight: 600; }
+
+  .hero p.sub { margin: 0; color: var(--ink-soft); max-width: 60ch; }
+
+  /* sections */
+
+  section { display: flex; flex-direction: column; gap: 20px; }
+
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* figure */
+
+  figure { margin: 0; display: flex; flex-direction: column; gap: 14px; }
+
+  .figwrap { overflow-x: auto; }
+
+  figure svg {
+    display: block;
+    width: 100%;
+    min-width: 620px;
+    height: auto;
+    color: var(--ink-soft);
+  }
+
+  figcaption {
+    font-size: 15.5px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+  }
+
+  figcaption strong { color: var(--ink); font-weight: 600; }
+
+  /* track */
+
+  ol.track {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  ol.track li {
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    gap: 6px 16px;
+    align-items: baseline;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  ol.track li:last-child { border-bottom: none; }
+
+  .t-n {
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+
+  .t-body { display: flex; flex-direction: column; gap: 2px; }
+
+  .t-name { font-weight: 600; font-size: 17px; }
+
+  .t-desc { font-size: 15px; color: var(--ink-soft); line-height: 1.45; }
+
+  .pill {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.03em;
+    padding: 4px 11px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .pill.msg {
+    background: var(--accent);
+    color: var(--surface);
+    font-weight: 500;
+  }
+
+  .pill.none {
+    border: 1px dashed var(--rule);
+    color: var(--ink-faint);
+  }
+
+  @media (max-width: 620px) {
+    ol.track li { grid-template-columns: 26px 1fr; }
+    .pill { grid-column: 2; justify-self: start; margin-top: 6px; }
+  }
+
+  /* removals */
+
+  .quitados {
+    background: var(--gone-soft);
+    border-radius: 8px;
+    padding: 8px 24px;
+  }
+
+  dl.quit { margin: 0; display: flex; flex-direction: column; }
+
+  dl.quit > div {
+    display: grid;
+    grid-template-columns: 168px 1fr;
+    gap: 4px 18px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(134, 100, 19, 0.22);
+  }
+
+  dl.quit > div:last-child { border-bottom: none; }
+
+  dl.quit dt {
+    font-family: var(--f-mono);
+    font-size: 14px;
+    color: var(--gone);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+  }
+
+  dl.quit dd {
+    margin: 0;
+    font-size: 15.5px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 560px) {
+    dl.quit > div { grid-template-columns: 1fr; }
+  }
+
+  .cierre {
+    font-size: 19px;
+    line-height: 1.45;
+    margin: 0;
+    max-width: 34em;
+    text-wrap: balance;
+  }
+
+  .cierre strong { color: var(--accent-ink); }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 20px;
+    font-size: 14.5px;
+    color: var(--ink-faint);
+    max-width: 64ch;
+  }
+</style>
+
+<div class="page">
+
+  <header class="hero">
+    <div class="eyebrow">Grupo 04 · Teóricos y Encuestas</div>
+    <h1>Nueve momentos, siete mensajes</h1>
+    <p class="regla">Todo el contrato con el Motor de Desafíos sale de una sola regla: <em>el 03 nunca abre la caja.</em></p>
+    <p class="sub">La respuesta del alumno y el contenido del desafío son cajas cerradas para el Motor. Puede transportarlas, envolverlas y guardarlas — nunca mirarlas adentro. Todo lo que sigue son consecuencias de eso.</p>
+  </header>
+
+  <section>
+    <h2>La regla, dibujada</h2>
+    <figure>
+      <div class="figwrap">
+        <svg viewBox="0 0 880 220" role="img" aria-label="El front arma la caja con la respuesta del alumno, el Tema 03 la envuelve agregando cinco campos sin abrirla, y el Tema 04 o 05 es el único que la abre.">
+          <defs>
+            <marker id="pta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="90"  y="26" text-anchor="middle" font-size="12.5" fill="currentColor" font-weight="600">Front</text>
+          <text x="400" y="26" text-anchor="middle" font-size="12.5" fill="currentColor" font-weight="600">Tema 03 · Motor</text>
+          <text x="740" y="26" text-anchor="middle" font-size="12.5" fill="currentColor" font-weight="600">Tema 04 · Tema 05</text>
+
+          <rect x="20"  y="40" width="140" height="120" rx="7" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.45"></rect>
+          <rect x="260" y="40" width="280" height="120" rx="7" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.45"></rect>
+          <rect x="620" y="40" width="240" height="120" rx="7" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.45"></rect>
+
+          <rect x="68" y="76" width="44" height="44" rx="4" fill="#1F5C7A"></rect>
+          <text x="90" y="140" text-anchor="middle" font-size="11" fill="currentColor">respuesta</text>
+
+          <rect x="278" y="62" width="244" height="76" rx="6" fill="none" stroke="#1F5C7A" stroke-width="1.2" stroke-dasharray="4 3"></rect>
+          <rect x="292" y="78" width="44" height="44" rx="4" fill="#1F5C7A"></rect>
+          <text x="350" y="82"  font-size="11" fill="currentColor">+ entregaId</text>
+          <text x="350" y="99"  font-size="11" fill="currentColor">+ intento</text>
+          <text x="350" y="116" font-size="11" fill="currentColor">+ alumno · curso</text>
+          <text x="350" y="133" font-size="11" fill="currentColor">+ contenido</text>
+
+          <rect x="644" y="76" width="44" height="44" rx="4" fill="#1F5C7A"></rect>
+          <text x="702" y="94"  font-size="11" fill="currentColor">el único</text>
+          <text x="702" y="111" font-size="11" fill="currentColor">que la abre</text>
+
+          <line x1="160" y1="100" x2="252" y2="100" stroke="currentColor" stroke-width="1.4" marker-end="url(#pta)"></line>
+          <text x="206" y="90" text-anchor="middle" font-size="11" fill="currentColor">envía</text>
+
+          <line x1="540" y1="100" x2="612" y2="100" stroke="currentColor" stroke-width="1.4" marker-end="url(#pta)"></line>
+          <text x="576" y="90" text-anchor="middle" font-size="11" fill="currentColor">despacha</text>
+
+          <text x="90"  y="188" text-anchor="middle" font-size="12" fill="#1F5C7A" font-weight="600">la arma</text>
+          <text x="400" y="188" text-anchor="middle" font-size="12" fill="#1F5C7A" font-weight="600">no la abre</text>
+          <text x="740" y="188" text-anchor="middle" font-size="12" fill="#1F5C7A" font-weight="600">la abre</text>
+        </svg>
+      </div>
+      <figcaption>El cuadrado lleno es la respuesta del alumno, y es el mismo en las tres estaciones: <strong>el 03 la envuelve, no la toca.</strong> Los cuatro campos que agrega son los que el navegador no puede decir por sí solo — si el alumno se autodeclarara el número de intento, se regalaría intentos infinitos. Y como esos cuatro son iguales para un teórico y para un práctico, el mensaje que recibimos nosotros y el que recibe el 05 son idénticos.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Dónde hay mensaje y dónde no</h2>
+    <ol class="track">
+      <li>
+        <span class="t-n">00</span>
+        <span class="t-body"><span class="t-name">Autoría</span><span class="t-desc">Cada grupo es dueño de su banco. El 03 no participa, no almacena, no se entera.</span></span>
+        <span class="pill none">sin mensaje</span>
+      </li>
+      <li>
+        <span class="t-n">01</span>
+        <span class="t-body"><span class="t-name">Composición</span><span class="t-desc">El front compone. El 03 recibe una ficha ya armada y la guarda sin abrirla.</span></span>
+        <span class="pill none">sin mensaje</span>
+      </li>
+      <li>
+        <span class="t-n">02</span>
+        <span class="t-body"><span class="t-name">Publicación</span><span class="t-desc">No existe un momento de congelamiento, así que no hay nada que avisar.</span></span>
+        <span class="pill none">sin mensaje</span>
+      </li>
+      <li>
+        <span class="t-n">03</span>
+        <span class="t-body"><span class="t-name">El alumno abre</span><span class="t-desc">El 03 valida, crea el intento y firma un permiso de lectura. Nosotros validamos la firma sin llamar a nadie.</span></span>
+        <span class="pill msg">vale de lectura</span>
+      </li>
+      <li>
+        <span class="t-n">04</span>
+        <span class="t-body"><span class="t-name">El alumno envía</span><span class="t-desc">Revalida lo que pudo cambiar, envuelve y despacha. Le contestamos <span style="font-family:var(--f-mono);font-size:13.5px">202</span>, nunca la nota.</span></span>
+        <span class="pill msg">despacho + acuse</span>
+      </li>
+      <li>
+        <span class="t-n">05</span>
+        <span class="t-body"><span class="t-name">Evaluación</span><span class="t-desc">Corregimos. Si hace falta un LLM, lo invocamos nosotros directo al Tema 07.</span></span>
+        <span class="pill none">sin mensaje</span>
+      </li>
+      <li>
+        <span class="t-n">06</span>
+        <span class="t-body"><span class="t-name">Resultado</span><span class="t-desc">La nota y nada más. Sin desglose, sin quién corrigió, sin decir si aprobó.</span></span>
+        <span class="pill msg">TEORICO_CORREGIDO</span>
+      </li>
+      <li>
+        <span class="t-n">07</span>
+        <span class="t-body"><span class="t-name">Reintento</span><span class="t-desc">Es el mismo despacho con otro número. Guardamos todas las correcciones; cuál cuenta lo decide el 03.</span></span>
+        <span class="pill none">sin mensaje nuevo</span>
+      </li>
+      <li>
+        <span class="t-n">08</span>
+        <span class="t-body"><span class="t-name">Edición</span><span class="t-desc">Le refrescamos la ficha: su copia es una caché y nosotros la invalidamos.</span></span>
+        <span class="pill msg">CONTENIDO_ACTUALIZADO</span>
+      </li>
+    </ol>
+    <figcaption>En <strong>cinco de los nueve momentos no cruza ningún mensaje.</strong> Sumando los dos endpoints de rescate que en el camino feliz no se usan, toda la relación con el Motor de Desafíos son siete intercambios.</figcaption>
+  </section>
+
+  <section>
+    <h2>Lo que la regla fue sacando</h2>
+    <div class="quitados">
+      <dl class="quit">
+        <div>
+          <dt>aprobado</dt>
+          <dd>Nadie definió el umbral en el PRD, y decidirlo maneja XP y vidas: es economía, y la economía vive en un solo lugar.</dd>
+        </div>
+        <div>
+          <dt>corrector</dt>
+          <dd>Su propia lámina dice que el 03 «recibe una nota ya formada y no le importa cómo se produjo». Los tomamos al pie de la letra.</dd>
+        </div>
+        <div>
+          <dt>detalle</dt>
+          <dd>Cuánto sacó en cada pregunta lo quiere ver el alumno, no el Motor. Se lo servimos al front.</dd>
+        </div>
+        <div>
+          <dt>materialRefs</dt>
+          <dd>La lista de PDFs de la unidad es insumo para generar preguntas. El 03 no hace nada con ella; le alcanza con saber a qué unidad pertenece el desafío.</dd>
+        </div>
+        <div>
+          <dt>origen</dt>
+          <dd>Si el desafío es personalizado, el 03 ya lo sabe: lo creó él porque el alumno se lo pidió a él.</dd>
+        </div>
+      </dl>
+    </div>
+    <p class="cierre">Cinco campos, cinco veces la misma pregunta: <strong>¿qué hace el 03 con esto?</strong> Cuando la respuesta es «nada», el campo no va — y cada vez que lo aplicamos, el contrato se achicó en lugar de crecer.</p>
+  </section>
+
+  <footer>
+    54 decisiones y 18 preguntas abiertas para la sesión de integración están en <span style="font-family:var(--f-mono);font-size:13.5px">CONTRATO-INTEGRACION-G04.md</span>. Las tres de mayor impacto: quién es dueño del material de las unidades, si un curso puede archivarse con correcciones pendientes, y si el 04 bloquea o no al 03 y al 05.
+  </footer>
+
+</div>

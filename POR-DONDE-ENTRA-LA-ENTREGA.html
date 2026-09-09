@@ -1,0 +1,650 @@
+<title>Por dónde entra la entrega</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+  :root{
+    --ground:#F4F6F9;
+    --surface:#FFFFFF;
+    --sunk:#EDF0F5;
+    --ink:#151A24;
+    --muted:#5B6474;
+    --hair:#D7DCE5;
+    --hair-soft:#E5E9F0;
+    --accent:#2D4A8A;
+    --accent-soft:#E6EBF6;
+    --fail:#A3352C;
+    --risk:#8A6412;
+    --hold:#26665A;
+    --hold-soft:#E2F0EC;
+    --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+    --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#11141B;
+      --surface:#181C25;
+      --sunk:#1F242F;
+      --ink:#E7EAF0;
+      --muted:#98A1B2;
+      --hair:#2E3543;
+      --hair-soft:#242A36;
+      --accent:#88A6E4;
+      --accent-soft:#1C2540;
+      --fail:#E48A80;
+      --risk:#DCA94E;
+      --hold:#6FBCA5;
+      --hold-soft:#17302A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#11141B;
+    --surface:#181C25;
+    --sunk:#1F242F;
+    --ink:#E7EAF0;
+    --muted:#98A1B2;
+    --hair:#2E3543;
+    --hair-soft:#242A36;
+    --accent:#88A6E4;
+    --accent-soft:#1C2540;
+    --fail:#E48A80;
+    --risk:#DCA94E;
+    --hold:#6FBCA5;
+    --hold-soft:#17302A;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px 96px}
+  .measure{max-width:66ch}
+
+  header.mast{
+    border-bottom:2px solid var(--ink);
+    padding:44px 0 22px;
+    margin-bottom:38px;
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 14px;
+  }
+  h1{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:clamp(2.1rem,5vw,3.1rem);
+    line-height:1.04;
+    letter-spacing:-.022em;
+    margin:0 0 16px;
+    text-wrap:balance;
+  }
+  .thesis{
+    font-size:1.16rem;
+    margin:0;
+    max-width:60ch;
+  }
+  .thesis b{color:var(--accent);font-weight:600}
+  .standfirst{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:.02em;
+    margin:20px 0 0;
+  }
+
+  section{margin:0 0 60px}
+  .sec-head{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    border-bottom:1px solid var(--hair);
+    padding-bottom:9px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .sec-tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--accent);
+    white-space:nowrap;
+  }
+  h2{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:1.42rem;
+    letter-spacing:-.014em;
+    margin:0;
+    text-wrap:balance;
+  }
+  .kills{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    margin-left:auto;
+    white-space:nowrap;
+  }
+  p{margin:0 0 15px}
+
+  .opts{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(268px,1fr));
+    gap:16px;
+  }
+  .opt{
+    background:var(--surface);
+    border:1px solid var(--hair);
+    padding:18px 18px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .opt.chosen{
+    border-color:var(--accent);
+    box-shadow:inset 4px 0 0 var(--accent);
+  }
+  .opt-top{display:flex;align-items:center;gap:9px}
+  .letter{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:.95rem;
+    width:26px;height:26px;
+    display:grid;place-items:center;
+    background:var(--sunk);
+    color:var(--muted);
+    flex:none;
+  }
+  .opt.chosen .letter{background:var(--accent);color:var(--surface)}
+  .opt h3{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:.99rem;
+    margin:0;
+    letter-spacing:-.008em;
+  }
+  .badge{
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:3px 7px;
+    margin-left:auto;
+    background:var(--accent-soft);
+    color:var(--accent);
+    white-space:nowrap;
+  }
+  .opt p{font-size:.88rem;line-height:1.5;color:var(--muted);margin:0}
+  .opt svg{width:100%;height:auto;display:block}
+  .verdict{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.03em;
+    padding-top:9px;
+    border-top:1px solid var(--hair-soft);
+    margin-top:auto;
+  }
+  .v-fail{color:var(--fail)}
+  .v-risk{color:var(--risk)}
+  .v-hold{color:var(--hold)}
+
+  figure{margin:0;background:var(--surface);border:1px solid var(--hair);padding:20px}
+  figure svg{width:100%;height:auto;display:block}
+  figcaption{
+    font-family:var(--mono);
+    font-size:11.5px;
+    line-height:1.55;
+    color:var(--muted);
+    margin-top:14px;
+    padding-top:11px;
+    border-top:1px solid var(--hair-soft);
+  }
+  figcaption b{color:var(--ink);font-weight:500}
+
+  .payloads{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .pl{background:var(--surface);border:1px solid var(--hair);display:flex;flex-direction:column}
+  .pl.win{border-color:var(--accent)}
+  .pl-head{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:11px 16px;
+    border-bottom:1px solid var(--hair-soft);
+    color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px;
+  }
+  .pl.win .pl-head{color:var(--accent);border-bottom-color:var(--accent)}
+  .pl pre{
+    font-family:var(--mono);
+    font-size:12.5px;
+    line-height:1.85;
+    margin:0;
+    padding:16px;
+    overflow-x:auto;
+  }
+  .k-bad{color:var(--fail);font-weight:500}
+  .k-ok{color:var(--hold);font-weight:500}
+  .cmt{color:var(--muted)}
+  .m{font-family:var(--mono);font-size:.86em}
+  .pl-foot{
+    font-size:.87rem;line-height:1.5;
+    padding:13px 16px;border-top:1px solid var(--hair-soft);
+    color:var(--muted);margin-top:auto;
+  }
+  .pl.win .pl-foot{color:var(--ink)}
+
+  .scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--hair)}
+  table{border-collapse:collapse;width:100%;min-width:780px}
+  th,td{text-align:left;vertical-align:top;padding:11px 13px;border-bottom:1px solid var(--hair-soft)}
+  thead th{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.11em;
+    text-transform:uppercase;
+    color:var(--muted);
+    border-bottom:1px solid var(--hair);
+    background:var(--surface);
+  }
+  thead th.win{color:var(--accent)}
+  tbody th{
+    font-family:var(--body);
+    font-weight:400;
+    font-size:.93rem;
+    line-height:1.4;
+    width:29%;
+    min-width:200px;
+  }
+  tbody td,tfoot td{width:17.75%}
+  td.win{background:var(--hold-soft)}
+  .mark{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:.95rem;
+    display:block;
+    margin-bottom:2px;
+  }
+  .m-fail{color:var(--fail)}
+  .m-risk{color:var(--risk)}
+  .m-hold{color:var(--hold)}
+  .why{font-family:var(--mono);font-size:10.5px;line-height:1.4;color:var(--muted);display:block}
+  tfoot td,tfoot th{border-bottom:none;border-top:2px solid var(--hair);padding-top:13px}
+  tfoot th{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+  .tally{font-family:var(--display);font-weight:700;font-size:1.05rem}
+
+  .lines{display:flex;flex-direction:column;border-top:1px solid var(--hair)}
+  .line{
+    display:grid;
+    grid-template-columns:34px 1fr;
+    gap:16px;
+    padding:17px 0;
+    border-bottom:1px solid var(--hair-soft);
+    align-items:start;
+  }
+  .line .n{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--accent);
+    padding-top:5px;
+    letter-spacing:.06em;
+  }
+  .line q{font-size:1.06rem;line-height:1.5;quotes:"\201C" "\201D"}
+  .line .src{display:block;font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:7px;letter-spacing:.02em}
+
+  .objection{
+    background:var(--sunk);
+    border-left:3px solid var(--risk);
+    padding:18px 20px;
+    margin-top:28px;
+  }
+  .objection h3{
+    font-family:var(--display);font-weight:600;font-size:1rem;margin:0 0 9px;letter-spacing:-.008em;
+  }
+  .objection p{font-size:.95rem;margin:0 0 10px}
+  .objection p:last-child{margin:0}
+
+  .note{
+    font-family:var(--mono);font-size:11.5px;line-height:1.65;color:var(--muted);
+    border-top:1px solid var(--hair);padding-top:16px;margin-top:52px;
+  }
+  .note b{color:var(--ink);font-weight:500}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">Grupo 04 · Tema 04 · Contrato de integración</p>
+  <h1>Por dónde entra la entrega</h1>
+  <p class="thesis">Cuatro formas de recibir un cuestionario resuelto. Tres dejan que el navegador del alumno diga cuántos intentos lleva. <b>La cuarta no le pregunta.</b></p>
+  <p class="standfirst">CI-20 · CI-21 · CI-22 · CI-24 · CI-25 &nbsp;—&nbsp; defensa visual de §2c</p>
+</header>
+
+<section>
+  <div class="sec-head">
+    <span class="sec-tag">El tablero</span>
+    <h2>Las cuatro opciones sobre la mesa</h2>
+  </div>
+  <p class="measure">El alumno aprieta <b>Entregar</b>. La única pregunta es quién recibe ese click y qué sabe cuando lo recibe. Todo el resto del recorrido ya está decidido.</p>
+
+  <div class="opts">
+
+    <div class="opt">
+      <div class="opt-top"><span class="letter">A</span><h3>Directo al 04</h3></div>
+      <svg viewBox="0 0 300 84" role="img" aria-label="El alumno manda respuesta e intento directo al Tema 04, sin que el 03 se entere">
+        <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="4" y="26" width="86" height="32"/>
+          <rect x="206" y="26" width="86" height="32"/>
+          <line x1="94" y1="42" x2="200" y2="42" marker-end="url(#ar)"/>
+        </g>
+        <text x="47" y="46" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">Alumno</text>
+        <text x="249" y="46" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">04</text>
+        <text x="147" y="34" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#A3352C">respuesta + intento</text>
+        <text x="147" y="70" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".55">el 03 no se entera</text>
+      </svg>
+      <p>El navegador manda todo. Validamos nosotros lo que podemos, que de los intentos es nada.</p>
+      <p class="verdict v-fail">✗ Cae en las 8 pruebas</p>
+    </div>
+
+    <div class="opt">
+      <div class="opt-top"><span class="letter">B</span><h3>Preguntar y guardar</h3></div>
+      <svg viewBox="0 0 300 84" role="img" aria-label="El alumno manda al 04, el 04 le pregunta al 03 si puede entregar y después guarda">
+        <g fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="4" y="26" width="72" height="32"/>
+          <rect x="114" y="26" width="72" height="32"/>
+          <rect x="224" y="26" width="72" height="32"/>
+          <line x1="80" y1="42" x2="108" y2="42" marker-end="url(#ar)"/>
+          <line x1="190" y1="35" x2="218" y2="35" marker-end="url(#ar)"/>
+          <line x1="220" y1="50" x2="192" y2="50" marker-end="url(#ar)"/>
+        </g>
+        <text x="40" y="46" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">Alumno</text>
+        <text x="150" y="46" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">04</text>
+        <text x="260" y="46" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">03</text>
+        <text x="205" y="26" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="currentColor" opacity=".7">¿puede?</text>
+        <text x="205" y="70" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#8A6412">sí — hace 20 s</text>
+      </svg>
+      <p>Lo intuitivo. Arregla la mentira: el número lo dice el 03. Pero validar y guardar quedan separados por la red.</p>
+      <p class="verdict v-risk">⚠ Sostiene 4 de 8 — se rompe con el tiempo</p>
+    </div>
+
+    <div class="opt">
+      <div class="opt-top"><span class="letter">C</span><h3>Vale firmado</h3></div>
+      <svg viewBox="0 0 300 84" role="img" aria-label="El 03 le firma un vale al alumno al abrir, y el alumno lo adjunta cuando envía al 04">
+        <g fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="4" y="30" width="72" height="32"/>
+          <rect x="114" y="30" width="72" height="32"/>
+          <rect x="224" y="30" width="72" height="32"/>
+          <line x1="222" y1="16" x2="80" y2="16" marker-end="url(#ar)" stroke-dasharray="3 3" opacity=".75"/>
+          <line x1="80" y1="46" x2="108" y2="46" marker-end="url(#ar)"/>
+        </g>
+        <text x="40" y="50" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">Alumno</text>
+        <text x="150" y="50" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">04</text>
+        <text x="260" y="50" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">03</text>
+        <text x="151" y="11" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#8A6412">vale firmado 23:50</text>
+        <text x="94" y="76" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="currentColor" opacity=".7">respuesta + vale</text>
+      </svg>
+      <p>El 03 firma <span class="m">intento: 2</span> al abrir. El alumno no lo puede alterar — pero es una foto vieja.</p>
+      <p class="verdict v-risk">⚠ Sostiene 3 de 8 — la firma no caduca sola</p>
+    </div>
+
+    <div class="opt chosen">
+      <div class="opt-top"><span class="letter">D</span><h3>El 03 recibe y despacha</h3><span class="badge">Elegida</span></div>
+      <svg viewBox="0 0 300 84" role="img" aria-label="El alumno manda solo la respuesta al 03, que valida y registra en un solo acto y despacha seis campos al 04">
+        <g fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="4" y="26" width="72" height="32"/>
+          <rect x="224" y="26" width="72" height="32"/>
+          <line x1="80" y1="42" x2="108" y2="42" marker-end="url(#ar)"/>
+          <line x1="194" y1="42" x2="218" y2="42" marker-end="url(#ar)"/>
+        </g>
+        <rect x="114" y="22" width="78" height="40" fill="none" stroke="#2D4A8A" stroke-width="2"/>
+        <text x="40" y="46" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">Alumno</text>
+        <text x="153" y="38" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#2D4A8A">03</text>
+        <text x="153" y="52" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8" fill="#2D4A8A">valida + registra</text>
+        <text x="260" y="46" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">04</text>
+        <text x="94" y="70" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#26665A">1 campo</text>
+        <text x="206" y="70" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#26665A">6 campos</text>
+      </svg>
+      <p>El click llega al dueño de la entrega. La valida y la anota en la misma transacción, y recién ahí nos despacha.</p>
+      <p class="verdict v-hold">✓ Sostiene las 8</p>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="sec-tag">Prueba 1 · El payload</span>
+    <h2>El campo que no se puede falsificar es el que no existe</h2>
+    <span class="kills">mata la opción A</span>
+  </div>
+  <p class="measure">Todo lo que sale del navegador lo escribe el alumno. No hace falta ser hacker: son dos clicks en la consola. Así que la pregunta no es <em>cómo lo validamos</em>, sino <em>cuánto le estamos preguntando</em>.</p>
+
+  <div class="payloads">
+    <div class="pl">
+      <div class="pl-head"><span>A · B · C — lo que sale del navegador</span><span>6 campos</span></div>
+<pre><span class="cmt">POST /entregas</span>
+{
+  <span class="k-bad">"alumnoId"</span>:       1177,
+  <span class="k-bad">"cursoCohorteId"</span>: "2026-2C-B",
+  <span class="k-bad">"entregaId"</span>:      "e-8842",
+  <span class="k-bad">"intento"</span>:        2,
+  <span class="k-bad">"contenidoRef"</span>:   "q-91@v3",
+  <span class="k-ok">"respuesta"</span>:      { ... }
+}</pre>
+      <p class="pl-foot"><b style="color:var(--fail)">Cinco campos en rojo.</b> Cambiar <span class="m">2</span> por <span class="m">1</span> son intentos infinitos. Cambiar <span class="m">@v3</span> por <span class="m">@v1</span> es contestar la versión que le conviene.</p>
+    </div>
+
+    <div class="pl win">
+      <div class="pl-head"><span>D — lo que sale del navegador</span><span>1 campo</span></div>
+<pre><span class="cmt">POST /desafios/42/entregas</span>
+<span class="cmt">Authorization: Bearer …</span>
+{
+  <span class="k-ok">"respuesta"</span>:      { ... }
+}
+
+<span class="cmt">// los otros 5 los pone el 03,</span>
+<span class="cmt">// leyéndolos de su propia base</span></pre>
+      <p class="pl-foot"><b>No hay nada rojo que tocar.</b> El alumno nunca escribe su número de intento, así que no puede mentir sobre él. La protección no es un chequeo: es una ausencia.</p>
+    </div>
+  </div>
+
+  <p class="measure" style="margin-top:18px">Es la frase con la que se abre §2c: <b>el 03 es el que convierte «lo que el alumno dice» en «lo que la plataforma sabe»</b>. Y lo hace sin abrir <span class="m">respuesta</span> una sola vez.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="sec-tag">Prueba 2 · La línea de tiempo</span>
+    <h2>Entre validar y registrar se puede cerrar el desafío</h2>
+    <span class="kills">mata B y C</span>
+  </div>
+  <p class="measure">B y C ya no dejan mentir al alumno. Pero les queda un hueco que no se cierra con más código: el que se abre entre el momento en que alguien pregunta <em>«¿puede entregar?»</em> y el momento en que la entrega se guarda.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 272" role="img" aria-label="Línea de tiempo: en B y C pasan veinte segundos entre validar y registrar, y el desafío cierra en el medio; en D ambas cosas ocurren en una sola transacción de menos de un segundo">
+      <defs>
+        <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+        <pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="0" x2="0" y2="7" stroke="#A3352C" stroke-width="2.5" opacity=".24"/>
+        </pattern>
+      </defs>
+
+      <text x="8" y="52" font-family="Archivo, sans-serif" font-weight="700" font-size="13" fill="currentColor">B y C</text>
+      <text x="8" y="66" font-family="IBM Plex Mono, monospace" font-size="9" fill="currentColor" opacity=".6">dos pasos</text>
+      <text x="8" y="172" font-family="Archivo, sans-serif" font-weight="700" font-size="13" fill="#2D4A8A">D</text>
+      <text x="8" y="186" font-family="IBM Plex Mono, monospace" font-size="9" fill="#2D4A8A" opacity=".85">un solo acto</text>
+
+      <rect x="100" y="36" width="400" height="52" fill="url(#hatch)"/>
+      <rect x="100" y="36" width="400" height="52" fill="none" stroke="#A3352C" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="300" y="28" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#A3352C">ventana de carrera — 20 s en los que el mundo cambia</text>
+
+      <line x1="100" y1="36" x2="100" y2="112" stroke="currentColor" stroke-width="1.4"/>
+      <circle cx="100" cy="62" r="4.5" fill="currentColor"/>
+      <text x="106" y="106" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">23:58:42 · valida → «sí»</text>
+
+      <line x1="500" y1="36" x2="500" y2="126" stroke="#A3352C" stroke-width="1.4"/>
+      <circle cx="500" cy="62" r="4.5" fill="#A3352C"/>
+      <text x="506" y="106" font-family="IBM Plex Mono, monospace" font-size="10" fill="#A3352C">23:59:02 · guarda la entrega</text>
+      <text x="506" y="120" font-family="IBM Plex Mono, monospace" font-size="10" fill="#A3352C" opacity=".8">— ya venció</text>
+
+      <rect x="94" y="148" width="22" height="44" fill="#2D4A8A"/>
+      <text x="126" y="163" font-family="IBM Plex Mono, monospace" font-size="10" fill="#2D4A8A">23:58:42 · valida ventana → valida intentos</text>
+      <text x="126" y="177" font-family="IBM Plex Mono, monospace" font-size="10" fill="#2D4A8A">→ crea la entrega → asigna el número</text>
+      <text x="126" y="191" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#2D4A8A" opacity=".75">una transacción · 0,4 s · o pasa todo, o no pasa nada</text>
+
+      <line x1="460" y1="18" x2="460" y2="230" stroke="#A3352C" stroke-width="1.6" stroke-dasharray="6 4"/>
+      <text x="454" y="224" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#A3352C">23:59:00 · cierra el desafío</text>
+
+      <line x1="60" y1="246" x2="700" y2="246" stroke="currentColor" stroke-width="1" marker-end="url(#ar2)" opacity=".5"/>
+      <text x="60" y="264" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".55">23:58:40</text>
+      <text x="668" y="264" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".55">23:59:10</text>
+    </svg>
+    <figcaption><b>El 03 no mintió.</b> A las 23:58:42 era verdad que el alumno podía entregar. Veinte segundos después ya no, y la entrega se guardó igual. Esa ventana existe siempre, por chica que sea — solo desaparece cuando validar y registrar son la misma operación sobre la misma fila.</figcaption>
+  </figure>
+
+  <p class="measure" style="margin-top:22px">Y ojo con el cronómetro que propusimos: si el cuestionario se auto-envía al vencer el tiempo, <b>todos los envíos del curso caen exactamente en el borde</b>. Lo que hoy es un caso raro pasa a ser el caso normal.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="sec-tag">Prueba 3 · La matriz</span>
+    <h2>Ocho cosas que pasan de verdad</h2>
+    <span class="kills">el margen completo</span>
+  </div>
+  <p class="measure">Ninguna de las ocho es hipotética: cinco salen de la tabla de §2c, dos las trajo la discusión del cronómetro y una es el doble click de siempre.</p>
+
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Lo que pasa</th>
+        <th scope="col">A · directo</th>
+        <th scope="col">B · preguntar</th>
+        <th scope="col">C · vale</th>
+        <th scope="col" class="win">D · el 03 recibe</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Cambia <span class="m">intento: 2 → 1</span> en la consola</th>
+        <td><span class="mark m-fail">✗</span><span class="why">intentos infinitos</span></td>
+        <td><span class="mark m-hold">✓</span><span class="why">el 03 da el número</span></td>
+        <td><span class="mark m-hold">✓</span><span class="why">rompe la firma</span></td>
+        <td class="win"><span class="mark m-hold">✓</span><span class="why">el campo no existe</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Entrega 00:07, el desafío cerró 23:59</th>
+        <td><span class="mark m-fail">✗</span><span class="why">nadie mira la hora</span></td>
+        <td><span class="mark m-risk">⚠</span><span class="why">carrera de 20 s</span></td>
+        <td><span class="mark m-fail">✗</span><span class="why">el vale es de 23:50</span></td>
+        <td class="win"><span class="mark m-hold">✓</span><span class="why">valida al registrar</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Se corta la luz entre validar y guardar</th>
+        <td><span class="mark m-fail">✗</span><span class="why">guarda sin permiso</span></td>
+        <td><span class="mark m-fail">✗</span><span class="why">intento quemado, 0 respuestas</span></td>
+        <td><span class="mark m-fail">✗</span><span class="why">igual que B</span></td>
+        <td class="win"><span class="mark m-hold">✓</span><span class="why">transacción atómica</span></td>
+      </tr>
+      <tr>
+        <th scope="row">El profesor invalida el desafío mientras contesta</th>
+        <td><span class="mark m-fail">✗</span><span class="why">no se entera</span></td>
+        <td><span class="mark m-risk">⚠</span><span class="why">carrera otra vez</span></td>
+        <td><span class="mark m-fail">✗</span><span class="why">el vale es anterior</span></td>
+        <td class="win"><span class="mark m-hold">✓</span><span class="why">un if contra su base</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Doble click en «Entregar»</th>
+        <td><span class="mark m-fail">✗</span><span class="why">corregimos dos veces</span></td>
+        <td><span class="mark m-risk">⚠</span><span class="why">dos entregas en vuelo</span></td>
+        <td><span class="mark m-risk">⚠</span><span class="why">el vale se reusa</span></td>
+        <td class="win"><span class="mark m-hold">✓</span><span class="why">entregaId · CI-25</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Abre dos pestañas y entrega desde las dos</th>
+        <td><span class="mark m-fail">✗</span><span class="why">dos intentos, cero control</span></td>
+        <td><span class="mark m-risk">⚠</span><span class="why">dos «sí» concurrentes</span></td>
+        <td><span class="mark m-risk">⚠</span><span class="why">dos vales válidos</span></td>
+        <td class="win"><span class="mark m-hold">✓</span><span class="why">una transacción por fila</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Vuelve a los 3 días con el <span class="m">entregaId</span> guardado</th>
+        <td><span class="mark m-fail">✗</span><span class="why">entra como si nada</span></td>
+        <td><span class="mark m-hold">✓</span><span class="why">el 03 dice que no</span></td>
+        <td><span class="mark m-risk">⚠</span><span class="why">según caduque el vale</span></td>
+        <td class="win"><span class="mark m-hold">✓</span><span class="why">la fila está cerrada</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Declara una versión vieja del cuestionario</th>
+        <td><span class="mark m-fail">✗</span><span class="why">elige la que le sirve</span></td>
+        <td><span class="mark m-hold">✓</span><span class="why">lo estampa el 03</span></td>
+        <td><span class="mark m-hold">✓</span><span class="why">va dentro del vale</span></td>
+        <td class="win"><span class="mark m-hold">✓</span><span class="why">contenidoRef · CI-48</span></td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th scope="row">Sostiene</th>
+        <td><span class="tally m-fail">0 / 8</span></td>
+        <td><span class="tally m-risk">4 / 8</span></td>
+        <td><span class="tally m-risk">3 / 8</span></td>
+        <td class="win"><span class="tally m-hold">8 / 8</span></td>
+      </tr>
+    </tfoot>
+  </table>
+  </div>
+
+  <p class="measure" style="margin-top:20px"><b>El patrón, en una línea:</b> A falla por confiar en el alumno. B y C dejan de confiar en el alumno, pero siguen fallando por el tiempo. D es la única en la que no hay tiempo entre validar y registrar, porque son la misma operación.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="sec-tag">La defensa</span>
+    <h2>Tres frases para decir en voz alta</h2>
+  </div>
+
+  <div class="lines">
+    <div class="line">
+      <span class="n">01</span>
+      <div>
+        <q>La entrega es la entidad del 03. Si nos llegara primero a nosotros, el 03 se enteraría de que existe una entrega suya porque se la contamos nosotros.</q>
+        <span class="src">§2c · Argumento 3 — quién es dueño de qué</span>
+      </div>
+    </div>
+    <div class="line">
+      <span class="n">02</span>
+      <div>
+        <q>Validar que el alumno puede entregar y anotar que entregó no pueden ser dos pasos separados por la red. Entre uno y otro se cierra el desafío.</q>
+        <span class="src">§2c · Argumento 1 — la carrera de la Prueba 2</span>
+      </div>
+    </div>
+    <div class="line">
+      <span class="n">03</span>
+      <div>
+        <q>El 03 no abre <span class="m">respuesta</span> ni una sola vez. Agrega cinco datos que solo él tiene y no toca el que no es suyo — por eso el mensaje que nos llega a nosotros y el que le llega al 05 son idénticos.</q>
+        <span class="src">§2c · El cierre — la caja opaca sigue cerrada</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="objection">
+    <h3>La objeción que nos van a hacer</h3>
+    <p><b>«En la Lámina 3 no hay flecha 03 → 04.»</b></p>
+    <p>El diagrama no tiene al alumno ni al front entre sus actores, así que no puede estar modelando el envío. Y su propia nota ③ —<em>el 03 recibe una nota ya formada y no le importa cómo se produjo</em>— es exactamente lo que estamos sosteniendo.</p>
+  </div>
+</section>
+
+<p class="note"><b>Alcance de esta lámina.</b> Cubre el momento del envío y nada más. No discute quién arma el cuestionario —eso está en la lámina del desafío— ni el cronómetro y la sesión única, que son propuestas del equipo todavía sin decidir: el cronómetro sería del <b>Tema 03</b>, la sesión única del <b>Tema 02</b>, y ninguno de los dos figura en el PRD para desafíos teóricos.</p>
+
+</div>

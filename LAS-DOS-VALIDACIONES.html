@@ -1,0 +1,494 @@
+<title>Las dos validaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+  :root{
+    --ground:#F4F6F9;
+    --surface:#FFFFFF;
+    --sunk:#EDF0F5;
+    --ink:#151A24;
+    --muted:#5B6474;
+    --hair:#D7DCE5;
+    --hair-soft:#E5E9F0;
+    --accent:#2D4A8A;
+    --accent-soft:#E6EBF6;
+    --fail:#A3352C;
+    --fail-soft:#F7E8E6;
+    --risk:#8A6412;
+    --hold:#26665A;
+    --hold-soft:#E2F0EC;
+    --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+    --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#11141B;
+      --surface:#181C25;
+      --sunk:#1F242F;
+      --ink:#E7EAF0;
+      --muted:#98A1B2;
+      --hair:#2E3543;
+      --hair-soft:#242A36;
+      --accent:#88A6E4;
+      --accent-soft:#1C2540;
+      --fail:#E48A80;
+      --fail-soft:#3A2320;
+      --risk:#DCA94E;
+      --hold:#6FBCA5;
+      --hold-soft:#17302A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#11141B;
+    --surface:#181C25;
+    --sunk:#1F242F;
+    --ink:#E7EAF0;
+    --muted:#98A1B2;
+    --hair:#2E3543;
+    --hair-soft:#242A36;
+    --accent:#88A6E4;
+    --accent-soft:#1C2540;
+    --fail:#E48A80;
+    --fail-soft:#3A2320;
+    --risk:#DCA94E;
+    --hold:#6FBCA5;
+    --hold-soft:#17302A;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px 96px}
+  .measure{max-width:66ch}
+
+  header.mast{border-bottom:2px solid var(--ink);padding:44px 0 22px;margin-bottom:38px}
+  .eyebrow{
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 14px;
+  }
+  h1{
+    font-family:var(--display);font-weight:700;
+    font-size:clamp(2.1rem,5vw,3.1rem);line-height:1.04;
+    letter-spacing:-.022em;margin:0 0 16px;text-wrap:balance;
+  }
+  .thesis{font-size:1.16rem;margin:0;max-width:62ch}
+  .thesis b{color:var(--accent);font-weight:600}
+  .standfirst{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.02em;margin:20px 0 0}
+
+  section{margin:0 0 60px}
+  .sec-head{
+    display:flex;align-items:baseline;gap:14px;
+    border-bottom:1px solid var(--hair);padding-bottom:9px;margin-bottom:22px;flex-wrap:wrap;
+  }
+  .sec-tag{
+    font-family:var(--mono);font-size:11px;letter-spacing:.13em;
+    text-transform:uppercase;color:var(--accent);white-space:nowrap;
+  }
+  h2{font-family:var(--display);font-weight:600;font-size:1.42rem;letter-spacing:-.014em;margin:0;text-wrap:balance}
+  .kills{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
+  p{margin:0 0 15px}
+  .m{font-family:var(--mono);font-size:.86em}
+
+  /* two-column compare */
+  .compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
+  .col{background:var(--surface);border:1px solid var(--hair);display:flex;flex-direction:column}
+  .col.b{border-color:var(--accent)}
+  .col-head{
+    font-family:var(--display);font-weight:600;font-size:1rem;
+    padding:15px 18px 13px;border-bottom:1px solid var(--hair-soft);
+    display:flex;align-items:baseline;gap:9px;
+  }
+  .col.b .col-head{border-bottom-color:var(--accent);color:var(--accent)}
+  .col-head span{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-left:auto}
+  .col.b .col-head span{color:var(--accent)}
+  dl{margin:0;padding:6px 18px 16px}
+  dt{
+    font-family:var(--mono);font-size:10px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--muted);margin-top:14px;
+  }
+  dd{margin:3px 0 0;font-size:.95rem;line-height:1.45}
+  dd.strong{font-weight:600;color:var(--accent)}
+  .col:not(.b) dd.strong{color:var(--ink)}
+
+  figure{margin:0;background:var(--surface);border:1px solid var(--hair);padding:20px}
+  figure svg{width:100%;height:auto;display:block}
+  figcaption{
+    font-family:var(--mono);font-size:11.5px;line-height:1.55;color:var(--muted);
+    margin-top:14px;padding-top:11px;border-top:1px solid var(--hair-soft);
+  }
+  figcaption b{color:var(--ink);font-weight:500}
+
+  /* traces */
+  .traces{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+  .trace{background:var(--surface);border:1px solid var(--hair);display:flex;flex-direction:column}
+  .trace h3{
+    font-family:var(--display);font-weight:600;font-size:.98rem;margin:0;
+    padding:14px 17px 12px;border-bottom:1px solid var(--hair-soft);letter-spacing:-.008em;
+  }
+  .trace pre{
+    font-family:var(--mono);font-size:12px;line-height:1.95;margin:0;padding:15px 17px;overflow-x:auto;
+  }
+  .trace .out{
+    font-size:.88rem;line-height:1.5;color:var(--muted);
+    padding:13px 17px;border-top:1px solid var(--hair-soft);margin-top:auto;
+  }
+  .trace .out b{color:var(--fail);font-weight:600}
+  .ok{color:var(--hold);font-weight:500}
+  .no{color:var(--fail);font-weight:500}
+  .dim{color:var(--muted)}
+
+  .flag{
+    display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+    text-transform:uppercase;padding:3px 7px;background:var(--fail-soft);color:var(--fail);margin-left:8px;
+  }
+  .flag.key{background:var(--accent-soft);color:var(--accent)}
+
+  /* proof panels */
+  .panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+  .panel{background:var(--surface);border:1px solid var(--accent);display:flex;flex-direction:column}
+  .panel-head{
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);padding:12px 17px;border-bottom:1px solid var(--accent);
+    display:flex;justify-content:space-between;gap:10px;
+  }
+  .panel-body{padding:16px 17px}
+  .panel ul{margin:0;padding:0 0 0 17px}
+  .panel li{font-size:.94rem;line-height:1.5;margin-bottom:9px}
+  .panel li:last-child{margin-bottom:0}
+  .panel li b{color:var(--accent)}
+  .panel pre{
+    font-family:var(--mono);font-size:11.5px;line-height:1.8;margin:0;padding:16px 17px;overflow-x:auto;
+  }
+  .kw{color:var(--accent);font-weight:500}
+  .cmt{color:var(--muted)}
+  .panel-foot{
+    font-size:.88rem;line-height:1.5;padding:13px 17px;
+    border-top:1px solid var(--hair-soft);color:var(--ink);margin-top:auto;
+  }
+
+  .analogy{
+    background:var(--sunk);border-left:3px solid var(--accent);padding:19px 22px;margin-top:8px;
+  }
+  .analogy h3{font-family:var(--display);font-weight:600;font-size:1rem;margin:0 0 10px;letter-spacing:-.008em}
+  .analogy p{font-size:.96rem;margin:0 0 11px;max-width:64ch}
+  .analogy p:last-child{margin:0}
+  .analogy b{color:var(--accent)}
+
+  .quote{
+    border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);
+    padding:26px 0;margin:0 0 26px;
+  }
+  .quote q{
+    font-family:var(--body);font-size:1.28rem;line-height:1.45;font-weight:600;
+    quotes:"\201C" "\201D";display:block;max-width:60ch;text-wrap:balance;
+  }
+  .quote .src{
+    display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
+    color:var(--muted);margin-top:14px;text-transform:uppercase;
+  }
+  .catedra{background:var(--surface);border:1px solid var(--hair);padding:18px 20px}
+  .catedra h3{font-family:var(--display);font-weight:600;font-size:1rem;margin:0 0 9px;letter-spacing:-.008em}
+  .catedra p{font-size:.95rem;margin:0 0 10px;max-width:64ch}
+  .catedra p:last-child{margin:0}
+  .catedra em{color:var(--accent);font-style:normal;font-weight:600}
+
+  .note{
+    font-family:var(--mono);font-size:11.5px;line-height:1.65;color:var(--muted);
+    border-top:1px solid var(--hair);padding-top:16px;margin-top:52px;
+  }
+  .note b{color:var(--ink);font-weight:500}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">Lámina 2 · Grupo 04 · Tema 04 · Contrato de integración</p>
+  <h1>Las dos validaciones</h1>
+  <p class="thesis">Al abrir el cuestionario se valida, y al enviarlo se valida otra vez. Parece el mismo chequeo repetido. <b>No lo es: son dos operaciones distintas que además validan, y ninguna de las dos se puede sacar.</b></p>
+  <p class="standfirst">CI-20 · CI-21 &nbsp;—&nbsp; continúa «Por dónde entra la entrega»</p>
+</header>
+
+<!-- ============ REENCUADRE ============ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-tag">El reencuadre</span>
+    <h2>No es un chequeo hecho dos veces</h2>
+  </div>
+  <p class="measure">Suenan iguales porque las dos «validan». Pero preguntan cosas distintas, protegen a personas distintas, y —esto es lo que casi nadie ve— <b>las dos escriben en la base</b>.</p>
+
+  <div class="compare">
+    <div class="col">
+      <div class="col-head">Al abrir<span>cortesía</span></div>
+      <dl>
+        <dt>La pregunta</dt>
+        <dd>¿Podés empezar?</dd>
+        <dt>Qué es</dt>
+        <dd class="strong">Una predicción</dd>
+        <dt>A quién protege</dt>
+        <dd>Al <b>alumno</b> — que no trabaje al pedo</dd>
+        <dt>Qué escribe</dt>
+        <dd><b>Crea</b> el intento: <span class="m">entregaId</span>, vale de lectura, timestamp de apertura</dd>
+        <dt>Si la sacás</dt>
+        <dd>Alumnos que se enteran al final · y te quedás sin <span class="m">entregaId</span></dd>
+      </dl>
+    </div>
+    <div class="col b">
+      <div class="col-head">Al enviar<span>la que manda</span></div>
+      <dl>
+        <dt>La pregunta</dt>
+        <dd>¿Esto que llegó vale?</dd>
+        <dt>Qué es</dt>
+        <dd class="strong">Un hecho</dd>
+        <dt>A quién protege</dt>
+        <dd>Al <b>sistema</b> — que no entre lo que no vale</dd>
+        <dt>Qué escribe</dt>
+        <dd><b>Cierra</b> el intento: asigna el número, marca la entrega</dd>
+        <dt>Si la sacás</dt>
+        <dd>Entregas fuera de plazo · intentos infinitos · notas de desafíos que ya no existen</dd>
+      </dl>
+    </div>
+  </div>
+
+  <figure style="margin-top:16px">
+    <svg viewBox="0 0 720 178" role="img" aria-label="Ciclo de vida de un intento: la validación al abrir lo crea, el intento queda EN CURSO mientras el mundo cambia, y la validación al enviar lo cierra. Las dos son puntos de escritura, no chequeos sueltos.">
+      <defs>
+        <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+        <pattern id="h2" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="0" x2="0" y2="8" stroke="currentColor" stroke-width="2" opacity=".13"/>
+        </pattern>
+      </defs>
+
+      <!-- alumno abre -->
+      <rect x="6" y="66" width="86" height="34" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <text x="49" y="87" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">Alumno abre</text>
+      <line x1="94" y1="83" x2="122" y2="83" stroke="currentColor" stroke-width="1.2" marker-end="url(#a3)"/>
+
+      <!-- gate 1 -->
+      <rect x="130" y="50" width="11" height="66" fill="#2D4A8A"/>
+      <text x="135" y="40" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#2D4A8A">validación al abrir</text>
+      <text x="135" y="134" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700" font-size="10.5" fill="#2D4A8A">CREA el intento</text>
+      <text x="135" y="148" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#2D4A8A" opacity=".8">entregaId · vale · timestamp</text>
+
+      <!-- en curso -->
+      <rect x="149" y="66" width="330" height="34" fill="url(#h2)" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="314" y="81" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">EN_CURSO</text>
+      <text x="314" y="94" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="currentColor" opacity=".6">el alumno contesta — y acá pasan cosas</text>
+      <text x="314" y="40" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#A3352C">cierra la ventana · se agotan intentos · el profesor invalida</text>
+
+      <!-- gate 2 -->
+      <rect x="487" y="50" width="11" height="66" fill="#2D4A8A"/>
+      <text x="492" y="40" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#2D4A8A">validación al enviar</text>
+      <text x="492" y="134" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700" font-size="10.5" fill="#2D4A8A">CIERRA el intento</text>
+      <text x="492" y="148" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#2D4A8A" opacity=".8">asigna el número · marca entregada</text>
+
+      <!-- entregada -->
+      <rect x="516" y="66" width="96" height="34" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <text x="564" y="87" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">ENTREGADA</text>
+      <line x1="614" y1="83" x2="642" y2="83" stroke="currentColor" stroke-width="1.2" marker-end="url(#a3)"/>
+      <text x="648" y="80" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".7">despacho</text>
+      <text x="648" y="92" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".7">al 04</text>
+
+      <!-- baseline -->
+      <line x1="6" y1="164" x2="700" y2="164" stroke="currentColor" stroke-width="1" opacity=".18"/>
+      <text x="6" y="176" font-family="IBM Plex Mono, monospace" font-size="9" fill="currentColor" opacity=".5">las dos barras azules escriben en la base del 03 — ninguna es un chequeo suelto</text>
+    </svg>
+    <figcaption><b>Las dos son puertas, no controles.</b> La de la izquierda es la que hace existir la entrega; la de la derecha es la que la cierra. Entre una y otra hay un tramo donde el mundo cambia sin avisarle a nadie — y ese tramo es toda la discusión.</figcaption>
+  </figure>
+</section>
+
+<!-- ============ SIN LA DEL ENVÍO ============ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-tag">Prueba 1 · Sin la del envío</span>
+    <h2>Cuatro cosas que entran igual</h2>
+    <span class="kills">valida solo al abrir</span>
+  </div>
+  <p class="measure">Sofía cursa Programación IV. El desafío cierra a las <span class="m">23:59</span> y tiene 2 intentos. En los cuatro casos, <b>la validación al abrir funcionó perfecto</b> — dijo la verdad, no hubo bug. Y aun así:</p>
+
+  <div class="traces">
+
+    <div class="trace">
+      <h3>La que vuelve tarde</h3>
+<pre>23:50  Sofía abre         <span class="ok">✅ quedan 2</span>
+23:59  <span class="dim">cierra el desafío</span>
+00:07  Sofía envía        <span class="no">✗ entra igual</span></pre>
+      <p class="out">Entregó 8 minutos tarde y nadie se enteró. <b>La penalidad del 30 % por entrega tardía nunca se aplica</b> — la aplica el 03 sobre el XP, y el 03 no sabe que fue tarde. Cobra lo mismo que quien entregó 23:58.</p>
+    </div>
+
+    <div class="trace">
+      <h3>El profesor interviene</h3>
+<pre>10:00  Sofía abre         <span class="ok">✅</span>
+10:15  <span class="dim">el profesor invalida</span>
+       <span class="dim">el desafío (pregunta 4</span>
+       <span class="dim">mal redactada)</span>
+10:40  Sofía envía        <span class="no">✗ entra igual</span></pre>
+      <p class="out">Corregimos, emitimos la nota, y el Tema 10 <b>paga XP por un desafío que ya no existe</b>. Después hay que ir a buscar ese XP para devolverlo. Y ojo: <b>este caso no tiene nada que ver con el tiempo</b> — un cronómetro no lo cubre.</p>
+    </div>
+
+    <div class="trace">
+      <h3>La que vuelve el jueves</h3>
+<pre>lun 09:00  abre           <span class="ok">✅</span>
+lun 09:04  cierra la laptop
+mar 23:59  <span class="dim">cierra el desafío</span>
+jue 18:20  el navegador
+           todavía tiene el
+           entregaId → envía  <span class="no">✗</span></pre>
+      <p class="out">El <span class="m">entregaId</span> queda vivo en <span class="m">localStorage</span> para siempre. Sin nadie que lo revise al llegar, <b>una entrega de tres días después entra como si nada</b>.</p>
+    </div>
+
+    <div class="trace">
+      <h3>Las dos pestañas<span class="flag key">el clave</span></h3>
+<pre>14:00  abre pestaña 1     <span class="ok">✅ quedan 2</span>
+14:01  abre pestaña 2     <span class="ok">✅ quedan 2</span>
+14:30  envía desde la 1   <span class="dim">→ intento 1</span>
+14:32  envía desde la 2   <span class="no">✗ ¿y este?</span></pre>
+      <p class="out"><b>Las dos validaciones dijeron la verdad.</b> A las 14:00 y a las 14:01 efectivamente quedaban 2 intentos. No hubo error en ningún lado — y aun así terminan entrando 3 entregas con un tope de 2. Está dibujado acá abajo.</p>
+    </div>
+
+  </div>
+
+  <figure style="margin-top:16px">
+    <svg viewBox="0 0 720 244" role="img" aria-label="Dos pestañas abiertas con un minuto de diferencia: ambas validaciones al abrir informaron correctamente que quedaban dos intentos, y sin validación al enviar terminan registrándose tres entregas sobre un tope de dos.">
+      <defs>
+        <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+
+      <text x="6" y="60" font-family="Archivo, sans-serif" font-weight="700" font-size="12" fill="currentColor">Pestaña 1</text>
+      <text x="6" y="146" font-family="Archivo, sans-serif" font-weight="700" font-size="12" fill="currentColor">Pestaña 2</text>
+
+      <!-- lane 1 -->
+      <line x1="92" y1="76" x2="556" y2="76" stroke="currentColor" stroke-width="1.2" opacity=".45"/>
+      <circle cx="92" cy="76" r="5" fill="#26665A"/>
+      <text x="100" y="66" font-family="IBM Plex Mono, monospace" font-size="10" fill="#26665A">14:00 · abre — «quedan 2 intentos»</text>
+      <circle cx="556" cy="76" r="5" fill="currentColor"/>
+      <text x="548" y="66" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">14:30 · envía → intento 1</text>
+
+      <!-- lane 2 -->
+      <line x1="108" y1="162" x2="588" y2="162" stroke="currentColor" stroke-width="1.2" opacity=".45"/>
+      <circle cx="108" cy="162" r="5" fill="#26665A"/>
+      <text x="116" y="182" font-family="IBM Plex Mono, monospace" font-size="10" fill="#26665A">14:01 · abre — «quedan 2 intentos»</text>
+      <circle cx="588" cy="162" r="5" fill="#A3352C"/>
+      <text x="580" y="182" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10" fill="#A3352C">14:32 · envía → ¿intento 1 otra vez?</text>
+
+      <!-- verdict band -->
+      <rect x="70" y="98" width="180" height="42" fill="none" stroke="#26665A" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="160" y="115" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700" font-size="10.5" fill="#26665A">las dos dijeron la verdad</text>
+      <text x="160" y="130" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#26665A">a las 14:00 y 14:01 quedaban 2</text>
+
+      <!-- danger bracket -->
+      <rect x="520" y="44" width="150" height="150" fill="none" stroke="#A3352C" stroke-width="1.4" stroke-dasharray="5 4"/>
+      <text x="595" y="36" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700" font-size="11" fill="#A3352C">3 entregas · tope 2</text>
+      <text x="595" y="212" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#A3352C">la vida de RF-DES-07 nunca se descuenta</text>
+
+      <line x1="60" y1="228" x2="690" y2="228" stroke="currentColor" stroke-width="1" opacity=".4" marker-end="url(#a4)"/>
+      <text x="60" y="242" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".55">14:00</text>
+      <text x="660" y="242" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".55">14:35</text>
+    </svg>
+    <figcaption><b>Este es el caso que hay que entender.</b> No falló nada: las dos aperturas informaron correctamente. La validación al abrir es una foto, y el problema es la película. Solo alguien que mire <em>en el momento en que la entrega se registra</em> puede ver que ya se consumió un intento.</figcaption>
+  </figure>
+</section>
+
+<!-- ============ SIN LA DE ABRIR ============ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-tag">Prueba 2 · Sin la de abrir</span>
+    <h2>Cuarenta minutos a la basura</h2>
+    <span class="kills">valida solo al enviar</span>
+  </div>
+  <p class="measure">El otro extremo es corto de explicar, y por eso lo dejo corto.</p>
+
+  <div class="traces" style="grid-template-columns:minmax(330px,1fr) 1.35fr">
+    <div class="trace">
+      <h3>La que se entera al final</h3>
+<pre>20:00  Sofía abre         <span class="dim">— nadie chequea nada</span>
+20:00  <span class="dim">escribe. piensa.</span>
+       <span class="dim">borra. reescribe.</span>
+20:40  envía
+20:40  el 03: <span class="no">«no te quedaban
+       intentos»</span></pre>
+      <p class="out"><b>Cuarenta minutos tirados</b>, y se entera al final. En un desafío obligatorio, con una vida en juego, eso no es un detalle de interfaz.</p>
+    </div>
+
+    <div class="analogy">
+      <h3>El check-in y la puerta de embarque</h3>
+      <p>El <b>check-in online</b> te dice 24 h antes que tenés lugar en el vuelo. En la <b>puerta de embarque</b> te vuelven a pedir el pase.</p>
+      <p>¿Por qué dos veces? Porque en el medio pasan cosas: cambiaron el avión, te reasignaron, llegaste tarde.</p>
+      <p>El check-in te sirve para <b>no viajar al aeropuerto al pedo</b>. El de la puerta es <b>el que decide si subís</b>.</p>
+      <p>Nadie diría «ya hice el check-in, sacá al de la puerta». Y nadie diría «total manda el de la puerta, sacá el check-in» — porque entonces te enterás de que no viajás estando en Ezeiza.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NO SE PUEDE SACAR NINGUNA ============ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-tag">Prueba 3 · El costo</span>
+    <h2>Ninguna de las dos se puede podar, y las dos salen gratis</h2>
+    <span class="kills">el argumento que cierra</span>
+  </div>
+  <p class="measure">Acá está el punto que vuelve la discusión académica. La objeción de fondo cuando alguien dice «con una alcanza» suele ser <em>«¿no es trabajo de más?»</em>. La respuesta es que <b>ninguna de las dos es un paso agregado</b>: las dos vienen pegadas a algo que hay que hacer igual.</p>
+
+  <div class="panels">
+
+    <div class="panel">
+      <div class="panel-head"><span>La de abrir</span><span>CI-21</span></div>
+      <div class="panel-body">
+        <ul>
+          <li>Produce el <b>entregaId</b> — sin él no hay clave de idempotencia (CI-25), el doble click nos hace corregir dos veces, y no hay a qué colgar la nota que devolvemos.</li>
+          <li>Produce el <b>vale firmado</b> con el que el alumno lee nuestro contenido.</li>
+          <li>Produce el <b>timestamp de apertura</b>, que PAR-04 necesita igual para el XP por tiempo de resolución.</li>
+        </ul>
+      </div>
+      <p class="panel-foot"><b>No la podés sacar aunque quieras.</b> No es una validación redundante: es la operación que crea la entrega, y de paso valida. La validación viene de yapa.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span>La de enviar</span><span>es el WHERE</span></div>
+<pre><span class="kw">UPDATE</span> entregas
+   <span class="kw">SET</span> estado = <span class="cmt">'ENTREGADA'</span>, enviada_en = now()
+ <span class="kw">WHERE</span> id = :entregaId
+   <span class="kw">AND</span> estado = <span class="cmt">'EN_CURSO'</span>
+   <span class="kw">AND</span> now() &lt;= desafio.cierre
+   <span class="kw">AND</span> desafio.invalidado = <span class="cmt">false</span>;
+
+<span class="cmt">-- 0 filas afectadas → rechazada</span></pre>
+      <p class="panel-foot"><b>No hay un chequeo y después un guardado.</b> La validación <em>es</em> la escritura. Y por eso gana la opción D de la lámina anterior: en las otras eran dos cosas separadas por la red; acá son la misma línea.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ DEFENSA ============ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-tag">La defensa</span>
+    <h2>Cómo se dice en voz alta</h2>
+  </div>
+
+  <div class="quote">
+    <q>La validación al abrir es una predicción; la del envío es un hecho. La primera nos cuesta cero porque es la que crea el intento; la segunda nos cuesta cero porque es el WHERE de la escritura. No estamos validando dos veces — estamos haciendo dos operaciones distintas que además validan.</q>
+    <span class="src">CI-20 · CI-21 · §2c</span>
+  </div>
+
+  <div class="catedra">
+    <h3>Y no es solo diseño nuestro</h3>
+    <p>El reparto de la cátedra le asigna al Tema 03, dentro del núcleo, <em>«cierre evaluado al momento del envío»</em>.</p>
+    <p>O sea: <b>ya está definido que la fecha límite se chequea al enviar</b>. Si validáramos solo al abrir no estaríamos eligiendo una alternativa más simple — estaríamos incumpliendo el reparto.</p>
+  </div>
+</section>
+
+<p class="note"><b>Alcance de esta lámina.</b> Cubre por qué son dos y no una. Por qué el envío pasa primero por el Tema 03 está en la lámina anterior, «Por dónde entra la entrega». El cronómetro que discutimos no reemplaza a ninguna de las dos: cubre parcialmente el caso de la ventana vencida y no toca los otros tres — y además sería del <b>Tema 03</b>, no nuestro.</p>
+
+</div>
