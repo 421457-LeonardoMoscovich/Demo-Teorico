@@ -1,12 +1,19 @@
 export type Rol = 'PROFESOR' | 'ALUMNO';
 
-export type TipoDeItem = 'OPCION_MULTIPLE' | 'VERDADERO_FALSO' | 'EMPAREJAR' | 'ORDENAR';
+export type TipoDeItem =
+  | 'OPCION_MULTIPLE'
+  | 'VERDADERO_FALSO'
+  | 'EMPAREJAR'
+  | 'ORDENAR'
+  /** La unica que no se corrige sola: abre la cola del profesor (D-01). */
+  | 'ABIERTA';
 
 export const TIPOS: { valor: TipoDeItem; etiqueta: string }[] = [
   { valor: 'OPCION_MULTIPLE', etiqueta: 'Opción múltiple' },
   { valor: 'VERDADERO_FALSO', etiqueta: 'Verdadero / falso' },
   { valor: 'EMPAREJAR', etiqueta: 'Emparejar conceptos' },
   { valor: 'ORDENAR', etiqueta: 'Ordenar secuencia' },
+  { valor: 'ABIERTA', etiqueta: 'Respuesta abierta' },
 ];
 
 export interface Sesion {
@@ -103,9 +110,13 @@ export interface ItemCorregido {
   itemVersionId: string;
   orden: number;
   enunciado: string;
+  /** El payload de la versión que vio el alumno: con esto los ids se vuelven texto. */
+  payload: any;
   puntaje: number;
-  obtenido: number;
-  correcto: boolean;
+  /** Null mientras lo espere un humano. No es 0: es todavia-no-se. */
+  obtenido: number | null;
+  correcto: boolean | null;
+  pendiente: boolean;
   respuesta: any;
 }
 
@@ -119,6 +130,54 @@ export interface Resultado {
   corrector: string | null;
   revision: number;
   detalle: ItemCorregido[];
+}
+
+/** Un item esperando que la profesora lo puntue (D-01). */
+export interface Pendiente {
+  detalleId: string;
+  evaluacionId: string;
+  alumnoId: string;
+  intento: number;
+  cuestionario: string | null;
+  enunciado: string | null;
+  consigna: string | null;
+  rubrica: string | null;
+  puntaje: number;
+  respuesta: string | null;
+  entregadaEn: string;
+}
+
+/** Un cuestionario del profesor, para reutilizarlo. NO es la ficha: lleva título. */
+export interface MiContenido {
+  contenidoId: string;
+  titulo: string;
+  cursoCohorteId: string;
+  escala: string;
+  creadoEn: string;
+  ficha: ContenidoRef;
+}
+
+/** Una línea del historial del alumno (CI-44: cada intento se conserva). */
+export interface EntregaDelAlumno {
+  entregaId: string;
+  desafioId: string;
+  cuestionario: string | null;
+  intento: number;
+  nota: number | null;
+  estado: string;
+  corrector: string | null;
+  entregadaEn: string;
+}
+
+/** Un envelope publicado. Andamiaje de la demo: se borra cuando entre Kafka. */
+export interface EventoPublicado {
+  topico: string;
+  clave: string;
+  eventId: string;
+  eventType: string;
+  timestamp: string;
+  producer: string;
+  payload: any;
 }
 
 export interface ErrorApi {

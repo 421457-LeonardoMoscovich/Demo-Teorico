@@ -54,8 +54,20 @@ interface FilaPar {
                 <p>{{ i.enunciado }}</p>
               </div>
               <div class="acciones-fila">
-                <button type="button" class="secundario" (click)="editar(i)">Editar</button>
-                <button class="peligro" type="button" (click)="darDeBaja(i)">Dar de baja</button>
+                @if (porDarDeBaja() === i.id) {
+                  <span class="ayuda">¿Seguro?</span>
+                  <button class="peligro" type="button" (click)="confirmarBaja(i)">
+                    Sí, dar de baja
+                  </button>
+                  <button type="button" class="secundario" (click)="porDarDeBaja.set(null)">
+                    Cancelar
+                  </button>
+                } @else {
+                  <button type="button" class="secundario" (click)="editar(i)">Editar</button>
+                  <button class="peligro" type="button" (click)="porDarDeBaja.set(i.id)">
+                    Dar de baja
+                  </button>
+                }
               </div>
             </li>
           }
@@ -120,7 +132,7 @@ interface FilaPar {
                   />
                   correcta
                 </label>
-                <button type="button" class="secundario" (click)="quitar(opciones, i)">×</button>
+                <button type="button" class="secundario" (click)="quitar(opciones, i)" attr.aria-label="Quitar opción {{ i + 1 }}"><span aria-hidden="true">×</span></button>
               </div>
             }
             <button type="button" class="secundario" (click)="agregar(opciones, 'o')">
@@ -156,7 +168,7 @@ interface FilaPar {
                   [(ngModel)]="d.texto"
                   placeholder="Definición {{ i + 1 }}"
                 />
-                <button type="button" class="secundario" (click)="quitar(derecha, i)">×</button>
+                <button type="button" class="secundario" (click)="quitar(derecha, i)" attr.aria-label="Quitar definición {{ i + 1 }}"><span aria-hidden="true">×</span></button>
               </div>
             }
             <button type="button" class="secundario" (click)="agregar(derecha, 'd')">
@@ -177,12 +189,46 @@ interface FilaPar {
                     <option [value]="d.id">{{ d.texto || d.id }}</option>
                   }
                 </select>
-                <button type="button" class="secundario" (click)="quitar(izquierda, i)">×</button>
+                <button type="button" class="secundario" (click)="quitar(izquierda, i)" attr.aria-label="Quitar concepto {{ i + 1 }}"><span aria-hidden="true">×</span></button>
               </div>
             }
             <button type="button" class="secundario" (click)="agregar(izquierda, 'i')">
               + agregar concepto
             </button>
+          }
+
+          @if (tipo === 'ABIERTA') {
+            <p class="ayuda">
+              La única que no se corrige sola. Cuando un alumno la entregue, el cuestionario queda
+              esperando en tu cola hasta que le pongas puntaje.
+            </p>
+            <label>
+              Consigna
+              <textarea
+                name="consigna"
+                rows="2"
+                [(ngModel)]="consigna"
+                placeholder="Qué tiene que desarrollar, y con qué alcance"
+              ></textarea>
+            </label>
+            <label>
+              Extensión máxima en palabras <span class="ayuda">— opcional</span>
+              <input name="extension" type="number" min="1" [(ngModel)]="extensionMaxima" />
+            </label>
+            <label>
+              Rúbrica
+              <textarea
+                name="rubrica"
+                rows="4"
+                [(ngModel)]="rubrica"
+                placeholder="Qué tiene que decir para el puntaje completo, y qué para el parcial"
+              ></textarea>
+            </label>
+            <p class="ayuda">
+              La rúbrica es la clave de corrección de este ítem: <strong>el alumno no la ve
+              nunca</strong>. Es obligatoria, y no por burocracia — sin ella no hay forma de
+              puntuar parejo a veinte alumnos según en qué orden los leíste.
+            </p>
           }
 
           @if (tipo === 'ORDENAR') {
@@ -191,7 +237,7 @@ interface FilaPar {
               <div class="fila">
                 <span class="posicion">{{ i + 1 }}</span>
                 <input [name]="'el' + i" [(ngModel)]="e.texto" placeholder="Paso {{ i + 1 }}" />
-                <button type="button" class="secundario" (click)="quitar(elementos, i)">×</button>
+                <button type="button" class="secundario" (click)="quitar(elementos, i)" attr.aria-label="Quitar paso {{ i + 1 }}"><span aria-hidden="true">×</span></button>
               </div>
             }
             <button type="button" class="secundario" (click)="agregar(elementos, 'e')">
@@ -200,7 +246,7 @@ interface FilaPar {
           }
 
           @if (error()) {
-            <p class="error">
+            <p class="error" role="alert">
               {{ error()!.mensaje }}
               @if (error()!.campo) {
                 <span class="campo">({{ error()!.campo }})</span>
@@ -208,7 +254,7 @@ interface FilaPar {
             </p>
           }
           @if (ok()) {
-            <p class="ok">{{ ok() }}</p>
+            <p class="ok" role="status">{{ ok() }}</p>
           }
 
           <button type="submit" [disabled]="guardando()">
@@ -244,6 +290,10 @@ export class ProfesorBancoPage {
   afirmacion = '';
   esVerdadero = true;
 
+  consigna = '';
+  extensionMaxima: number | null = null;
+  rubrica = '';
+
   izquierda: FilaPar[] = [];
   derecha: FilaSimple[] = [];
 
@@ -260,6 +310,9 @@ export class ProfesorBancoPage {
    */
   readonly editando = signal<ItemDetalle | null>(null);
 
+  /** El item cuya baja se esta confirmando, o null. */
+  readonly porDarDeBaja = signal<string | null>(null);
+
   constructor() {
     this.reiniciarPorTipo();
     this.cargar();
@@ -270,6 +323,7 @@ export class ProfesorBancoPage {
   }
 
   cargar(): void {
+    this.porDarDeBaja.set(null);
     this.api.items(this.filtro).subscribe((i) => this.items.set(i));
   }
 
@@ -331,6 +385,9 @@ export class ProfesorBancoPage {
     this.editando.set(null);
     this.enunciado = '';
     this.afirmacion = '';
+    this.consigna = '';
+    this.rubrica = '';
+    this.extensionMaxima = null;
     this.reiniciarPorTipo();
   }
 
@@ -366,6 +423,12 @@ export class ProfesorBancoPage {
           texto: z.texto,
           parId: pares.find((par) => par[0] === z.id)?.[1] ?? '',
         }));
+        break;
+      }
+      case 'ABIERTA': {
+        this.consigna = p.consigna ?? '';
+        this.extensionMaxima = p.extensionMaxima ?? null;
+        this.rubrica = c.rubrica ?? '';
         break;
       }
       case 'ORDENAR': {
@@ -418,6 +481,9 @@ export class ProfesorBancoPage {
         this.editando.set(null);
         this.enunciado = '';
         this.afirmacion = '';
+        this.consigna = '';
+        this.rubrica = '';
+        this.extensionMaxima = null;
         this.reiniciarPorTipo();
         this.cargar();
       },
@@ -458,6 +524,15 @@ export class ProfesorBancoPage {
           criterio: { pares: this.izquierda.map((z) => [z.id, z.parId]) },
         };
 
+      case 'ABIERTA':
+        return {
+          payload: {
+            consigna: this.consigna,
+            extensionMaxima: this.extensionMaxima ? Number(this.extensionMaxima) : null,
+          },
+          criterio: { rubrica: this.rubrica },
+        };
+
       case 'ORDENAR':
         return {
           // El payload va MEZCLADO: si mandáramos los elementos en el orden en
@@ -471,8 +546,24 @@ export class ProfesorBancoPage {
     }
   }
 
-  darDeBaja(item: ItemResumen): void {
-    this.api.bajaItem(item.id).subscribe(() => this.cargar());
+  /**
+   * La unica accion destructiva de la pantalla, y por eso pide confirmacion en
+   * linea: `confirm()` bloquea el hilo del navegador y en una demo se nota.
+   */
+  confirmarBaja(item: ItemResumen): void {
+    this.porDarDeBaja.set(null);
+    this.api.bajaItem(item.id).subscribe({
+      next: () => {
+        this.ok.set('Ítem dado de baja. Lo ya respondido con él se sigue corrigiendo igual.');
+        this.cargar();
+      },
+      error: () =>
+        this.error.set({
+          clave: 'ERROR',
+          campo: null,
+          mensaje: 'No se pudo dar de baja el ítem.',
+        }),
+    });
   }
 }
 

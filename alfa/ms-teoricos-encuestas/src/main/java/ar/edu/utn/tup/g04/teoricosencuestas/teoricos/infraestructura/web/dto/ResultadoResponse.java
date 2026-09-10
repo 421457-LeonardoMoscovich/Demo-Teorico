@@ -22,19 +22,29 @@ public record ResultadoResponse(
         UUID desafioId,
         UUID alumnoId,
         int intento,
+        /** Null mientras el estado sea EN_ESPERA: la nota es del cuestionario entero o no es. */
         Integer nota,
         String estado,
         String corrector,
         int revision,
         List<ItemCorregido> detalle) {
 
+    /**
+     * `obtenido` y `correcto` en null significan que ese item todavia espera a
+     * un humano (D-01). Se modela como ausencia y no como un 0 con una bandera
+     * al lado: un 0 es una nota, y decirle 0 a algo que nadie corrigio todavia
+     * seria mentirle al alumno.
+     */
     public record ItemCorregido(
             UUID itemVersionId,
             int orden,
             String enunciado,
+            /** El payload de la version que vio el alumno: sirve para traducir ids a texto. */
+            JsonNode payload,
             int puntaje,
-            int obtenido,
-            boolean correcto,
+            Integer obtenido,
+            Boolean correcto,
+            boolean pendiente,
             JsonNode respuesta) {
     }
 }

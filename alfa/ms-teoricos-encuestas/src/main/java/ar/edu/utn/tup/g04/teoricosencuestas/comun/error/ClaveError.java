@@ -26,6 +26,9 @@ public enum ClaveError {
     SECUENCIA_NO_ES_PERMUTACION("La secuencia correcta tiene que usar todos los elementos, una vez cada uno"),
     ELEMENTOS_INSUFICIENTES("Hacen falta al menos dos elementos"),
     ID_DUPLICADO("Hay ids repetidos"),
+    CONSIGNA_REQUERIDA("La consigna de una respuesta abierta no puede estar vacia"),
+    RUBRICA_REQUERIDA("Una respuesta abierta necesita una rubrica: es lo unico que guia a quien corrige"),
+    EXTENSION_NO_POSITIVA("La extension maxima tiene que ser mayor que cero"),
 
     CONTENIDO_SIN_ITEMS("Un cuestionario necesita al menos un item"),
     ORDEN_NO_CONSECUTIVO("El orden de los items tiene que ser consecutivo desde 1"),
@@ -43,6 +46,9 @@ public enum ClaveError {
     RESPUESTAS_INCOMPLETAS("Falta la respuesta de al menos un item del cuestionario"),
     RESPUESTA_DE_ITEM_AJENO("Llego la respuesta de un item que no pertenece al cuestionario"),
     EVALUACION_INEXISTENTE("No hay ninguna evaluacion para esa entrega"),
+    DETALLE_INEXISTENTE("No hay ninguna correccion pendiente con ese id"),
+    DETALLE_YA_CORREGIDO("Ese item ya fue corregido y una correccion no se pisa (CI-44)"),
+    PUNTAJE_FUERA_DE_RANGO("El puntaje tiene que estar entre 0 y el peso del item"),
     NO_AUTORIZADO("No autorizado");
 
     private final String texto;

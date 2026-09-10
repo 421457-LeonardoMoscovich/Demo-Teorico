@@ -55,7 +55,30 @@ public class ValidadorDePayload {
             case ORDENAR -> validarOrdenar(
                     exigir(payload, PayloadDeItem.Ordenar.class),
                     exigir(criterio, CriterioDeCorreccion.Ordenar.class));
+            case ABIERTA -> validarAbierta(
+                    exigir(payload, PayloadDeItem.Abierta.class),
+                    exigir(criterio, CriterioDeCorreccion.Abierta.class));
             default -> throw new ExcepcionDeNegocio(ClaveError.TIPO_DESCONOCIDO, "tipo");
+        }
+    }
+
+    /**
+     * La rubrica es OBLIGATORIA, y esa es toda la regla de este tipo.
+     *
+     * En los cuatro automaticos el criterio existe para que la maquina puntue.
+     * Aca existe para que un humano puntue parejo entre veinte alumnos, y sin
+     * ella la correccion queda a merced de en que orden se leyeron las
+     * respuestas. Es el unico caso donde el criterio no lo consume el codigo.
+     */
+    private void validarAbierta(PayloadDeItem.Abierta p, CriterioDeCorreccion.Abierta c) {
+        if (p.consigna() == null || p.consigna().isBlank()) {
+            throw new ExcepcionDeNegocio(ClaveError.CONSIGNA_REQUERIDA, "payload.consigna");
+        }
+        if (p.extensionMaxima() != null && p.extensionMaxima() <= 0) {
+            throw new ExcepcionDeNegocio(ClaveError.EXTENSION_NO_POSITIVA, "payload.extensionMaxima");
+        }
+        if (c.rubrica() == null || c.rubrica().isBlank()) {
+            throw new ExcepcionDeNegocio(ClaveError.RUBRICA_REQUERIDA, "criterio.rubrica");
         }
     }
 

@@ -159,6 +159,20 @@ public abstract class BaseIT {
                 """, bearer);
     }
 
+    /**
+     * Un item de respuesta abierta: no lo corrige nadie automaticamente, asi que
+     * todo cuestionario que lo contenga queda esperando a un humano (D-01).
+     */
+    protected String itemAbierta(String bearer) throws Exception {
+        return crearItem("ABIERTA", "Explica por que un microservicio no lee la base de otro.",
+                """
+                {"consigna":"Desarrolla en no mas de 200 palabras.","extensionMaxima":200}
+                """,
+                """
+                {"rubrica":"Completo si nombra el acoplamiento de esquema Y una consecuencia sobre el despliegue."}
+                """, bearer);
+    }
+
     /** Compone un cuestionario y devuelve la ficha de cinco campos. */
     protected JsonNode componer(String titulo, String escala, String itemsJson, String bearer)
             throws Exception {

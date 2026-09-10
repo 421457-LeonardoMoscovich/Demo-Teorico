@@ -13,6 +13,22 @@
 
 ---
 
+## La forma exacta de cada mensaje
+
+Este documento explica **por qué** cada decisión es como es, y es lo que hay que leer para
+discutirla. La **forma** de cada mensaje —campos, tipos, códigos de error, las tres credenciales
+y cuándo va cada una— está publicada como OpenAPI por la alfa ejecutable:
+
+```
+http://localhost:8081/swagger-ui/index.html    para leerlo y probarlo
+http://localhost:8081/v3/api-docs              para generarse un cliente
+```
+
+Se levanta con `docker compose up` desde `alfa/`. Si alguna vez el spec y este documento se
+contradicen, **manda este documento**: acá está el argumento, allá solamente la forma.
+
+---
+
 ## 0. Estrategia general
 
 **Regla de asimetría.** Con lo que **consumimos** somos tolerantes y degradables: toda
@@ -89,7 +105,7 @@ lo puede correr el otro grupo contra su implementación; una tabla en Markdown n
 | CI-52 | **Campo `revision` en el payload del evento.** Revisión 1 es la corrección original; de 2 en adelante son recálculos. **Regla del 03: aceptar si la revisión es mayor a la guardada, ignorar si es igual o menor** | Resuelve el choque con CI-26 (un evento por entrega) y **tapa un agujero que habíamos dejado abierto: la apelación de CI-35 también produce un segundo evento** —el profesor sobrescribe la nota tras revisar— y no habíamos definido cómo viajaba. Un solo campo cubre los dos casos. **No contradice CI-25:** ahí `entregaId` es la clave de idempotencia del despacho **que nos entra**; `revision` ordena los eventos **que salen** |
 | CI-53 | **La estampa de versión por ítem es lo autoritativo, no `contenidoRef.version`** | Si el alumno abrió en la v3 y el profesor editó antes del envío, el `contenidoRef.version` cacheado del 03 puede decir 4. No importa: corregimos por la estampa de cada ítem. Se deja escrito para que nadie intente "arreglar" esa diferencia. **Corolario:** no existe carrera entre el profesor editando y nosotros corrigiendo — CI-12 ya nos había inmunizado sin que nos diéramos cuenta |
 | CI-54 | **No se edita contenido de un curso archivado** (RF-CUR-09 lo deja en modo lectura). Nos enteramos del estado del curso por `cursos.ciclo-vida` | **Sale gratis:** ya vamos a estar suscritos a ese tópico para el módulo de encuestas, que necesita el cierre de curso para disparar los instrumentos. Misma suscripción, dos usos, cero integración nueva |
-| CI-19 | **La lectura del contenido no tiene estado.** El mismo contenido se le sirve igual a todos: no necesitamos saber quién está mirando para armar la respuesta, ni guardamos nada al servirla | Verificado en el PRD (2026-09-08): **no hay barajado de preguntas ni cronómetro por desafío**. El único "al azar" es la selección del pool de recuperación de vida (RF-REC-04), que es otra cosa. Si mañana apareciera el barajado, el orden tendría que ser estable entre recargas o el alumno vería las preguntas mezcladas al refrescar — eso obliga a guardar el orden **por alumno y por intento**, y la lectura deja de ser pura y pasa a escribir. Si apareciera el cronómetro, registrar "abrió a las 14:32" sería del **03**, porque la entrega y sus estados son de ellos |
+| CI-19 | **La lectura del contenido no tiene estado.** No guardamos nada al servirla. Lo que sí hacemos, desde 2026-09-10, es **barajar las preguntas por alumno** | Revisado. La redacción original decía que barajar obligaba a persistir el orden **por alumno y por intento** —porque si no, el alumno recarga y ve otra cosa— y que por eso la lectura dejaba de ser pura. **Eso vale para un barajado al azar y no para uno derivado.** La permutación sale de `SHA-256(contenidoId + alumnoId)`: es la misma cada vez que se calcula, así que recargar da lo mismo, reconstruirla para el desglose da lo mismo, y no hay nada que guardar. El principio de CI-19 sobrevive intacto; lo que cambió es que la respuesta ahora depende de **quién** pregunta, y eso ya lo sabíamos porque el vale trae el `alumnoId`. La semilla **no** incluye el intento: el vale no lo lleva y meterlo cambiaría el contrato con el 03 por una ganancia discutible. **Nota de alcance:** el PRD (verificado 2026-09-08) no pide barajado — es una decisión de producto del Grupo 04, tomada a sabiendas. El cronómetro sigue afuera, y ahí el argumento no cambió: registrar "abrió a las 14:32" es del **03**, porque la entrega y sus estados son de ellos. Lo fija `BarajadoPorAlumnoIT` |
 
 ---
 

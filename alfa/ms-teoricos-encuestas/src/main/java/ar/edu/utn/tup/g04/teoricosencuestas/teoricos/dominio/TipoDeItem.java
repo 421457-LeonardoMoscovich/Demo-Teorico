@@ -3,8 +3,10 @@ package ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio;
 /**
  * Los siete tipos del PRD. No son homogeneos y el enum lo dice:
  *
- *  - cuatro se corrigen solos y son los que implementa la alfa;
- *  - ABIERTA se corrige a mano o por IA (D-01): modelada, fuera de la alfa;
+ *  - cuatro se corrigen solos;
+ *  - ABIERTA se corrige a mano o por IA (D-01). Ya no es autocorregible pero SI
+ *    esta en la alfa: es la que obliga a que exista un estado de espera, y sin
+ *    ella el puerto Corrector es una promesa que nadie verifico;
  *  - CONVERSACION y DEBATE estan DIFERIDOS (D-09), no descartados: son dos
  *    formas de interaccion que el modelo de entrega unica no soporta.
  *
@@ -17,7 +19,7 @@ public enum TipoDeItem {
     VERDADERO_FALSO(true, false, true),
     EMPAREJAR(true, false, true),
     ORDENAR(true, false, true),
-    ABIERTA(false, false, false),
+    ABIERTA(false, false, true),
     CONVERSACION(false, true, false),
     DEBATE(false, true, false);
 

@@ -10,6 +10,8 @@ import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.Cre
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.ItemDetalleResponse;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.ItemResumenResponse;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +34,8 @@ import java.util.UUID;
  * token y nunca de un parametro, asi que un GET del banco ajeno no se puede ni
  * siquiera expresar (RF-USR-07).
  */
+@Tag(name = "Banco de ítems")
+@SecurityRequirement(name = "token")
 @RestController
 @RequestMapping("/teoricos/items")
 public class ItemController {

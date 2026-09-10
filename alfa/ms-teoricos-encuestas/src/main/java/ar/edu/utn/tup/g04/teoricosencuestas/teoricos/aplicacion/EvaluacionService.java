@@ -127,8 +127,11 @@ public class EvaluacionService {
                 UUID.randomUUID(), despacho.entregaId(), despacho.desafioId(), despacho.alumnoId(),
                 despacho.cursoCohorteId(), despacho.intento(), despacho.contenidoId(), Instant.now()));
 
-        int nota = 0;
-        String corrector = "AUTOMATICO";
+        // Se particiona por tipo: lo autocorregible se puntua ahora, lo que espera
+        // a un humano (D-01) se guarda con obtenido NULL. La respuesta del alumno
+        // se persiste igual en los dos casos —el que corrige despues necesita
+        // leerla, y la estampa de version tiene que quedar fijada YA.
+        int pendientes = 0;
 
         for (ContenidoItemEntity linea : porItem.values()) {
             ItemVersionEntity version = versionPorItem.get(linea.getItemId());
@@ -139,13 +142,44 @@ public class EvaluacionService {
             respuestas.save(new RespuestaEntity(UUID.randomUUID(), evaluacion.getId(),
                     version.getId(), json.escribir(recibida.contenido()), Instant.now()));
 
-            int obtenido = corregirUno(item.getTipo(), version, recibida, linea.getPuntaje());
-            nota += obtenido;
+            Integer obtenido = null;
+            if (item.getTipo().esAutocorregible()) {
+                obtenido = corregirUno(item.getTipo(), version, recibida, linea.getPuntaje());
+            } else {
+                pendientes++;
+            }
 
             detalles.save(new EvaluacionDetalleEntity(UUID.randomUUID(), evaluacion.getId(),
                     version.getId(), linea.getOrden(), linea.getPuntaje(), obtenido));
         }
 
+        if (pendientes > 0) {
+            // Ni nota ni evento. El Tema 03 se entera cuando HAY nota, y todavia
+            // no la hay: la nota es del cuestionario entero o no es.
+            evaluacion.esperarCorreccionHumana();
+            evaluaciones.save(evaluacion);
+            return evaluacion;
+        }
+
+        cerrarYPublicar(evaluacion, "AUTOMATICO");
+        return evaluacion;
+    }
+
+    /**
+     * Suma el desglose y cierra. Es el unico lugar donde una evaluacion pasa a
+     * FINAL y el unico que publica, venga de un despacho todo-automatico o del
+     * profesor poniendo el ultimo puntaje a mano.
+     */
+    @Transactional
+    public EvaluacionEntity cerrarYPublicar(EvaluacionEntity evaluacion, String corrector) {
+        int nota = 0;
+        for (EvaluacionDetalleEntity d : detalles.findByEvaluacionIdOrderByOrdenAsc(evaluacion.getId())) {
+            if (d.estaPendiente()) {
+                throw new IllegalStateException(
+                        "No se puede cerrar una evaluacion con items sin corregir: " + evaluacion.getId());
+            }
+            nota += d.getObtenido();
+        }
         evaluacion.cerrar(nota, corrector);
         evaluaciones.save(evaluacion);
         publicar(evaluacion);
@@ -187,8 +221,33 @@ public class EvaluacionService {
                 EventoSobre.de(EVENTO, payload));
     }
 
-    public record Detalle(UUID itemVersionId, int orden, String enunciado,
-                          int puntaje, int obtenido, JsonNode respuesta) {}
+    /**
+     * `obtenido` en null = todavia lo espera un humano.
+     *
+     * `payload` es el de LA VERSION QUE EL ALUMNO VIO, no el vigente. Va para que
+     * el front pueda mostrar "Contestaste: Paris" en vez de "Contestaste: a" —las
+     * respuestas viajan por id, y un id no le dice nada a nadie. Sacarlo de la
+     * estampa y no del item de hoy es lo que hace que el desglose siga siendo
+     * legible despues de que el profesor edite la pregunta (CI-13).
+     *
+     * No lleva el criterio: con reintentos ilimitados eso convierte el reintento
+     * en copiar.
+     */
+    public record Detalle(UUID itemVersionId, int orden, String enunciado, JsonNode payload,
+                          int puntaje, Integer obtenido, JsonNode respuesta) {}
+
+    /**
+     * Todo lo que este alumno entrego, lo mas reciente primero.
+     *
+     * CI-44 dice que se guarda una correccion por entrega y NUNCA se pisa: cada
+     * intento queda. Esta consulta es lo que hace que eso se pueda ver — y de
+     * paso muestra el versionado, porque dos intentos del mismo desafio pueden
+     * haberse corregido contra versiones distintas del mismo item.
+     */
+    @Transactional(readOnly = true)
+    public List<EvaluacionEntity> historialDe(UUID alumnoId) {
+        return evaluaciones.findByAlumnoIdOrderByCreadaEnDesc(alumnoId);
+    }
 
     @Transactional(readOnly = true)
     public EvaluacionEntity porEntrega(UUID entregaId) {
@@ -199,9 +258,15 @@ public class EvaluacionService {
     /**
      * El desglose se arma sobre la estampa: el enunciado que sale de aca es el
      * que el alumno vio, no el que el item tiene hoy.
+     *
+     * Y sale EN EL ORDEN EN QUE EL LO VIO. Como cada alumno recibe las preguntas
+     * barajadas, mostrarle el resultado en el orden del profesor lo haria buscar
+     * a mano cual era cual. La permutacion no esta guardada: se reconstruye con
+     * la misma semilla, que es exactamente lo que la hace barata.
      */
     @Transactional(readOnly = true)
-    public List<Detalle> desglose(UUID evaluacionId) {
+    public List<Detalle> desglose(EvaluacionEntity evaluacion) {
+        UUID evaluacionId = evaluacion.getId();
         Map<UUID, String> respuestaPorVersion = new HashMap<>();
         for (RespuestaEntity r : respuestas.findByEvaluacionId(evaluacionId)) {
             respuestaPorVersion.put(r.getItemVersionId(), r.getContenido());
@@ -209,14 +274,26 @@ public class EvaluacionService {
 
         List<Detalle> resultado = new ArrayList<>();
         for (EvaluacionDetalleEntity d : detalles.findByEvaluacionIdOrderByOrdenAsc(evaluacionId)) {
-            String enunciado = versiones.findById(d.getItemVersionId())
-                    .map(ItemVersionEntity::getEnunciado)
-                    .orElse(null);
+            ItemVersionEntity version = versiones.findById(d.getItemVersionId()).orElse(null);
             String contestado = respuestaPorVersion.get(d.getItemVersionId());
-            resultado.add(new Detalle(d.getItemVersionId(), d.getOrden(), enunciado,
+            resultado.add(new Detalle(
+                    d.getItemVersionId(), d.getOrden(),
+                    version == null ? null : version.getEnunciado(),
+                    version == null ? null : json.aNodo(version.getPayload()),
                     d.getPuntaje(), d.getObtenido(),
                     contestado == null ? null : json.aNodo(contestado)));
         }
-        return resultado;
+
+        // Se reordena como lo vio el alumno y se renumera: para el, la primera
+        // que contesto es la 1.
+        List<Detalle> comoLoVio = composicion.enOrdenPara(
+                resultado, evaluacion.getContenidoId(), evaluacion.getAlumnoId());
+        List<Detalle> numerado = new ArrayList<>();
+        for (int i = 0; i < comoLoVio.size(); i++) {
+            Detalle d = comoLoVio.get(i);
+            numerado.add(new Detalle(d.itemVersionId(), i + 1, d.enunciado(), d.payload(),
+                    d.puntaje(), d.obtenido(), d.respuesta()));
+        }
+        return numerado;
     }
 }

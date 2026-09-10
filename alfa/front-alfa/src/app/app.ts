@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SesionService } from './core/sesion.service';
 import { TemaService } from './core/tema.service';
+import { PendientesService } from './core/pendientes.service';
 
 @Component({
   selector: 'app-root',
@@ -15,8 +16,21 @@ import { TemaService } from './core/tema.service';
         @if (sesion.esProfesor()) {
           <a routerLink="/profesor/cursos" routerLinkActive="activo">Cursos</a>
           <a routerLink="/profesor/banco" routerLinkActive="activo">Banco</a>
+          <a routerLink="/profesor/correcciones" routerLinkActive="activo" class="con-badge">
+            Por corregir
+            @if (pendientes.hay()) {
+              <span class="badge" role="status" aria-live="polite">
+                {{ pendientes.pendientes() }}
+                <span class="sr-solo">
+                  {{ pendientes.pendientes() === 1 ? 'corrección esperando' : 'correcciones esperando' }}
+                </span>
+              </span>
+            }
+          </a>
+          <a routerLink="/profesor/demo" routerLinkActive="activo">Demo</a>
         } @else {
           <a routerLink="/alumno/cursos" routerLinkActive="activo">Cursos</a>
+          <a routerLink="/alumno/historial" routerLinkActive="activo">Mis entregas</a>
         }
       }
 
@@ -47,9 +61,24 @@ import { TemaService } from './core/tema.service';
 export class App {
   protected readonly sesion = inject(SesionService);
   protected readonly tema = inject(TemaService);
+  protected readonly pendientes = inject(PendientesService);
   private readonly router = inject(Router);
 
+  constructor() {
+    // El sondeo sigue a la sesion: arranca cuando entra una profesora y se corta
+    // cuando sale. Al alumno no se le sondea nada — no porque sea caro, sino
+    // porque CI-37 prohibe avisarle a el.
+    effect(() => {
+      if (this.sesion.esProfesor()) {
+        this.pendientes.arrancar();
+      } else {
+        this.pendientes.detener();
+      }
+    });
+  }
+
   salir(): void {
+    this.pendientes.detener();
     this.sesion.salir();
     this.router.navigateByUrl('/login');
   }

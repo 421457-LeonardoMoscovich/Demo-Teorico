@@ -22,8 +22,10 @@ import { Curso } from '../core/modelos';
         sirve un stub de ese grupo.
       </p>
 
-      @if (cursos().length === 0 && !error()) {
+      @if (cargando()) {
         <p class="vacio">Cargando cursos…</p>
+      } @else if (cursos().length === 0 && !error()) {
+        <p class="vacio">El Tema 02 no te tiene asignado a ningún curso.</p>
       }
 
       <ul class="lista">
@@ -40,7 +42,7 @@ import { Curso } from '../core/modelos';
       </ul>
 
       @if (error()) {
-        <p class="error">{{ error() }}</p>
+        <p class="error" role="alert">{{ error() }}</p>
       }
     </section>
   `,
@@ -52,11 +54,23 @@ export class CursosPage {
 
   readonly cursos = signal<Curso[]>([]);
   readonly error = signal('');
+  /**
+   * Estado explicito y no `cursos().length === 0`: una lista vacia y una lista
+   * que todavia no llego se ven igual, y sin esto la pantalla se queda
+   * "Cargando…" para siempre cuando el Tema 02 responde [].
+   */
+  readonly cargando = signal(true);
 
   constructor() {
     this.api.cursos().subscribe({
-      next: (c) => this.cursos.set(c),
-      error: () => this.error.set('No se pudo hablar con el Tema 02.'),
+      next: (c) => {
+        this.cursos.set(c);
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.cargando.set(false);
+        this.error.set('No se pudo hablar con el Tema 02.');
+      },
     });
   }
 

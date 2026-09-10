@@ -175,5 +175,28 @@ public class SembradorDeDemo {
                     """,
                     """
                     {"secuencia":["e1","e2","e3","e4"]}
+                    """),
+
+            // Las dos abiertas son las que obligan a que exista la cola: no las
+            // puede puntuar nadie mas que la profesora. La rubrica va con la
+            // clave de correccion y NUNCA sale por la vista del alumno.
+            new Semilla(TipoDeItem.ABIERTA,
+                    "Explicá por qué un microservicio no debería leer la base de datos de otro.",
+                    """
+                    {"consigna":"Desarrollá en no más de 200 palabras. Mencioná al menos una consecuencia concreta sobre el despliegue.",
+                     "extensionMaxima":200}
+                    """,
+                    """
+                    {"rubrica":"Completo (todo el puntaje): nombra el acoplamiento de esquema y una consecuencia sobre el despliegue independiente. Parcial (mitad): nombra el acoplamiento pero no la consecuencia. Nulo: describe la separación sin explicar por qué importa."}
+                    """),
+
+            new Semilla(TipoDeItem.ABIERTA,
+                    "¿Cuándo elegirías coreografía por sobre orquestación? Justificá con un caso.",
+                    """
+                    {"consigna":"Desarrollá en no más de 150 palabras. Tiene que haber un caso concreto, no solo la definición.",
+                     "extensionMaxima":150}
+                    """,
+                    """
+                    {"rubrica":"Completo: distingue los dos estilos Y trae un caso donde el acoplamiento del orquestador sería el problema. Parcial: distingue los estilos sin caso, o trae un caso que no discrimina. Nulo: repite las definiciones."}
                     """));
 }

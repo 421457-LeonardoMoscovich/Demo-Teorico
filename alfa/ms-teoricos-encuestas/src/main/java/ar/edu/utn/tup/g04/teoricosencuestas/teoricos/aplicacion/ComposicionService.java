@@ -8,6 +8,8 @@ import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistenci
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ContenidoRepository;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ItemEntity;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ItemVersionEntity;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.BarajadorDeterministico;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,11 +37,20 @@ public class ComposicionService {
     private final ContenidoItemRepository lineas;
     private final BancoDeItemsService banco;
 
+    /**
+     * Interruptor del barajado. Esta encendido: es una funcion del producto y no
+     * un experimento. Existe la propiedad igual porque una funcion que no se
+     * puede apagar es una funcion que no se puede diagnosticar.
+     */
+    private final boolean barajar;
+
     public ComposicionService(ContenidoRepository contenidos, ContenidoItemRepository lineas,
-                              BancoDeItemsService banco) {
+                              BancoDeItemsService banco,
+                              @Value("${app.barajado.habilitado:true}") boolean barajar) {
         this.contenidos = contenidos;
         this.lineas = lineas;
         this.banco = banco;
+        this.barajar = barajar;
     }
 
     public record Linea(UUID itemId, int orden, int puntaje) {}
@@ -100,10 +111,15 @@ public class ComposicionService {
             throw new ExcepcionDeNegocio(ClaveError.PESOS_NO_SUMAN_100, "items");
         }
 
-        // TODO CI-47: cuando entren los items de correccion humana, rechazar la
-        // composicion si el desafio admite reintentos ilimitados. En la alfa no
-        // hay items de correccion humana, asi que la regla no tiene que rechazar
-        // nada todavia; el hueco queda marcado, no olvidado.
+        // CI-47 NO se valida aca, y eso es una conclusion, no un olvido.
+        //
+        // La regla es "un desafio con reintentos ilimitados no admite items de
+        // correccion humana". Estuvo anotada como TODO en este metodo y era el
+        // lugar equivocado: por CI-03 esta composicion ocurre ANTES de que el
+        // desafio exista, asi que aca no hay reintentos que mirar, y pedirselos
+        // a quien llama seria hacer que el Tema 04 conozca un concepto que es
+        // del 03. La consecuencia que el 03 necesita ya viaja en la ficha como
+        // `correccion: DIFERIDA` (CI-07), y es el 03 quien rechaza.
     }
 
     @Transactional(readOnly = true)
@@ -116,6 +132,14 @@ public class ComposicionService {
     public ContenidoEntity exigirPropio(UUID profesorId, UUID contenidoId) {
         return contenidos.findByIdAndProfesorIdAndBajaLogicaIsNull(contenidoId, profesorId)
                 .orElseThrow(() -> new ExcepcionDeNegocio(ClaveError.CONTENIDO_INEXISTENTE, "contenidoId"));
+    }
+
+    /** El titulo, o null si el contenido se dio de baja. Para listas, no para contratos. */
+    @Transactional(readOnly = true)
+    public String tituloDe(UUID contenidoId) {
+        return contenidos.findByIdAndBajaLogicaIsNull(contenidoId)
+                .map(ContenidoEntity::getTitulo)
+                .orElse(null);
     }
 
     @Transactional(readOnly = true)
@@ -137,6 +161,21 @@ public class ComposicionService {
                     linea.getOrden(), linea.getPuntaje()));
         }
         return resueltos;
+    }
+
+    /**
+     * El orden en que ve las preguntas ESTE alumno.
+     *
+     * Vive aca y no en el controlador porque la misma permutacion hay que poder
+     * reconstruirla al armar el desglose: si el alumno contesto la que para el
+     * era la 3, el resultado tiene que decirle 3. Es una funcion pura de sus dos
+     * argumentos, asi que reconstruirla es gratis y no hay nada que guardar.
+     */
+    public <T> List<T> enOrdenPara(List<T> enOrdenDelProfesor, UUID contenidoId, UUID alumnoId) {
+        if (!barajar) {
+            return enOrdenDelProfesor;
+        }
+        return BarajadorDeterministico.barajar(enOrdenDelProfesor, contenidoId, alumnoId);
     }
 
     public int puntajeTotal(List<ItemResuelto> resueltos) {

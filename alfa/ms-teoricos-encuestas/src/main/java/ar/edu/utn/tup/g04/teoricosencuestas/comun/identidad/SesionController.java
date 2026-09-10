@@ -4,6 +4,7 @@ import ar.edu.utn.tup.g04.teoricosencuestas.comun.error.ClaveError;
 import ar.edu.utn.tup.g04.teoricosencuestas.comun.error.ExcepcionDeNegocio;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import java.util.UUID;
  * Login del ADAPTADOR FALSO. Cuando exista el Tema 01, este controlador
  * desaparece y el front va a pedirle el token a ellos.
  */
+@Tag(name = "Identidad")
 @RestController
 @RequestMapping("/auth")
 public class SesionController {

@@ -35,6 +35,38 @@ son dos microservicios de dos equipos distintos. Comparten proceso sólo porque 
 | Desafío dentro de la unidad | Tema 03 |
 | El cuestionario adentro del desafío | **nosotros** |
 
+### La frontera, dibujada
+
+Una sola caja es nuestra, y lo único que cruza son dos mensajes: la **ficha de cinco campos**
+que sale al publicar, y el **evento con la nota** que sale al terminar de corregir. Todo lo
+demás —qué preguntas hay, qué contestó el alumno, cuánto sacó en cada una— se queda adentro.
+
+```mermaid
+graph LR
+    subgraph nuestro["★ Tema 04 — la única caja nuestra"]
+        T4["Banco de ítems versionado<br/>Composición del cuestionario<br/>Corrección y desglose"]
+    end
+
+    subgraph ajeno["De otros grupos"]
+        T02["Tema 02<br/>curso · cohorte · roadmap"]
+        T03["Tema 03<br/>desafío · intento · entrega"]
+        T10["Tema 10<br/>XP · vidas"]
+    end
+
+    T4 == "1 · la ficha" ==> T03
+    T03 == "2 · vale + entrega" ==> T4
+    T4 == "3 · la nota" ==> T03
+
+    T02 -. "cuelga de<br/>una unidad" .-> T03
+    T03 --> T10
+
+    style nuestro fill:#1f1a3a,stroke:#8b5cf6,stroke-width:3px
+    style ajeno fill:#17132c,stroke:#332c55,stroke-dasharray:5 5
+```
+
+**Lo que NO hay en ese dibujo, y es lo importante:** ninguna flecha desde el Tema 03 hacia
+adentro del cuestionario. Él nunca abre la ficha ni mira las respuestas: las reenvía opacas.
+
 ---
 
 ## Arrancar
@@ -51,10 +83,24 @@ curl localhost:8081/actuator/health     # {"status":"UP"}
 open http://localhost:4200
 ```
 
+### El contrato, para los otros grupos
+
+```
+http://localhost:8081/swagger-ui/index.html    para leerlo y probarlo
+http://localhost:8081/v3/api-docs              para generarse un cliente
+```
+
+`CONTRATO-INTEGRACION-G04.md` explica **por qué** cada decisión es como es, y es lo que hay que
+leer para discutirla. El OpenAPI es la otra mitad: la **forma exacta** de cada mensaje, que un
+grupo se baja y consume sin hablar con nosotros. Documenta las tres credenciales del contrato y
+por qué son tres y no una: el **token** dice quién sos, el **vale** dice que el Tema 03 te
+habilitó a leer esto ahora, y la **clave de despacho** dice que quien entrega es un servicio.
+
 Dos usuarios, clave igual al usuario: **`profe`** y **`alumno`**.
 
-**El banco viene sembrado**: al arrancar, si está vacío, se cargan 8 ítems de los cuatro tipos
-con contenido real de la materia (`SembradorDeDemo`). Es andamiaje de la demo — se apaga con
+**El banco viene sembrado**: al arrancar, si está vacío, se cargan 10 ítems —los cuatro tipos
+autocorregibles más dos de respuesta abierta— con contenido real de la materia
+(`SembradorDeDemo`). Es andamiaje de la demo — se apaga con
 `DEMO_SEMBRAR=false` y los tests lo apagan solos. Como sólo siembra sobre un banco vacío, para
 volver al estado inicial hay que borrar el volumen: `docker compose down -v`.
 
@@ -75,6 +121,45 @@ cd front-alfa           && npx ng serve            # 4200
 
 ## El recorrido de la demo
 
+Los siete pasos, y quién hace qué en cada uno:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor P as Profesora
+    participant F as Front
+    participant T4 as ★ Tema 04
+    participant T3 as Tema 03
+    actor A as Alumno
+
+    Note over P,T3: Armar
+    P->>F: agrega ítems del banco, reparte pesos
+    F->>T4: POST /teoricos/contenidos
+    T4-->>F: ficha de 5 campos (correccion derivada, no elegida)
+    F->>T3: POST /desafios (con la ficha ya formada)
+    Note right of T3: la guarda sin abrirla:<br/>solo interpreta `tipo`
+
+    Note over A,T4: Rendir
+    A->>T3: Empezar
+    T3-->>F: entregaId + vale FIRMADO (CI-18)
+    F->>T4: GET vista-alumno (token + vale)
+    T4-->>F: preguntas SIN las claves de corrección
+    A->>T3: Entregar
+    Note right of T3: valida el intento y<br/>recién entonces despacha
+    T3->>T4: POST /teoricos/evaluaciones
+    T4-->>T3: 202 ACEPTADA, nunca la nota (CI-23)
+
+    alt todo autocorregible
+        T4-)T3: evento TEORICO_CORREGIDO
+        A->>T4: ve su nota y el desglose
+    else hay respuesta abierta
+        Note over T4: queda EN_ESPERA · sin nota · sin evento
+        A->>T4: ve "sin nota todavía"
+        P->>T4: corrige contra su rúbrica
+        T4-)T3: evento TEORICO_CORREGIDO
+    end
+```
+
 1. Entrar como **profesora** → **Cursos** → *Programación IV* → el **roadmap de unidades**.
    Esa pantalla la llenan dos grupos y ninguno es el nuestro: las unidades las sirve el Tema 02
    y los desafíos el Tema 03.
@@ -90,6 +175,35 @@ cd front-alfa           && npx ng serve            # 4200
 6. Responder → **Entregar**. El botón va al **Tema 03**, no a nosotros.
 7. Ver la nota y el desglose por pregunta.
 
+### El recorrido largo: la corrección humana
+
+Si en el paso 3 agregás una **respuesta abierta**, el recorrido cambia y cuenta algo que el
+corto no puede contar:
+
+- La ficha sale con `correccion: DIFERIDA`, y **nadie la eligió**: se deriva de que hay un ítem
+  que no se corrige solo (CI-07).
+- El alumno entrega y **no tiene nota**. La pantalla dice *sin nota todavía*, con lo automático
+  ya puntuado y lo abierto marcado como *La corrige tu profesor*.
+- **El Tema 03 tampoco se enteró.** El evento `TEORICO_CORREGIDO` no salió, porque no hay nota
+  que contarle.
+- En la barra de la profesora aparece **Por corregir ①**, que se actualiza solo cada diez
+  segundos. Si tenés las dos pestañas abiertas, el contador sube mientras mirás.
+- Ella entra a la cola, lee la respuesta contra **su propia rúbrica** —que el alumno no vio
+  nunca— y pone el puntaje. Recién ahí sale el evento, y recién ahí el alumno tiene nota.
+
+Dos cosas que conviene señalar en ese momento:
+
+- **Al alumno no se le avisa, a la profesora sí.** La asimetría es contrato: CI-37 prohíbe
+  avisarle a él —se enteraría antes de que el Tema 03 aplique la penalidad por tardanza y el
+  Tema 10 el XP—, y no dice nada de ella. Está escrito en la propia pantalla del alumno.
+- **Un 48 sobre 60 no dice "Incorrecta", dice "Parcial".** Correcto/incorrecto es una pregunta
+  que solo tiene sentido en los cuatro tipos automáticos, que son todo o nada.
+
+Y si querés mostrar **CI-47**: al armar, tildá *reintentos ilimitados* con una abierta adentro.
+El **Tema 03** rechaza el desafío con 422 —el cuestionario igual queda guardado—. La regla vive
+allá y no acá porque la composición ocurre antes de que el desafío exista (CI-03), así que en
+el momento de componer todavía no hay reintentos que mirar.
+
 ### El cierre, si querés mostrar lo más fino del diseño
 
 Con el alumno en la pantalla del cuestionario, en otra pestaña como profesora: **Banco** →
@@ -104,6 +218,37 @@ Mientras tanto, en el log de `ms-teoricos-encuestas` aparece el evento que iría
 [EVENTO -> desafios.resultados | key=<desafioId>:<alumnoId>] {"eventId":…,"eventType":"TEORICO_CORREGIDO",…}
 ```
 
+### El panel de demo
+
+En la barra de la profesora hay una pantalla **Demo**, rotulada como lo que es: andamiaje, no
+producto. Tiene dos cosas que hasta ahora sólo se veían desde una terminal:
+
+- **Los eventos que salen hacia el Tema 03.** Mirá *cuándo* aparecen: con un cuestionario todo
+  automático el evento sale junto con la entrega; con una respuesta abierta, el alumno entrega y
+  **acá no pasa nada** hasta que la profesora pone el último puntaje. Es el contrato asincrónico,
+  visible.
+- **Un interruptor que apaga el Tema 03.** Apagalo y andá a armar un cuestionario: se compone y
+  **se guarda igual**, y lo único que falla es la creación del desafío. Eso es CI-03 eligiendo
+  cómo fallar, y el mensaje de error lo dice con todas las letras. Apaga sólo `/desafios`: los
+  cursos siguen en pie, porque el Tema 02 es otro equipo y no se cae con ellos.
+
+### Mis entregas, y reutilizar un cuestionario
+
+Dos cosas más que hacen visible lo que el modelo ya garantizaba:
+
+- **El alumno tiene una pantalla con todas sus entregas.** CI-44 dice que se guarda una
+  corrección por entrega y **nunca se pisa**; hasta ahora nadie podía verlo. Si rindió dos veces
+  el mismo desafío y la profesora editó un ítem en el medio, ahí se ven los dos intentos, cada
+  uno corregido contra la versión que él vio.
+- **Un cuestionario ya armado se puede colgar de otra unidad o de otra cohorte.** Al armar, si el
+  profesor ya tiene cuestionarios, aparecen arriba para reutilizar. Los dos desafíos apuntan al
+  **mismo `contenidoId`**: la ficha es una referencia, no una copia, así que editar una pregunta
+  los cambia a los dos — y cada alumno se sigue corrigiendo contra la versión que vio.
+
+  Ojo con lo que esa pantalla **no** muestra: cuántos desafíos usan cada cuestionario. No podemos
+  saberlo. Los desafíos viven en el Tema 03, y contarlos sería una llamada sincrónica a otro
+  grupo cada vez que el profesor abre la lista.
+
 ### Tres cosas para mirar en la demo
 
 - **El alumno ve la nota, no si aprobó.** No es un olvido: el PRD no define en ningún lado el
@@ -113,6 +258,11 @@ Mientras tanto, en el log de `ms-teoricos-encuestas` aparece el evento que iría
   contenido filtrándose al Tema 03.
 - **Editar un ítem no cambia lo ya corregido, pero sí lo que ve el próximo alumno.** No hay
   congelamiento: hay estampa (CI-12, CI-13). El test `EstampaDeVersionIT` es el que lo prueba.
+- **Cada alumno ve las preguntas en otro orden, y el orden no se guarda en ningún lado.** Sale de
+  `SHA-256(contenidoId + alumnoId)`, así que es estable entre recargas y se puede reconstruir al
+  armar el desglose —por eso el resultado le dice "pregunta 3" a la que para él era la 3—. Es lo
+  que permite tener barajado sin romper CI-19: la lectura sigue sin escribir nada. **Es producto
+  fuera del PRD**, decidido a sabiendas; está anotado en CI-19.
 
 ---
 
@@ -123,7 +273,7 @@ cd ms-teoricos-encuestas
 mvn verify
 ```
 
-52 tests: 30 de dominio puro (corrección de los cuatro tipos, validaciones de payload) y 22 de
+63 tests: 30 de dominio puro (corrección de los cuatro tipos, validaciones de payload) y 33 de
 integración contra PostgreSQL real, conectándose con los **roles reales** y no con el
 superusuario — si falta un permiso, queremos que falle en el build y no en la demo.
 
@@ -136,6 +286,8 @@ Los que valen la pena leer:
 | `ValeInvalidoRechazadoIT` | Sin vale, con la firma cambiada, vencido, y de otro cuestionario |
 | `ComposicionYDespachoIT` | Pesos, idempotencia del despacho, y que el acuse nunca lleve la nota |
 | `BancoAjenoNoSeVeIT` | El banco de cada profesor es invisible para el resto |
+| `CorreccionHumanaIT` | **El que prueba que el contrato con el 03 siempre fue asincrónico.** El evento no sale hasta que el profesor pone el último puntaje |
+| `BarajadoPorAlumnoIT` | Dos alumnos ven otro orden, el mismo alumno ve siempre el suyo, y el desglose sale como él las vio |
 
 ### Si Testcontainers no encuentra Docker
 
@@ -161,16 +313,30 @@ Está afuera a propósito, y conviene decirlo antes de que alguien lo busque:
   sprint y no arrancó.
 - **Kafka.** El evento se publica contra el puerto `PublicadorDeEventos` con un adaptador en
   memoria que escribe el envelope en el log. El adaptador de Kafka entra sin tocar quién publica.
-- **Respuestas abiertas** y la cola de corrección del profesor (D-01), la corrección por LLM,
-  la apelación (CI-35) y el recálculo (CI-50).
+- **La corrección por LLM**, la apelación (CI-35) y el recálculo (CI-50). Las respuestas
+  abiertas y la cola de corrección del profesor SÍ están: ver el recorrido largo.
 - **Eureka y el gateway.** Los tres procesos se hablan por URL directa.
 - **i18n** (`G04-HU04`): los textos de error viven en `ClaveError`, con la clave ya separada del
   mensaje, pero todavía no salen de un `messages_*.properties`.
 - **Anonimización** (D-11).
 
-Y una regla que está declarada pero no puede rechazar nada todavía: **CI-47** —un desafío con
-reintentos ilimitados no admite ítems de corrección humana— está como `TODO` en
-`ComposicionService`, porque en la alfa no hay ítems de corrección humana.
+**CI-47** ya rechaza de verdad, y terminó en un lugar distinto del que decía el plan: no en
+`ComposicionService` sino en el **Tema 03**, que es quien conoce los reintentos. El `TODO` que
+estaba de nuestro lado era una conclusión equivocada, y el comentario que quedó en su lugar
+explica por qué.
+
+---
+
+## El mapa de los doce temas
+
+Quién es dueño de qué en la plataforma, con cuáles de los otros once nos hablamos de verdad y con
+cuáles no nos cruzamos nunca:
+
+**https://claude.ai/code/artifact/8aaa62bf-5735-44b6-9043-8b198c53b221**
+
+Incluye la zona gris que conviene tener a mano en la defensa: la propuesta de arquitectura le da
+el grafo de contenidos al Tema 10 y el PRD mete el roadmap adentro de Cursos, que es del Tema 02.
+Los dos documentos de la cátedra no dicen lo mismo, y nosotros elegimos un lado.
 
 ---
 
@@ -183,7 +349,7 @@ alfa/
 │       ├── comun/                  config, errores, identidad, eventos
 │       └── teoricos/
 │           ├── dominio/            TipoDeItem, payloads sellados, correctores
-│           ├── aplicacion/         banco, composición, evaluación, vale
+│           ├── aplicacion/         banco, composición, evaluación, vale, cola de corrección
 │           └── infraestructura/    JPA y controladores
 ├── stub-tema-03/                   ~200 líneas, todo en memoria
 ├── front-alfa/                     Angular standalone
