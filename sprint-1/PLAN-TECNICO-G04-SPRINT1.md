@@ -843,6 +843,47 @@ diferido, y no un 400 genérico.
 ---
 # E-04 · Composición y entrega del desafío teórico
 
+> ## ⛔ Corrección aplicada el 2026-09-09 — leer antes de tomar HU14, HU15 o HU16
+>
+> Las tres historias de esta épica se escribieron sobre `DISENIO-G04-SPRINT1.md`, **antes** de que
+> `CONTRATO-INTEGRACION-G04.md` cerrara las decisiones CI-01 a CI-54. Tres de esas decisiones
+> cambian lo que dicen los pasos de abajo. El contrato manda; los pasos originales se conservan
+> tachados en lo que corresponde para que se vea qué cambió y por qué.
+>
+> **1 · No hay congelamiento de versión (CI-12, CI-13).**
+> La referencia del contenido al ítem es **flotante**: `contenido_item` guarda `item_id` y el
+> desafío sirve **siempre la última versión**. Quien estampa la versión es **la respuesta del
+> alumno** (`respuesta.item_version_id`), no la composición. La `⚠ Trampa` original de HU14 decía
+> exactamente lo contrario y **quedó invertida**. El motivo del cambio es RF-CUR-05: el profesor
+> tiene que poder arreglar una errata y que surta efecto en los alumnos que todavía no respondieron.
+> Corolario (CI-53): lo autoritativo al corregir es la estampa de cada respuesta, nunca
+> `contenidoRef.version`.
+>
+> **2 · `POST /teoricos/desafios` lo llama el front, no el Tema 03 (CI-03), y se renombra.**
+> El front compone: primero el contenido acá, que devuelve un `contenidoId`, y después el desafío
+> en el 03 con la referencia ya formada. La entidad deja de llamarse `desafio_teorico` y pasa a ser
+> **`contenido`**; el endpoint es **`POST /teoricos/contenidos`**. No existe ningún contrato de
+> composición entre el 03 y nosotros — ese es el punto de CI-03.
+>
+> **3 · La entrega del alumno no nos llega a nosotros (CI-22).**
+> Llega al Tema 03, que valida, registra y **nos despacha** con
+> `{ entregaId, desafioId, alumnoId, cursoCohorteId, intento, contenidoBinding, respuesta }`.
+> Nuestro endpoint de recepción es **`POST /teoricos/evaluaciones`**, lo consume un servicio y no
+> un alumno, responde **siempre `202` con `{ evaluacionId, estado, correccion }` y nunca la nota**
+> (CI-23, CI-24), y `entregaId` es la clave de idempotencia (CI-25). En consecuencia, en HU16 el
+> `alumnoId` **sí** viene en el body —lo manda el 03, que es su dueño— y el paso 3 original
+> («resolverlo del token, el DTO no tiene el campo») ya no aplica: lo que reemplaza a esa garantía
+> es la validación de la firma del despacho.
+>
+> **4 · La lectura del alumno exige un vale firmado (CI-18, CI-21).**
+> En HU15, la pertenencia a cohorte deja de ser la única autorización: el 03 emite un vale de
+> lectura de corta vida al abrir el desafío y nosotros validamos la firma sin llamar a nadie.
+> Y son **dos endpoints con dos proyecciones separadas** —`/vista-alumno` y `/vista-profesor`—,
+> no uno filtrado por rol (CI-17).
+>
+> Lo que **no** cambió y sigue valiendo palabra por palabra: el test de no-fuga de criterio sobre el
+> JSON crudo (HU15 paso 5), la inmutabilidad de `item_version` (HU10) y toda la épica E-03.
+
 ---
 
 ### ▸ G04-HU14 — Composición del desafío teórico con congelado de versión
@@ -905,10 +946,13 @@ nos llama: si todavía no está, se implementa contra el contrato del diseño y 
 
 **Listo cuando** editar un ítem del banco no altera ningún desafío ya compuesto.
 
-**⚠ Trampa.** Guardar `item_id` y resolver la versión en la lectura anula D-04 por completo:
-todo compila, todo pasa, y el día que un profesor corrija una falta de ortografía cambia el
-enunciado de un examen ya rendido. La FK va a `item_version(id)`, y no hay ninguna columna
-`item_id` en `desafio_teorico_item`.
+**⚠ Trampa** *(invertida por CI-12 y CI-13 — ver la corrección al inicio de la épica)*.
+Guardar `item_version_id` en la composición **pinnea** la referencia y rompe RF-CUR-05: el profesor
+arregla una errata y ningún alumno la ve hasta que alguien suba la versión del desafío a mano.
+La columna es **`item_id`**, la versión se resuelve en cada lectura, y la FK a `item_version(id)`
+va en **`respuesta`**, que es donde la estampa tiene sentido: dice qué vio ese alumno.
+Lo que D-04 protege —que un examen ya rendido no cambie— lo garantiza la estampa de la respuesta,
+no el pinneo de la composición.
 
 ---
 
