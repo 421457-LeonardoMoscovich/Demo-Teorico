@@ -1,0 +1,929 @@
+/* ============================================================================
+   ED-CADE · sistema de diseño de la plataforma gamificada
+   Portado del canvas "Desafios Teoricos.dc.html" (Claude Design).
+
+   La regla que gobierna todo: lo arcade vive en el MARCO —barra, títulos,
+   botones, badges, el marcador de nota— y el CONTENIDO adentro es legible.
+   Un alumno puede tener que leer veinte consignas seguidas, y una fuente
+   pixel en un enunciado largo lo agota.
+   ========================================================================= */
+
+/* ---------------------------------------------------------------- tokens - */
+
+:root {
+  /* Modo oscuro: es el que manda. La paleta neón nació para #0D0B1E. */
+  --fondo: #0d0b1e;
+  --papel: #17132c;
+  --papel-alt: #1f1a3a;
+  --linea: #332c55;
+  --tinta: #f1edff;
+  --tinta-tenue: #a79fc9;
+
+  --cian: #00e5ff;
+  --violeta: #8b5cf6;
+  --magenta: #ff2e93;
+  --amarillo: #ffd60a;
+
+  --on-cian: #0b0716;
+  --on-violeta: #0b0716;
+  --on-amarillo: #0b0716;
+
+  --disabled-bg: #2a2640;
+  --disabled-fg: #6b647f;
+  --disabled-border: #3a3550;
+
+  --sombra: #000000;
+  --fondo-pre: #000000;
+
+  /* El brillo neón existe solo en oscuro. En claro estas variables quedan
+     vacías y desaparecen de la lista de sombras sin romper nada. */
+  --glow-cian: , 0 0 14px #00e5ff99;
+  --glow-cian-fuerte: , 0 0 22px #00e5ff99;
+  --glow-cian-suave: , 0 0 6px #00e5ff99;
+  --glow-violeta: , 0 0 14px #8b5cf699;
+  --glow-violeta-fuerte: , 0 0 22px #8b5cf699;
+  --glow-violeta-suave: , 0 0 6px #8b5cf699;
+  --glow-amarillo: , 0 0 14px #ffd60a99;
+  --glow-amarillo-fuerte: , 0 0 22px #ffd60a99;
+  --glow-amarillo-suave: , 0 0 6px #ffd60a99;
+  --glow-chip: , 0 0 10px #00e5ff99;
+  --glow-foco: 0 0 0 3px #00e5ff33;
+  --sombra-nota: 0 0 18px #8b5cf6aa;
+
+  --pixel: "Press Start 2P", ui-monospace, monospace;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radio: 4px;
+
+  color-scheme: dark;
+}
+
+/* El modo claro es el difícil: el cian sobre blanco es ilegible como TEXTO,
+   así que acá abajo es relleno y borde, y el texto va en violeta o casi negro. */
+:root[data-tema="light"] {
+  --fondo: #f8fafc;
+  --papel: #ffffff;
+  --papel-alt: #eef1f6;
+  --linea: #d7dce5;
+  --tinta: #16112b;
+  --tinta-tenue: #5b5470;
+
+  --cian: #00e5ff;
+  --violeta: #7c3aed;
+  --magenta: #db2777;
+  --amarillo: #ca8a04;
+
+  --on-cian: #0b0716;
+  --on-violeta: #ffffff;
+  --on-amarillo: #0b0716;
+
+  --disabled-bg: #e4e6ec;
+  --disabled-fg: #9aa0ac;
+  --disabled-border: #cbd0d8;
+
+  --fondo-pre: #0f0a1f;
+
+  --glow-cian: ;
+  --glow-cian-fuerte: ;
+  --glow-cian-suave: ;
+  --glow-violeta: ;
+  --glow-violeta-fuerte: ;
+  --glow-violeta-suave: ;
+  --glow-amarillo: ;
+  --glow-amarillo-fuerte: ;
+  --glow-amarillo-suave: ;
+  --glow-chip: ;
+  --glow-foco: 0 0 0 3px #00e5ff55;
+  --sombra-nota: none;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.35);
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--tinta);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 32px 64px;
+}
+
+/* --------------------------------------------------------- tipografía --- */
+
+h1,
+h2,
+h3 {
+  font-family: var(--pixel);
+  color: var(--tinta);
+  font-weight: 400;
+}
+
+h1 {
+  font-size: 20px;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+h2 {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+
+h3 {
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--tinta);
+  background: var(--papel-alt);
+  padding: 2px 6px;
+  border-radius: var(--radio);
+}
+
+pre {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--violeta);
+  background: var(--fondo-pre);
+  border: 2px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 16px 18px;
+  overflow-x: auto;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.ayuda {
+  font-size: 13px;
+  color: var(--tinta-tenue);
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+
+.vacio {
+  font-size: 13px;
+  color: var(--tinta-tenue);
+  padding: 16px 0;
+}
+
+.ok {
+  font-size: 13px;
+  color: var(--violeta);
+  margin: 8px 0;
+}
+
+.error {
+  font-size: 13px;
+  color: var(--magenta);
+  background: var(--papel-alt);
+  border: 2px solid var(--magenta);
+  border-radius: var(--radio);
+  padding: 12px 14px;
+  margin: 12px 0;
+}
+
+/* El campo navegable que devuelve el backend: criterio.correctas[0].
+   Va en monoespaciada porque es un identificador, no una frase. */
+.error .campo {
+  font-family: var(--mono);
+  font-size: 11px;
+  opacity: 0.85;
+  margin-left: 8px;
+}
+
+/* -------------------------------------------------------------- barra --- */
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 0 32px;
+  height: 68px;
+  background: var(--papel);
+  border-bottom: 2px solid var(--linea);
+}
+
+.barra .marca {
+  font-family: var(--pixel);
+  font-size: 13px;
+  color: var(--tinta);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.barra .marca em {
+  font-family: var(--pixel);
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--amarillo);
+  background: var(--papel-alt);
+  color: var(--tinta-tenue);
+}
+
+.barra a {
+  font-family: var(--pixel);
+  font-size: 11px;
+  color: var(--tinta-tenue);
+  letter-spacing: 0.5px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.barra a.activo {
+  color: var(--tinta);
+  border-bottom-color: var(--violeta);
+}
+
+.barra .espacio {
+  flex: 1;
+}
+
+.barra .quien {
+  font-size: 13px;
+  color: var(--tinta-tenue);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ tarjetas --- */
+
+.tarjeta {
+  background: var(--papel);
+  border: 2px solid var(--linea);
+  border-radius: var(--radio);
+  box-shadow: 4px 4px 0 var(--sombra);
+  padding: 28px;
+}
+
+.tarjeta.ancho {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.centro {
+  min-height: 62vh;
+  display: grid;
+  place-items: center;
+}
+
+.login {
+  width: 400px;
+}
+
+.login h1 {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.columnas {
+  display: grid;
+  /* minmax(0,·) y no 1fr a secas: con `1fr` la columna nunca se achica por
+     debajo de su contenido, y un boton ancho en pixel font desborda la pagina. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .columnas {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------- formularios --- */
+
+label {
+  display: block;
+  font-size: 12px;
+  color: var(--tinta-tenue);
+  margin-bottom: 16px;
+}
+
+input,
+select,
+textarea {
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 11px 13px;
+  border-radius: var(--radio);
+  border: 2px solid var(--linea);
+  background: var(--papel-alt);
+  color: var(--tinta);
+  width: 100%;
+  margin-top: 6px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--cian);
+  box-shadow: var(--glow-foco);
+  outline: none;
+}
+
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched {
+  border-color: var(--magenta);
+}
+
+label.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--tinta);
+  margin-bottom: 7px;
+}
+
+label.check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--violeta);
+}
+
+.filtro {
+  max-width: 260px;
+}
+
+/* --------------------------------------------------------------- botones - */
+
+/* Primario = cian. El sistema lo fija; no se elige por pantalla. */
+button,
+.boton {
+  font-family: var(--pixel);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  padding: 14px 22px;
+  border-radius: var(--radio);
+  border: 2px solid var(--sombra);
+  background: var(--cian);
+  color: var(--on-cian);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: transform 0.06s ease;
+  box-shadow: 4px 4px 0 var(--sombra) var(--glow-cian);
+}
+
+button:hover:not(:disabled),
+.boton:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--sombra) var(--glow-cian-fuerte);
+}
+
+button:active:not(:disabled),
+.boton:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--sombra) var(--glow-cian-suave);
+}
+
+button:disabled {
+  background: var(--disabled-bg);
+  color: var(--disabled-fg);
+  border-color: var(--disabled-border);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Fantasma neutro: el secundario real del sistema para acciones de bajo peso. */
+button.secundario {
+  font-size: 11px;
+  padding: 10px 16px;
+  background: transparent;
+  color: var(--tinta-tenue);
+  border: 2px solid var(--linea);
+  box-shadow: none;
+}
+
+button.secundario:hover:not(:disabled) {
+  background: var(--papel-alt);
+  transform: translate(-1px, -1px);
+  box-shadow: none;
+}
+
+button.secundario:active:not(:disabled) {
+  background: var(--papel-alt);
+  transform: translate(1px, 1px);
+}
+
+button.peligro {
+  font-size: 11px;
+  padding: 10px 16px;
+  background: transparent;
+  color: var(--magenta);
+  border: 2px solid var(--magenta);
+  box-shadow: none;
+}
+
+button.peligro:hover:not(:disabled) {
+  background: var(--papel-alt);
+  transform: translate(-1px, -1px);
+  box-shadow: none;
+}
+
+.atajos {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.atajos button {
+  flex: 1;
+  font-size: 10px;
+  padding: 12px 8px;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------- listas --- */
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lista li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 0;
+  border-top: 2px solid var(--linea);
+}
+
+.lista li p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.acciones-fila {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+.titulo-desafio {
+  font-family: var(--pixel);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0 0 10px !important;
+}
+
+.etiqueta {
+  font-family: var(--pixel);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--linea);
+  background: var(--papel-alt);
+  color: var(--tinta-tenue);
+  display: inline-block;
+  white-space: nowrap;
+  margin-right: 6px;
+}
+
+.etiqueta.diferida {
+  border-color: var(--amarillo);
+  color: var(--amarillo);
+}
+
+.version {
+  font-size: 11px;
+  color: var(--tinta-tenue);
+  margin-left: 8px;
+}
+
+/* El número de orden: un disco violeta, el mismo en las cinco pantallas. */
+.posicion {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--papel-alt);
+  border: 2px solid var(--violeta);
+  color: var(--violeta);
+  font-family: var(--pixel);
+  font-size: 11px;
+  flex: none;
+}
+
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.fila input,
+.fila select {
+  margin-top: 0;
+}
+
+/* Sin esto el select se lleva todo el ancho (hereda width:100%) y el concepto
+   de la izquierda queda partido en dos lineas. */
+.fila select {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+
+.fila .concepto {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--tinta);
+}
+
+.fila.orden .posicion {
+  margin-right: 2px;
+}
+
+/* ------------------------------------------------------ pesos (armar) --- */
+
+.linea-peso {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 2px solid var(--linea);
+}
+
+.linea-texto {
+  flex: 1;
+}
+
+.linea-texto p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-family: var(--pixel);
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  padding: 8px 14px;
+  border-radius: var(--radio);
+  border: 2px solid var(--linea);
+  background: var(--papel-alt);
+  color: var(--tinta-tenue);
+  text-transform: none;
+  box-shadow: none;
+}
+
+.chip:hover:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--violeta);
+}
+
+.chip.activo {
+  background: var(--cian);
+  color: var(--on-cian);
+  border-color: var(--sombra);
+  box-shadow: 2px 2px 0 var(--sombra) var(--glow-chip);
+}
+
+input.peso {
+  width: 82px;
+  margin-top: 0;
+  text-align: right;
+}
+
+.totalizador {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 2px solid var(--cian);
+  border-radius: var(--radio);
+  background: var(--papel-alt);
+  margin: 20px 0;
+  font-size: 13px;
+  color: var(--tinta-tenue);
+}
+
+.totalizador strong {
+  font-family: var(--pixel);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--violeta);
+}
+
+.totalizador span {
+  flex: 1;
+}
+
+.totalizador.mal {
+  border-color: var(--magenta);
+}
+
+.totalizador.mal strong {
+  color: var(--magenta);
+}
+
+.ficha {
+  margin-top: 24px;
+  border-top: 2px solid var(--linea);
+  padding-top: 20px;
+}
+
+/* -------------------------------------------------- curso y roadmap --- */
+
+.unidad {
+  border-top: 2px solid var(--linea);
+  padding: 20px 0;
+}
+
+.unidad:first-of-type {
+  border-top: none;
+}
+
+.unidad h3 {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  align-items: center;
+}
+
+.unidad h3 .posicion {
+  font-family: var(--pixel);
+}
+
+.descripcion-unidad {
+  margin: 8px 0 12px 40px;
+}
+
+.unidad .lista {
+  margin: 0 0 12px 40px;
+}
+
+/* Dentro de una unidad las filas son mas apretadas: son subordinadas. */
+.lista.compacta li {
+  padding: 10px 0;
+  border-top: 1px solid var(--linea);
+}
+
+.lista.compacta li:first-child {
+  border-top: none;
+}
+
+.unidad > button {
+  margin-left: 40px;
+}
+
+.tipos-desafio {
+  margin-left: 40px;
+  padding: 16px 18px;
+  border: 2px solid var(--violeta);
+  border-radius: var(--radio);
+  background: var(--papel-alt);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tipos-desafio .ayuda {
+  flex-basis: 100%;
+  margin: 0 0 4px;
+}
+
+/* Rotulo de procedencia: dice que grupo sirve ese dato. Es lo que hace visible
+   la frontera en la demo, asi que se lee, no se esconde. */
+.fuente {
+  display: inline-block;
+  font-family: var(--pixel);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--cian);
+  color: var(--cian);
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+:root[data-tema="light"] .fuente {
+  /* El cian no se lee como texto sobre blanco: en claro el rotulo va en
+     violeta y el cian queda de borde. */
+  color: var(--violeta);
+  border-color: var(--violeta);
+}
+
+/* -------------------------------------------------- responder / examen --- */
+
+.cabecera-cuestionario {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--linea);
+  margin-bottom: 8px;
+}
+
+.contestadas {
+  font-size: 13px;
+  color: var(--tinta-tenue);
+  white-space: nowrap;
+}
+
+.pregunta {
+  border-top: 2px solid var(--linea);
+  padding: 22px 0;
+}
+
+.pregunta h3 {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pregunta h3 .posicion,
+.pregunta h3 .peso-pregunta {
+  font-family: var(--pixel);
+  margin-top: 1px;
+}
+
+.pregunta:first-of-type {
+  border-top: none;
+}
+
+.peso-pregunta {
+  margin-left: auto;
+  font-family: var(--pixel);
+  font-size: 11px;
+  color: var(--tinta-tenue);
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+
+.peso-pregunta.cero {
+  color: var(--magenta);
+  border-color: var(--magenta);
+}
+
+.afirmacion {
+  font-style: italic;
+  font-size: 14px;
+  color: var(--tinta);
+  margin: 12px 0;
+}
+
+/* La opción elegida se marca con una barra violeta a la izquierda, no solo
+   con el radio: el estado se ve de un vistazo al revisar antes de entregar. */
+.pregunta label.check {
+  padding: 10px 12px;
+  border-radius: var(--radio);
+  border-left: 3px solid transparent;
+  margin-bottom: 2px;
+}
+
+.pregunta label.check.elegida {
+  border-left-color: var(--violeta);
+  background: var(--papel-alt);
+  font-weight: 600;
+}
+
+.acciones {
+  border-top: 2px solid var(--linea);
+  padding-top: 24px;
+  margin-top: 8px;
+}
+
+.acciones .ayuda {
+  margin: 14px 0 0;
+}
+
+/* ----------------------------------------------------------- resultado --- */
+
+.cabecera-resultado {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid var(--linea);
+  margin-bottom: 8px;
+}
+
+/* El marcador: una placa de arcade, no un círculo de dashboard. */
+.nota {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  /* 176 y no 150: la nota llega a tres digitos (100) y el sufijo /100 no
+     puede quedar montado sobre el borde de la placa. */
+  width: 176px;
+  height: 110px;
+  flex: none;
+  padding: 0 10px;
+  background: var(--fondo-pre);
+  border: 3px solid var(--violeta);
+  border-radius: var(--radio);
+  box-shadow: 4px 4px 0 var(--sombra);
+  font-family: var(--pixel);
+  font-size: 38px;
+  color: var(--violeta);
+  text-shadow: var(--sombra-nota);
+}
+
+.nota .sufijo {
+  font-family: var(--pixel);
+  font-size: 12px;
+  color: var(--tinta-tenue);
+  text-shadow: none;
+}
+
+/* Correcta / incorrecta, dicho con palabra y con color: quien no distingue
+   el violeta del magenta igual lee el estado. */
+.contestaste {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0;
+}
+
+.contestaste code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.marca-correcta,
+.marca-incorrecta {
+  font-family: var(--pixel);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.marca-correcta {
+  border: 1px solid var(--violeta);
+  color: var(--violeta);
+}
+
+.marca-incorrecta {
+  border: 1px solid var(--magenta);
+  color: var(--magenta);
+}
+
+.pregunta.mal .posicion {
+  border-color: var(--magenta);
+  color: var(--magenta);
+}

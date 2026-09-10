@@ -1,0 +1,71 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: g04-postgres
+    environment:
+      POSTGRES_DB: g04
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      # OJO: los scripts de aca corren SOLO si el volumen esta vacio.
+      # Al cambiar 00-roles.sql hay que hacer: docker compose down -v
+      - ./docker/postgres:/docker-entrypoint-initdb.d:ro
+      - g04-datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d g04"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  ms-teoricos-encuestas:
+    build:
+      context: ./ms-teoricos-encuestas
+    container_name: g04-ms-teoricos
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/g04
+      DB_OWNER_USER: app_owner
+      DB_OWNER_PASSWORD: owner
+      DB_TEORICOS_USER: app_teoricos
+      DB_TEORICOS_PASSWORD: teoricos
+      SECRETO_SESION: ${SECRETO_SESION:-alfa-g04-secreto-de-sesion-no-usar-en-produccion}
+      SECRETO_VALE: ${SECRETO_VALE:-alfa-g04-secreto-del-vale-no-usar-en-produccion}
+      CLAVE_DESPACHO: ${CLAVE_DESPACHO:-alfa-g04-clave-de-despacho}
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8081/actuator/health | grep -q UP"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  stub-tema-03:
+    build:
+      context: ./stub-tema-03
+    container_name: g04-stub-03
+    depends_on:
+      ms-teoricos-encuestas:
+        condition: service_healthy
+    environment:
+      URL_TEORICOS: http://ms-teoricos-encuestas:8081
+      SECRETO_VALE: ${SECRETO_VALE:-alfa-g04-secreto-del-vale-no-usar-en-produccion}
+      CLAVE_DESPACHO: ${CLAVE_DESPACHO:-alfa-g04-clave-de-despacho}
+    ports:
+      - "8082:8082"
+
+  front-alfa:
+    build:
+      context: ./front-alfa
+    container_name: g04-front
+    depends_on:
+      - stub-tema-03
+    ports:
+      - "4200:80"
+
+volumes:
+  g04-datos:

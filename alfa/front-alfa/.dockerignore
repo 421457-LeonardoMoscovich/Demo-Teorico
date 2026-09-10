@@ -1,0 +1,7 @@
+# Sin esto el contexto de build se lleva node_modules entero (cientos de MB) y
+# el dist local, que ademas pisaria el que construye la imagen.
+node_modules
+dist
+.angular
+.git
+*.log

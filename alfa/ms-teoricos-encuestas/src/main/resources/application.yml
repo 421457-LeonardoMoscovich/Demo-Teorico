@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: ms-teoricos-encuestas
+  # Flyway lo construimos a mano, un migrador por esquema (G04-HU01 paso 2).
+  flyway:
+    enabled: false
+  jpa:
+    # Nunca `update`: si Hibernate puede crear tablas, las migraciones dejan
+    # de ser la fuente de verdad.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: teoricos
+        format_sql: false
+
+server:
+  port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+app:
+  datasource:
+    # app_owner: el UNICO con DDL. Ningun repositorio lo usa.
+    migraciones:
+      url: ${DB_URL:jdbc:postgresql://localhost:5432/g04}
+      username: ${DB_OWNER_USER:app_owner}
+      password: ${DB_OWNER_PASSWORD:owner}
+    # app_teoricos: sin permisos sobre ningun otro esquema.
+    teoricos:
+      url: ${DB_URL:jdbc:postgresql://localhost:5432/g04}
+      username: ${DB_TEORICOS_USER:app_teoricos}
+      password: ${DB_TEORICOS_PASSWORD:teoricos}
+  demo:
+    # Siembra el banco de items al arrancar, SOLO si esta vacio. Es andamiaje de
+    # la demo: los tests lo apagan y se borra cuando la alfa deje de serlo.
+    sembrar: ${DEMO_SEMBRAR:true}
+  seguridad:
+    # Sesion de usuario: lo emite nuestro adaptador falso de identidad.
+    # Cuando exista el Tema 01, se cambia el adaptador y esto se cae.
+    secreto-sesion: ${SECRETO_SESION:alfa-g04-secreto-de-sesion-no-usar-en-produccion}
+    # Vale de lectura (CI-18): lo firma el Tema 03, nosotros solo validamos.
+    # Secreto DISTINTO del de sesion, a proposito: son dos mecanismos distintos.
+    secreto-vale: ${SECRETO_VALE:alfa-g04-secreto-del-vale-no-usar-en-produccion}
+    # Despacho de entregas (CI-22): lo llama un servicio, no un alumno.
+    clave-despacho: ${CLAVE_DESPACHO:alfa-g04-clave-de-despacho}
+
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: WARN

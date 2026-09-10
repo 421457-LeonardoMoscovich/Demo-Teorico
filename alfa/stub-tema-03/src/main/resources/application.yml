@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: stub-tema-03
+
+server:
+  port: 8082
+
+stub:
+  url-teoricos: ${URL_TEORICOS:http://localhost:8081}
+  # Los dos secretos compartidos con ms-teoricos-encuestas, y son DISTINTOS
+  # entre si a proposito: uno autentica un servicio, el otro autoriza una
+  # lectura. Que sean dos deja ver en la demo que son dos mecanismos.
+  clave-despacho: ${CLAVE_DESPACHO:alfa-g04-clave-de-despacho}
+  secreto-vale: ${SECRETO_VALE:alfa-g04-secreto-del-vale-no-usar-en-produccion}
+  minutos-vale: ${MINUTOS_VALE:15}

@@ -1,0 +1,4 @@
+# target/ local no va al contexto: la imagen compila lo suyo desde cero.
+target
+.git
+*.log
