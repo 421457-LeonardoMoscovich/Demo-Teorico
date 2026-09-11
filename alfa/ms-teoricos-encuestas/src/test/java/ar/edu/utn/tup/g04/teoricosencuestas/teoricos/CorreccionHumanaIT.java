@@ -120,23 +120,49 @@ class CorreccionHumanaIT extends BaseIT {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
+    /**
+     * El unico item del desglose que cumple `pendiente`, y falla si hay mas de
+     * uno: si algun dia el cuestionario del helper deja de tener exactamente un
+     * automatico y un item a mano, el test tiene que romperse acá y no elegir
+     * uno cualquiera en silencio.
+     */
+    private JsonNode detalleDonde(JsonNode resultado, boolean pendiente) {
+        JsonNode encontrado = null;
+        for (JsonNode d : resultado.get("detalle")) {
+            if (d.get("pendiente").asBoolean() == pendiente) {
+                assertThat(encontrado).as("hay mas de un item con pendiente=" + pendiente).isNull();
+                encontrado = d;
+            }
+        }
+        assertThat(encontrado).as("no hay ningun item con pendiente=" + pendiente).isNotNull();
+        return encontrado;
+    }
+
     @Test
     void la_entrega_queda_sin_nota_con_lo_automatico_ya_puntuado() throws Exception {
         UUID entregaId = entregarMixto(bearerProfesor(), marca());
 
-        mvc.perform(get("/teoricos/evaluaciones/{id}", entregaId)
-                        .header("Authorization", bearerAlumno()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.estado").value("EN_ESPERA"))
-                // La nota es del cuestionario entero o no es: nada de notas parciales.
-                .andExpect(jsonPath("$.nota").doesNotExist())
-                // Lo automatico YA esta corregido, y el alumno lo puede ver.
-                .andExpect(jsonPath("$.detalle[0].obtenido").value(40))
-                .andExpect(jsonPath("$.detalle[0].pendiente").value(false))
-                // Lo abierto es un hueco, no un 0: decirle 0 seria mentirle.
-                .andExpect(jsonPath("$.detalle[1].obtenido").doesNotExist())
-                .andExpect(jsonPath("$.detalle[1].correcto").doesNotExist())
-                .andExpect(jsonPath("$.detalle[1].pendiente").value(true));
+        JsonNode resultado = json.readTree(
+                mvc.perform(get("/teoricos/evaluaciones/{id}", entregaId)
+                                .header("Authorization", bearerAlumno()))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.estado").value("EN_ESPERA"))
+                        // La nota es del cuestionario entero o no es: nada de notas parciales.
+                        .andExpect(jsonPath("$.nota").doesNotExist())
+                        .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8));
+
+        // Por naturaleza y no por posicion, igual que `entregarMixto` mas arriba:
+        // el desglose sale en el orden barajado de ESTE alumno (CI-19), que
+        // depende del contenidoId, que es nuevo en cada corrida. Con indices fijos
+        // el test pasaba o fallaba segun que UUID le tocara.
+        JsonNode automatico = detalleDonde(resultado, false);
+        JsonNode aMano = detalleDonde(resultado, true);
+
+        // Lo automatico YA esta corregido, y el alumno lo puede ver.
+        assertThat(automatico.get("obtenido").asInt()).isEqualTo(40);
+        // Lo abierto es un hueco, no un 0: decirle 0 seria mentirle.
+        assertThat(aMano.hasNonNull("obtenido")).isFalse();
+        assertThat(aMano.hasNonNull("correcto")).isFalse();
     }
 
     @Test

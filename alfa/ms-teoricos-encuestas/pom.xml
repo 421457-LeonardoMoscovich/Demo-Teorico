@@ -113,9 +113,42 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+      <!--
+        Dos cosas que la maquina rompia y el codigo no, las dos arregladas aca
+        para que no dependan de lo que cada uno tenga configurado en su HOME.
+
+        `user.timezone`: la JVM de Windows puede resolver la zona local a un id
+        que no existe en IANA (`America/Buenos_Aires` en vez de
+        `America/Argentina/Buenos_Aires`). El driver de Postgres se la manda al
+        servidor al conectar y el servidor la rechaza con
+        `FATAL: invalid value for parameter "TimeZone"`. Se fija UTC y no la
+        zona de Argentina porque UTC es lo que corre el contenedor en
+        produccion: los tests quedan mas cerca de lo real, no mas lejos. El
+        dominio guarda `Instant`, asi que nada depende de la zona local.
+
+        `api.version`: Testcontainers 1.20.4 negocia con el demonio una version
+        de API vieja y Docker Engine 29 —que subio el minimo a 1.44— le
+        contesta 400 a /info. El sintoma engania: reporta "Could not find a
+        valid Docker environment", como si Docker no estuviera corriendo,
+        mientras el CLI funciona perfecto al lado. Cuando se suba
+        Testcontainers a una version que negocie sola, este flag sobra.
+        (No sirve ponerlo en un `testcontainers.properties` del classpath:
+        Testcontainers lee esa clave solo de propiedades de sistema, de
+        variables de entorno y del `~/.testcontainers.properties` de cada uno.)
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-Duser.timezone=UTC</argLine>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <argLine>-Duser.timezone=UTC -Dapi.version=1.44</argLine>
+        </configuration>
         <executions>
           <execution>
             <goals>

@@ -289,11 +289,22 @@ Los que valen la pena leer:
 | `CorreccionHumanaIT` | **El que prueba que el contrato con el 03 siempre fue asincrónico.** El evento no sale hasta que el profesor pone el último puntaje |
 | `BarajadoPorAlumnoIT` | Dos alumnos ven otro orden, el mismo alumno ve siempre el suyo, y el desglose sale como él las vio |
 
-### Si Testcontainers no encuentra Docker
+### Si los tests no arrancan
 
-En algunas máquinas —Docker Desktop en Windows sirviendo el engine por *named pipe*—
-Testcontainers no logra hablar con el demonio aunque el CLI funcione. La salida es correr los
-tests contra una base ya levantada:
+Dos cosas de entorno rompían la suite entera en Windows, y las dos están arregladas en el
+`argLine` del `pom.xml`. Se documentan porque el síntoma de la primera es engañoso y hace
+perder una tarde:
+
+| Síntoma | Causa real |
+|---|---|
+| `Could not find a valid Docker environment`, con el CLI de Docker funcionando al lado | Testcontainers 1.20.4 negocia una versión de API que Docker Engine 29 ya no acepta. Se fija con `-Dapi.version=1.44` |
+| `FATAL: invalid value for parameter "TimeZone"` | La JVM resuelve la zona local a `America/Buenos_Aires`, que no existe en IANA. Los tests corren en UTC, igual que el contenedor en producción |
+
+Si aparece el primer mensaje otra vez después de actualizar Docker, el número de `api.version`
+quedó viejo: subir Testcontainers es el arreglo de fondo y deja ese flag de sobra.
+
+Queda además una salida para una máquina sin Docker: correr los tests contra una base ya
+levantada.
 
 ```bash
 docker compose up -d postgres
