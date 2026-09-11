@@ -9,7 +9,9 @@ import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistenci
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.CrearItemRequest;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.ItemDetalleResponse;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.ItemResumenResponse;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.VistaAlumnoResponse;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
@@ -78,6 +80,30 @@ public class ItemController {
         return detalle(item, banco.versionVigente(item));
     }
 
+    @Operation(summary = "El ítem como lo va a ver el alumno",
+            description = """
+                    Vista previa para el profesor, antes de componer (CI-59).
+
+                    **Devuelve la misma clase que el endpoint del alumno** (`ItemParaAlumno`,
+                    de `VistaAlumnoResponse`), y eso es lo que la hace valer: no es una
+                    maqueta de cómo se vería, es literalmente la proyección que se sirve en
+                    el examen. Si algún día filtrara un campo de corrección, filtraría en
+                    los dos lados o en ninguno — no puede haber una vista previa "limpia"
+                    sobre un endpoint que no lo está.
+
+                    El `orden` y el `puntaje` van en cero: los dos los decide el profesor al
+                    componer, y todavía no compuso nada.
+                    """)
+    @GetMapping("/{id}/vista-previa")
+    public VistaAlumnoResponse.ItemParaAlumno vistaPrevia(@PathVariable UUID id) {
+        ItemEntity item = banco.exigirPropio(identidad.id(), id);
+        ItemVersionEntity version = banco.versionVigente(item);
+        return new VistaAlumnoResponse.ItemParaAlumno(
+                version.getId(), item.getTipo(), version.getEnunciado(),
+                0, 0,
+                json.leerPayload(item.getTipo(), json.aNodo(version.getPayload())));
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void darDeBaja(@PathVariable UUID id) {
@@ -86,13 +112,15 @@ public class ItemController {
 
     private ItemResumenResponse resumen(ItemEntity item, ItemVersionEntity version) {
         return new ItemResumenResponse(item.getId(), item.getTipo(), version.getEnunciado(),
-                version.getVersion(), item.getTipo().esAutocorregible());
+                version.getVersion(), item.getTipo().esAutocorregible(), item.getEstado());
     }
 
     private ItemDetalleResponse detalle(ItemEntity item, ItemVersionEntity version) {
         return new ItemDetalleResponse(item.getId(), item.getTipo(), version.getEnunciado(),
                 version.getVersion(), version.getId(),
                 json.aNodo(version.getPayload()),
-                version.getCriterio() == null ? null : json.aNodo(version.getCriterio()));
+                version.getCriterio() == null ? null : json.aNodo(version.getCriterio()),
+                version.getDevolucion() == null ? null : json.aNodo(version.getDevolucion()),
+                item.getEstado());
     }
 }

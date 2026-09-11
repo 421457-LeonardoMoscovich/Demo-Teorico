@@ -4,6 +4,9 @@ import { ApiService } from '../core/api.service';
 import { PendientesService } from '../core/pendientes.service';
 import { ErrorApi, Pendiente } from '../core/modelos';
 
+/** Lo que tarda la fila corregida en irse. Igual que `--dur-salida` en el CSS. */
+const SALIDA_MS = 180;
+
 /**
  * La cola de correccion humana (D-01).
  *
@@ -27,9 +30,9 @@ import { ErrorApi, Pendiente } from '../core/modelos';
       </header>
 
       <p class="ayuda">
-        Respuestas abiertas que no puede puntuar nadie más que vos. Mientras quede una sin
-        corregir, ese alumno no tiene nota — y el Tema 03 tampoco se enteró: el evento con la nota
-        recién sale cuando ponés el último puntaje.
+        Respuestas abiertas que no puede puntuar nadie más que vos. Mientras quede una sin corregir,
+        ese alumno no tiene nota — y el Tema 03 tampoco se enteró: el evento con la nota recién sale
+        cuando ponés el último puntaje.
       </p>
 
       @if (cargando()) {
@@ -45,8 +48,12 @@ import { ErrorApi, Pendiente } from '../core/modelos';
         <p class="ok" role="status">{{ ok() }}</p>
       }
 
-      @for (p of pendientes(); track p.detalleId) {
-        <article class="correccion">
+      @for (p of pendientes(); track p.detalleId; let idx = $index) {
+        <article
+          class="correccion"
+          [style.--orden]="idx"
+          [class.saliendo]="saliendo() === p.detalleId"
+        >
           <h3>
             <span class="posicion">{{ p.intento }}</span>
             {{ p.enunciado }}
@@ -117,6 +124,8 @@ export class ProfesorCorreccionesPage {
   readonly guardando = signal<string | null>(null);
   readonly error = signal<ErrorApi | null>(null);
   readonly ok = signal('');
+  /** La fila que se esta yendo: existe solo mientras dura la salida. */
+  readonly saliendo = signal<string | null>(null);
 
   /** El puntaje tipeado, por detalle. */
   puntajes: Record<string, number | null> = {};
@@ -161,7 +170,14 @@ export class ProfesorCorreccionesPage {
             ? 'Puntaje guardado. Con este se cerró el cuestionario: la nota ya salió hacia el Tema 03.'
             : 'Puntaje guardado. Todavía le falta otra pregunta a esta entrega.',
         );
-        this.pendientes.update((lista) => lista.filter((x) => x.detalleId !== p.detalleId));
+        // La fila no se borra en el mismo tick: primero se va —se apaga y se
+        // corre— y recien despues sale del arreglo. Sin esto la cola pega un
+        // salto y la profesora no sabe cual de las tres corrigio.
+        this.saliendo.set(p.detalleId);
+        setTimeout(() => {
+          this.pendientes.update((lista) => lista.filter((x) => x.detalleId !== p.detalleId));
+          this.saliendo.set(null);
+        }, SALIDA_MS);
         // Que el badge de la barra baje ya, sin esperar al próximo sondeo.
         this.contador.refrescar();
       },

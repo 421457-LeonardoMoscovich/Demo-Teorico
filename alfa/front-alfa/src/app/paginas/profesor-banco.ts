@@ -1,12 +1,24 @@
 import { Component, inject, signal } from '@angular/core';
+import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../core/api.service';
-import { ErrorApi, ItemDetalle, ItemResumen, TIPOS, TipoDeItem } from '../core/modelos';
+import {
+  ErrorApi,
+  ItemDetalle,
+  ItemResumen,
+  TIPOS,
+  TipoDeItem,
+  VistaPreviaItem,
+} from '../core/modelos';
 
 interface FilaSimple {
   id: string;
   texto: string;
   correcta: boolean;
+  /** Cuanto paga marcarla, en % del peso del item. Solo se usa en modo parcial. */
+  porcentaje: number;
+  /** Que se le explica a quien la marque (CI-58). Vacio = no se le explica nada. */
+  devolucion: string;
 }
 
 interface FilaPar {
@@ -19,7 +31,7 @@ interface FilaPar {
 @Component({
   selector: 'app-profesor-banco',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, JsonPipe],
   template: `
     <div class="columnas">
       <section class="tarjeta">
@@ -46,12 +58,40 @@ interface FilaPar {
         }
 
         <ul class="lista">
-          @for (i of items(); track i.id) {
-            <li>
+          @for (i of items(); track i.id; let idx = $index) {
+            <li [style.--orden]="idx">
               <div>
                 <span class="etiqueta">{{ etiqueta(i.tipo) }}</span>
+                @if (i.estado === 'BORRADOR') {
+                  <span class="etiqueta diferida">borrador</span>
+                }
                 <span class="version">v{{ i.version }}</span>
                 <p>{{ i.enunciado }}</p>
+
+                <!--
+                  La vista previa (CI-59). Lo que se pinta acá sale del MISMO
+                  endpoint que se le sirve al alumno en el examen, así que si
+                  alguna vez filtrara la clave de corrección, se vería acá.
+                -->
+                @if (previaDe() === i.id && previa(); as p) {
+                  <div class="previa">
+                    <p class="ayuda">
+                      <span class="fuente">Así lo ve el alumno</span>
+                      servido por el mismo endpoint que el examen
+                    </p>
+                    <p class="titulo-desafio">{{ p.enunciado }}</p>
+                    @for (o of opcionesDe(p); track o.id) {
+                      <label class="check">
+                        <input type="checkbox" disabled />
+                        {{ o.texto }}
+                      </label>
+                    }
+                    <details>
+                      <summary>Lo que viaja, tal cual</summary>
+                      <pre>{{ p | json }}</pre>
+                    </details>
+                  </div>
+                }
               </div>
               <div class="acciones-fila">
                 @if (porDarDeBaja() === i.id) {
@@ -63,6 +103,9 @@ interface FilaPar {
                     Cancelar
                   </button>
                 } @else {
+                  <button type="button" class="secundario" (click)="alternarPrevia(i)">
+                    {{ previaDe() === i.id ? 'Cerrar previa' : 'Vista previa' }}
+                  </button>
                   <button type="button" class="secundario" (click)="editar(i)">Editar</button>
                   <button class="peligro" type="button" (click)="porDarDeBaja.set(i.id)">
                     Dar de baja
@@ -120,9 +163,48 @@ interface FilaPar {
               Admite más de una respuesta correcta
             </label>
 
+            <label class="check">
+              <input
+                type="checkbox"
+                name="parcial"
+                [ngModel]="parcial"
+                (ngModelChange)="alternarParcial($event)"
+              />
+              Puntaje parcial por opción
+            </label>
+
+            @if (parcial) {
+              <p class="ayuda">
+                Cada opción paga un porcentaje del peso de la pregunta. Las negativas descuentan:
+                sin ellas, marcar todas las opciones garantiza el 100% y la pregunta no evalúa nada.
+              </p>
+              <div class="totalizador" [class.mal]="positivos() !== 100">
+                <strong>{{ positivos() }}%</strong>
+                <span>
+                  suman las calificaciones positivas.
+                  {{ positivos() === 100 ? 'Listo.' : 'Tienen que sumar exactamente 100.' }}
+                </span>
+              </div>
+            }
+
             @for (o of opciones; track o.id; let i = $index) {
               <div class="fila">
                 <input [name]="'op' + i" [(ngModel)]="o.texto" placeholder="Opción {{ i + 1 }}" />
+                @if (parcial) {
+                  <label class="sr-solo" [attr.for]="'pc' + i">
+                    Porcentaje de la opción {{ i + 1 }}
+                  </label>
+                  <input
+                    class="peso"
+                    type="number"
+                    min="-100"
+                    max="100"
+                    [id]="'pc' + i"
+                    [name]="'pc' + i"
+                    [(ngModel)]="o.porcentaje"
+                  />
+                  <span class="ayuda">%</span>
+                }
                 <label class="check">
                   <input
                     [type]="multiple ? 'checkbox' : 'radio'"
@@ -132,8 +214,27 @@ interface FilaPar {
                   />
                   correcta
                 </label>
-                <button type="button" class="secundario" (click)="quitar(opciones, i)" attr.aria-label="Quitar opción {{ i + 1 }}"><span aria-hidden="true">×</span></button>
+                <button
+                  type="button"
+                  class="secundario"
+                  (click)="quitar(opciones, i)"
+                  attr.aria-label="Quitar opción {{ i + 1 }}"
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
               </div>
+              @if (conDevolucion) {
+                <label class="sr-solo" [attr.for]="'dv' + i">
+                  Qué se le explica a quien marque la opción {{ i + 1 }}
+                </label>
+                <input
+                  class="devolucion-opcion"
+                  [id]="'dv' + i"
+                  [name]="'dv' + i"
+                  [(ngModel)]="o.devolucion"
+                  placeholder="Qué se le explica a quien marque esta opción"
+                />
+              }
             }
             <button type="button" class="secundario" (click)="agregar(opciones, 'o')">
               + agregar opción
@@ -168,7 +269,14 @@ interface FilaPar {
                   [(ngModel)]="d.texto"
                   placeholder="Definición {{ i + 1 }}"
                 />
-                <button type="button" class="secundario" (click)="quitar(derecha, i)" attr.aria-label="Quitar definición {{ i + 1 }}"><span aria-hidden="true">×</span></button>
+                <button
+                  type="button"
+                  class="secundario"
+                  (click)="quitar(derecha, i)"
+                  attr.aria-label="Quitar definición {{ i + 1 }}"
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
               </div>
             }
             <button type="button" class="secundario" (click)="agregar(derecha, 'd')">
@@ -189,7 +297,14 @@ interface FilaPar {
                     <option [value]="d.id">{{ d.texto || d.id }}</option>
                   }
                 </select>
-                <button type="button" class="secundario" (click)="quitar(izquierda, i)" attr.aria-label="Quitar concepto {{ i + 1 }}"><span aria-hidden="true">×</span></button>
+                <button
+                  type="button"
+                  class="secundario"
+                  (click)="quitar(izquierda, i)"
+                  attr.aria-label="Quitar concepto {{ i + 1 }}"
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
               </div>
             }
             <button type="button" class="secundario" (click)="agregar(izquierda, 'i')">
@@ -225,9 +340,9 @@ interface FilaPar {
               ></textarea>
             </label>
             <p class="ayuda">
-              La rúbrica es la clave de corrección de este ítem: <strong>el alumno no la ve
-              nunca</strong>. Es obligatoria, y no por burocracia — sin ella no hay forma de
-              puntuar parejo a veinte alumnos según en qué orden los leíste.
+              La rúbrica es la clave de corrección de este ítem:
+              <strong>el alumno no la ve nunca</strong>. Es obligatoria, y no por burocracia — sin
+              ella no hay forma de puntuar parejo a veinte alumnos según en qué orden los leíste.
             </p>
           }
 
@@ -237,7 +352,14 @@ interface FilaPar {
               <div class="fila">
                 <span class="posicion">{{ i + 1 }}</span>
                 <input [name]="'el' + i" [(ngModel)]="e.texto" placeholder="Paso {{ i + 1 }}" />
-                <button type="button" class="secundario" (click)="quitar(elementos, i)" attr.aria-label="Quitar paso {{ i + 1 }}"><span aria-hidden="true">×</span></button>
+                <button
+                  type="button"
+                  class="secundario"
+                  (click)="quitar(elementos, i)"
+                  attr.aria-label="Quitar paso {{ i + 1 }}"
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
               </div>
             }
             <button type="button" class="secundario" (click)="agregar(elementos, 'e')">
@@ -257,13 +379,46 @@ interface FilaPar {
             <p class="ok" role="status">{{ ok() }}</p>
           }
 
+          <label class="check">
+            <input type="checkbox" name="borrador" [(ngModel)]="borrador" />
+            Guardar como borrador
+          </label>
+          @if (borrador) {
+            <p class="ayuda">
+              Queda en el banco pero no se puede componer en ningún cuestionario. Es para la
+              pregunta a medio escribir: hoy una así entra a un examen igual que una terminada.
+            </p>
+          }
+
+          <label class="check">
+            <input
+              type="checkbox"
+              name="conDevolucion"
+              [ngModel]="conDevolucion"
+              (ngModelChange)="alternarDevolucion($event)"
+            />
+            Escribir retroalimentación
+          </label>
+
+          @if (conDevolucion) {
+            <p class="ayuda">
+              El alumno la lee recién cuando su respuesta ya está corregida, y de los textos por
+              opción solo ve los de las que marcó: los del resto le dirían cuál era la correcta.
+            </p>
+            <label>
+              Para cualquiera que haya contestado
+              <textarea
+                name="devolucionGeneral"
+                rows="2"
+                [(ngModel)]="devolucionGeneral"
+                placeholder="Por qué la respuesta es la que es"
+              ></textarea>
+            </label>
+          }
+
           <button type="submit" [disabled]="guardando()">
             {{
-              guardando()
-                ? 'Guardando…'
-                : editando()
-                  ? 'Publicar versión nueva'
-                  : 'Guardar ítem'
+              guardando() ? 'Guardando…' : editando() ? 'Publicar versión nueva' : 'Guardar ítem'
             }}
           </button>
         </form>
@@ -286,6 +441,17 @@ export class ProfesorBancoPage {
 
   multiple = false;
   opciones: FilaSimple[] = [];
+  /** Modo ponderado. Apagado = el todo-o-nada de siempre, sin `pesos` en el criterio. */
+  parcial = false;
+  /** Retroalimentacion (CI-58). Apagada = el item no devuelve nada al corregir. */
+  conDevolucion = false;
+  devolucionGeneral = '';
+  /** CI-59. El que no dice nada publica listo, que es lo que todos hacian hasta ahora. */
+  borrador = false;
+
+  /** La vista previa abierta, si hay alguna. */
+  readonly previa = signal<VistaPreviaItem | null>(null);
+  readonly previaDe = signal<string | null>(null);
 
   afirmacion = '';
   esVerdadero = true;
@@ -335,10 +501,103 @@ export class ProfesorBancoPage {
     this.derecha = [this.nueva('d'), this.nueva('d')];
     this.izquierda = [this.nuevoPar(), this.nuevoPar()];
     this.elementos = [this.nueva('e'), this.nueva('e')];
+    this.parcial = false;
+    this.conDevolucion = false;
+    this.devolucionGeneral = '';
+    this.borrador = false;
   }
 
   private nueva(prefijo: string): FilaSimple {
-    return { id: prefijo + ++this.contador, texto: '', correcta: false };
+    return {
+      id: prefijo + ++this.contador,
+      texto: '',
+      correcta: false,
+      porcentaje: 0,
+      devolucion: '',
+    };
+  }
+
+  /** Al apagarla se borra todo: un texto guardado que no se publica es peor que nada. */
+  alternarDevolucion(prendida: boolean): void {
+    this.conDevolucion = prendida;
+    if (!prendida) {
+      this.devolucionGeneral = '';
+      this.opciones.forEach((o) => (o.devolucion = ''));
+    }
+  }
+
+  /**
+   * `null` cuando no hay nada escrito, y esa ausencia es la que hace que el
+   * item se comporte como los que ya estan en la base.
+   */
+  private devolucionArmada(): any {
+    if (!this.conDevolucion) return null;
+    const porOpcion = this.opciones
+      .filter((o) => o.devolucion.trim() !== '')
+      .map((o) => ({ id: o.id, texto: o.devolucion.trim() }));
+    const general = this.devolucionGeneral.trim();
+    if (general === '' && porOpcion.length === 0) return null;
+    return { general: general || null, porOpcion };
+  }
+
+  /**
+   * Abre o cierra la vista previa. Se pide al backend cada vez y no se cachea:
+   * es barato, y si el profesor acaba de publicar una version nueva tiene que
+   * ver ESA, no la que estaba en memoria.
+   */
+  alternarPrevia(i: ItemResumen): void {
+    if (this.previaDe() === i.id) {
+      this.previaDe.set(null);
+      this.previa.set(null);
+      return;
+    }
+    this.previaDe.set(i.id);
+    this.previa.set(null);
+    this.api.vistaPrevia(i.id).subscribe({
+      next: (p) => this.previa.set(p),
+      error: () => {
+        this.previaDe.set(null);
+        this.error.set({
+          clave: 'ERROR',
+          campo: null,
+          mensaje: 'No se pudo traer la vista previa del ítem.',
+        });
+      },
+    });
+  }
+
+  /** Lo unico que la previa sabe pintar de a uno: las opciones, si el tipo tiene. */
+  opcionesDe(p: VistaPreviaItem): { id: string; texto: string }[] {
+    const carga = p.payload ?? {};
+    return carga.opciones ?? carga.elementos ?? carga.izquierda ?? [];
+  }
+
+  /** Lo que tiene que dar 100 para que el item sea valido (CI-55). */
+  positivos(): number {
+    return this.opciones.reduce((t, o) => t + (o.porcentaje > 0 ? o.porcentaje : 0), 0);
+  }
+
+  /**
+   * Al prender el modo, reparte 100 entre las que ya estan marcadas correctas.
+   * Es el unico reparto que no hace falta explicar, y deja el formulario valido
+   * de entrada en vez de rojo. El resto —cuanto descuenta cada distractora— es
+   * decision del profesor y no se adivina.
+   *
+   * Al apagarlo los porcentajes se borran: si quedaran, el criterio guardado
+   * seguiria sin `pesos` pero el formulario mostraria numeros que no se usan.
+   */
+  alternarParcial(prendido: boolean): void {
+    this.parcial = prendido;
+    const correctas = this.opciones.filter((o) => o.correcta);
+    if (!prendido || correctas.length === 0) {
+      this.opciones.forEach((o) => (o.porcentaje = 0));
+      return;
+    }
+    // El resto se lo lleva la primera: con tres correctas, 34/33/33 y no 33/33/33.
+    const parte = Math.floor(100 / correctas.length);
+    this.opciones.forEach((o) => (o.porcentaje = 0));
+    correctas.forEach((o) => (o.porcentaje = parte));
+    correctas[0].porcentaje += 100 - parte * correctas.length;
   }
 
   private nuevoPar(): FilaPar {
@@ -395,14 +654,26 @@ export class ProfesorBancoPage {
     const p = d.payload ?? {};
     const c = d.criterio ?? {};
 
+    this.borrador = d.estado === 'BORRADOR';
+
+    // Comun a los cinco tipos: la devolucion no depende del tipo.
+    this.devolucionGeneral = d.devolucion?.general ?? '';
+    this.conDevolucion =
+      this.devolucionGeneral !== '' || (d.devolucion?.porOpcion?.length ?? 0) > 0;
+
     switch (d.tipo) {
       case 'OPCION_MULTIPLE': {
         const correctas: string[] = c.correctas ?? [];
+        const pesos: { id: string; porcentaje: number }[] = c.pesos ?? [];
         this.multiple = !!p.multiple;
+        this.parcial = pesos.length > 0;
+        const porOpcion: { id: string; texto: string }[] = d.devolucion?.porOpcion ?? [];
         this.opciones = (p.opciones ?? []).map((o: any) => ({
           id: o.id,
           texto: o.texto,
           correcta: correctas.includes(o.id),
+          porcentaje: pesos.find((x) => x.id === o.id)?.porcentaje ?? 0,
+          devolucion: porOpcion.find((x) => x.id === o.id)?.texto ?? '',
         }));
         break;
       }
@@ -417,6 +688,8 @@ export class ProfesorBancoPage {
           id: x.id,
           texto: x.texto,
           correcta: false,
+          porcentaje: 0,
+          devolucion: '',
         }));
         this.izquierda = (p.izquierda ?? []).map((z: any) => ({
           id: z.id,
@@ -439,7 +712,13 @@ export class ProfesorBancoPage {
         this.elementos = secuencia
           .map((id) => porId.get(id))
           .filter(Boolean)
-          .map((e: any) => ({ id: e.id, texto: e.texto, correcta: false }));
+          .map((e: any) => ({
+            id: e.id,
+            texto: e.texto,
+            correcta: false,
+            porcentaje: 0,
+            devolucion: '',
+          }));
         break;
       }
     }
@@ -463,6 +742,8 @@ export class ProfesorBancoPage {
       tipo: this.tipo,
       enunciado: this.enunciado,
       ...this.payloadYCriterio(),
+      devolucion: this.devolucionArmada(),
+      estado: this.borrador ? 'BORRADOR' : 'LISTO',
     };
 
     const enEdicion = this.editando();
@@ -506,7 +787,16 @@ export class ProfesorBancoPage {
             opciones: this.opciones.map((o) => ({ id: o.id, texto: o.texto })),
             multiple: this.multiple,
           },
-          criterio: { correctas: this.opciones.filter((o) => o.correcta).map((o) => o.id) },
+          criterio: {
+            correctas: this.opciones.filter((o) => o.correcta).map((o) => o.id),
+            // Ausente cuando el modo esta apagado, y esa ausencia ES el
+            // contrato: sin `pesos` el backend corrige todo o nada (CI-55).
+            pesos: this.parcial
+              ? this.opciones
+                  .filter((o) => o.porcentaje !== 0)
+                  .map((o) => ({ id: o.id, porcentaje: o.porcentaje }))
+              : null,
+          },
         };
 
       case 'VERDADERO_FALSO':

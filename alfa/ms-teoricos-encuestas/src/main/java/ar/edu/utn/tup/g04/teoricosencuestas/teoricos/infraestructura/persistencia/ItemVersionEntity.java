@@ -43,6 +43,15 @@ public class ItemVersionEntity {
     @Column
     private String criterio;
 
+    /**
+     * La retroalimentacion (CI-58). Tampoco sale en la vista del alumno, pero
+     * por un motivo distinto del criterio: no es clave de correccion, es lo que
+     * se le explica DESPUES de responder.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column
+    private String devolucion;
+
     @Column(name = "creada_en", nullable = false)
     private Instant creadaEn;
 
@@ -50,13 +59,15 @@ public class ItemVersionEntity {
     }
 
     public ItemVersionEntity(UUID id, UUID itemId, int version, String enunciado,
-                             String payload, String criterio, Instant creadaEn) {
+                             String payload, String criterio, String devolucion,
+                             Instant creadaEn) {
         this.id = id;
         this.itemId = itemId;
         this.version = version;
         this.enunciado = enunciado;
         this.payload = payload;
         this.criterio = criterio;
+        this.devolucion = devolucion;
         this.creadaEn = creadaEn;
     }
 
@@ -66,5 +77,6 @@ public class ItemVersionEntity {
     public String getEnunciado() { return enunciado; }
     public String getPayload() { return payload; }
     public String getCriterio() { return criterio; }
+    public String getDevolucion() { return devolucion; }
     public Instant getCreadaEn() { return creadaEn; }
 }

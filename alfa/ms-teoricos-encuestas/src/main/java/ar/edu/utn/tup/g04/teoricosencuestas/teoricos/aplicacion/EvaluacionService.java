@@ -6,6 +6,7 @@ import ar.edu.utn.tup.g04.teoricosencuestas.comun.eventos.EventoSobre;
 import ar.edu.utn.tup.g04.teoricosencuestas.comun.eventos.PublicadorDeEventos;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.Corrector;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.TipoDeItem;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.Devolucion;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.MapeadorJson;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ContenidoItemEntity;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ContenidoItemRepository;
@@ -232,9 +233,15 @@ public class EvaluacionService {
      *
      * No lleva el criterio: con reintentos ilimitados eso convierte el reintento
      * en copiar.
+     *
+     * `devolucion` (CI-58) SI viaja, y no contradice lo anterior porque viene
+     * recortada: solo el texto general y el de las opciones que este alumno
+     * marco. La devolucion de una opcion que no eligio diria si esa opcion era
+     * la correcta, que es el criterio contado de otra forma.
      */
     public record Detalle(UUID itemVersionId, int orden, String enunciado, JsonNode payload,
-                          int puntaje, Integer obtenido, JsonNode respuesta) {}
+                          int puntaje, Integer obtenido, JsonNode respuesta,
+                          Devolucion devolucion) {}
 
     /**
      * Todo lo que este alumno entrego, lo mas reciente primero.
@@ -276,12 +283,14 @@ public class EvaluacionService {
         for (EvaluacionDetalleEntity d : detalles.findByEvaluacionIdOrderByOrdenAsc(evaluacionId)) {
             ItemVersionEntity version = versiones.findById(d.getItemVersionId()).orElse(null);
             String contestado = respuestaPorVersion.get(d.getItemVersionId());
+            JsonNode respuesta = contestado == null ? null : json.aNodo(contestado);
             resultado.add(new Detalle(
                     d.getItemVersionId(), d.getOrden(),
                     version == null ? null : version.getEnunciado(),
                     version == null ? null : json.aNodo(version.getPayload()),
                     d.getPuntaje(), d.getObtenido(),
-                    contestado == null ? null : json.aNodo(contestado)));
+                    respuesta,
+                    devolucionDe(version, respuesta, d.getObtenido())));
         }
 
         // Se reordena como lo vio el alumno y se renumera: para el, la primera
@@ -292,8 +301,51 @@ public class EvaluacionService {
         for (int i = 0; i < comoLoVio.size(); i++) {
             Detalle d = comoLoVio.get(i);
             numerado.add(new Detalle(d.itemVersionId(), i + 1, d.enunciado(), d.payload(),
-                    d.puntaje(), d.obtenido(), d.respuesta()));
+                    d.puntaje(), d.obtenido(), d.respuesta(), d.devolucion()));
         }
         return numerado;
+    }
+
+    /**
+     * La devolucion de un item, lista para mostrar (CI-58).
+     *
+     * Dos recortes, y los dos son de fondo:
+     *
+     * <ul>
+     *   <li><b>solo si el item ya esta corregido</b> — mientras `obtenido` sea
+     *       null el item espera a un humano, y explicarle al alumno por que su
+     *       respuesta esta bien antes de que nadie la haya leido no tiene
+     *       sentido;</li>
+     *   <li><b>solo las opciones que marco</b> — lo hace {@code paraLoMarcado},
+     *       y es lo que impide que la devolucion se convierta en la clave de
+     *       correccion contada con otras palabras.</li>
+     * </ul>
+     */
+    private Devolucion devolucionDe(ItemVersionEntity version, JsonNode respuesta,
+                                    Integer obtenido) {
+        if (version == null || version.getDevolucion() == null || obtenido == null) {
+            return null;
+        }
+        Devolucion cruda = json.leerDevolucion(json.aNodo(version.getDevolucion()));
+        Devolucion recortada = new Devolucion(cruda.general(), cruda.paraLoMarcado(marcadas(respuesta)));
+        return recortada.vacia() ? null : recortada;
+    }
+
+    /**
+     * Lo que el alumno marco, leido del jsonb de la respuesta sin mirar el tipo.
+     *
+     * Los tipos que no tienen `seleccionadas` devuelven la lista vacia, y con
+     * eso la devolucion por opcion desaparece sola: no hace falta preguntar por
+     * el tipo para saber que en un V/F no hay opciones que comentar.
+     */
+    private List<String> marcadas(JsonNode respuesta) {
+        if (respuesta == null || !respuesta.hasNonNull("seleccionadas")) {
+            return List.of();
+        }
+        List<String> ids = new ArrayList<>();
+        for (JsonNode n : respuesta.get("seleccionadas")) {
+            ids.add(n.asText());
+        }
+        return ids;
     }
 }

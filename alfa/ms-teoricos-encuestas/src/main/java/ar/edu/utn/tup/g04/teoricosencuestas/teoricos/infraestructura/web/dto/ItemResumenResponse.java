@@ -1,5 +1,6 @@
 package ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto;
 
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.EstadoDeItem;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.TipoDeItem;
 
 import java.util.UUID;
@@ -10,5 +11,7 @@ public record ItemResumenResponse(
         TipoDeItem tipo,
         String enunciado,
         int version,
-        boolean autocorregible) {
+        boolean autocorregible,
+        /** BORRADOR | LISTO (CI-59). Un borrador no entra a ningun cuestionario. */
+        EstadoDeItem estado) {
 }

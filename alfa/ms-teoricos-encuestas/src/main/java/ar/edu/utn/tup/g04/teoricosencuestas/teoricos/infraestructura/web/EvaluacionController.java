@@ -162,7 +162,8 @@ public class EvaluacionController {
                                 d.obtenido(),
                                 correcto(d.obtenido(), d.puntaje()),
                                 d.obtenido() == null,
-                                d.respuesta()))
+                                d.respuesta(),
+                                d.devolucion()))
                         .toList());
     }
 }

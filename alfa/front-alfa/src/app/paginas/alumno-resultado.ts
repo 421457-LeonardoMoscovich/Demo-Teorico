@@ -14,7 +14,9 @@ import { ItemCorregido, Resultado } from '../core/modelos';
       <section class="tarjeta ancho">
         <header class="cabecera-resultado">
           @if (esperando()) {
-            <div class="nota esperando"><span class="sufijo">sin nota<br />todavía</span></div>
+            <div class="nota esperando">
+              <span class="sufijo">sin nota<br />todavía</span>
+            </div>
           } @else {
             <div class="nota">{{ r.nota }}<span class="sufijo">/100</span></div>
           }
@@ -23,8 +25,8 @@ import { ItemCorregido, Resultado } from '../core/modelos';
               <h2>Intento {{ r.intento }} entregado</h2>
               <p class="ayuda">
                 Tu cuestionario tiene {{ cuantasPendientes() }}
-                {{ cuantasPendientes() === 1 ? 'pregunta' : 'preguntas' }} de respuesta abierta. Esas
-                las corrige tu profesor a mano, así que la nota no está todavía.
+                {{ cuantasPendientes() === 1 ? 'pregunta' : 'preguntas' }} de respuesta abierta.
+                Esas las corrige tu profesor a mano, así que la nota no está todavía.
               </p>
               <p class="ayuda">
                 <strong>No te vamos a avisar cuando esté.</strong> No es un olvido: si te enteraras
@@ -39,14 +41,20 @@ import { ItemCorregido, Resultado } from '../core/modelos';
               </p>
               <p class="ayuda">
                 No decimos si aprobaste: el umbral de aprobación no lo define ningún documento de la
-                plataforma, y como maneja XP y vidas, es una regla de economía. La decide el Tema 03.
+                plataforma, y como maneja XP y vidas, es una regla de economía. La decide el Tema
+                03.
               </p>
             }
           </div>
         </header>
 
-        @for (d of r.detalle; track d.itemVersionId) {
-          <article class="pregunta" [class.mal]="d.correcto === false" [class.espera]="d.pendiente">
+        @for (d of r.detalle; track d.itemVersionId; let idx = $index) {
+          <article
+            class="pregunta"
+            [style.--orden]="idx"
+            [class.mal]="d.correcto === false"
+            [class.espera]="d.pendiente"
+          >
             <h3>
               <span class="posicion">{{ d.orden }}</span>
               {{ d.enunciado }}
@@ -72,6 +80,26 @@ import { ItemCorregido, Resultado } from '../core/modelos';
                 </span>
               }
             </p>
+
+            <!--
+              La devolución (CI-58). Llega recortada del backend: solo el texto
+              general y el de las opciones que ESTE alumno marcó. La del resto
+              diría cuál era la correcta, y con reintentos ilimitados eso
+              convierte el reintento en copiar.
+            -->
+            @if (d.devolucion) {
+              <div class="devolucion">
+                @if (d.devolucion.general) {
+                  <p>{{ d.devolucion.general }}</p>
+                }
+                @for (o of d.devolucion.porOpcion ?? []; track o.id) {
+                  <p class="por-opcion">
+                    <span class="etiqueta">{{ textoDeOpcion(d, o.id) }}</span>
+                    {{ o.texto }}
+                  </p>
+                }
+              </div>
+            }
           </article>
         }
 
@@ -157,9 +185,25 @@ export class AlumnoResultadoPage {
     }
     if (typeof r.valor === 'boolean') return r.valor ? 'Verdadero' : 'Falso';
     if (Array.isArray(r.pares)) {
-      return r.pares.map((par: string[]) => `${leer(par[0])} → ${leer(par[1])}`).join(' · ') || 'nada';
+      return (
+        r.pares.map((par: string[]) => `${leer(par[0])} → ${leer(par[1])}`).join(' · ') || 'nada'
+      );
     }
     if (Array.isArray(r.secuencia)) return r.secuencia.map(leer).join(' → ') || 'nada';
     return JSON.stringify(r);
+  }
+
+  /**
+   * El texto de la opción que una devolución comenta.
+   *
+   * Sale del payload estampado por el mismo motivo que `formatear`: sin esto la
+   * devolución arrancaría con "a" y el alumno tendría que volver a la pregunta
+   * para saber de cuál le están hablando.
+   */
+  textoDeOpcion(d: ItemCorregido, id: string): string {
+    for (const o of d.payload?.opciones ?? []) {
+      if (o.id === id) return o.texto;
+    }
+    return id;
   }
 }

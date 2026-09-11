@@ -36,8 +36,8 @@ interface Borrador {
           <p [class]="descartadas() > 0 ? 'error' : 'ok'" role="status">{{ aviso }}</p>
         }
 
-        @for (i of v.items; track i.itemVersionId) {
-          <article class="pregunta">
+        @for (i of v.items; track i.itemVersionId; let idx = $index) {
+          <article class="pregunta" [style.--orden]="idx">
             <h3>
               <span class="posicion">{{ i.orden }}</span>
               {{ i.enunciado }}

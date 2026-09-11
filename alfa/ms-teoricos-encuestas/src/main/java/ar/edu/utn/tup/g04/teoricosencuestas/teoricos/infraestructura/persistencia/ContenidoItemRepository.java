@@ -10,4 +10,12 @@ public interface ContenidoItemRepository extends Repository<ContenidoItemEntity,
     ContenidoItemEntity save(ContenidoItemEntity linea);
 
     List<ContenidoItemEntity> findByClaveContenidoIdOrderByOrdenAsc(UUID contenidoId);
+
+    /**
+     * Si el item cuelga de algun cuestionario. Lo necesita CI-59: como la
+     * referencia al contenido es flotante (CI-13), un item que ya esta compuesto
+     * y vuelve a borrador le seguiria llegando al alumno igual — el borrador
+     * seria invisible justo donde tenia que frenar.
+     */
+    boolean existsByClaveItemId(UUID itemId);
 }

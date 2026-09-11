@@ -150,16 +150,49 @@ interface Elegido {
         }
 
         <label class="check">
-          <input type="checkbox" name="ilimitados" [ngModel]="reintentosIlimitados()"
-                 (ngModelChange)="reintentosIlimitados.set($event)" />
+          <input
+            type="checkbox"
+            name="ilimitados"
+            [ngModel]="reintentosIlimitados()"
+            (ngModelChange)="reintentosIlimitados.set($event)"
+          />
           Reintentos ilimitados
         </label>
         <p class="ayuda">
           CI-47: un desafío con reintentos ilimitados no admite corrección humana —pondría al
-          profesor a corregir la misma entrega infinitas veces—. La regla la aplica el Tema 03,
-          que es quien sabe de reintentos; nosotros solo le mandamos <code>correccion</code> en la
+          profesor a corregir la misma entrega infinitas veces—. La regla la aplica el Tema 03, que
+          es quien sabe de reintentos; nosotros solo le mandamos <code>correccion</code> en la
           ficha.
         </p>
+
+        <!--
+          Las cuatro pantallas que Moodle pone en este mismo formulario y que acá
+          no estan. Se muestran en vez de omitirse: la ausencia sola parece un
+          agujero, la ausencia rotulada es la frontera (ver 5c del contrato).
+        -->
+        <div class="frontera">
+          <h3>Lo que no se configura acá</h3>
+          <p class="ayuda">
+            En Moodle todo esto vive en el mismo formulario que las preguntas. Acá cada cosa es de
+            quien la sabe, y el cuestionario es una sola de las partes del desafío.
+          </p>
+          <p class="linea-frontera">
+            <span class="fuente">Tema 03</span> Cuándo abre, cuándo cierra y el límite de tiempo
+            <span class="version">CI-15 · CI-20</span>
+          </p>
+          <p class="linea-frontera">
+            <span class="fuente">Tema 03</span> Cuántos intentos hay y cuál de ellos cuenta
+            <span class="version">CI-45</span>
+          </p>
+          <p class="linea-frontera">
+            <span class="fuente">Tema 03</span> La nota con la que se aprueba
+            <span class="version">CI-39</span>
+          </p>
+          <p class="linea-frontera">
+            <span class="fuente">Tema 02</span> Quiénes pueden entrar: curso, cohorte y grupo
+            <span class="version">CI-01</span>
+          </p>
+        </div>
 
         @if (error()) {
           <p class="error" role="alert">
@@ -325,7 +358,11 @@ export class ProfesorArmarPage {
     const base = Math.floor(100 / total);
     const resto = 100 - base * total;
     this.elegidos.update((lista) =>
-      lista.map((e, i) => ({ ...e, puntaje: i === total - 1 ? base + resto : base, manual: false })),
+      lista.map((e, i) => ({
+        ...e,
+        puntaje: i === total - 1 ? base + resto : base,
+        manual: false,
+      })),
     );
   }
 

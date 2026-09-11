@@ -1,4 +1,4 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SesionService } from './core/sesion.service';
 import { TemaService } from './core/tema.service';
@@ -19,10 +19,20 @@ import { PendientesService } from './core/pendientes.service';
           <a routerLink="/profesor/correcciones" routerLinkActive="activo" class="con-badge">
             Por corregir
             @if (pendientes.hay()) {
-              <span class="badge" role="status" aria-live="polite">
+              <span
+                class="badge"
+                [class.pulso]="pulso()"
+                (animationend)="pulso.set(false)"
+                role="status"
+                aria-live="polite"
+              >
                 {{ pendientes.pendientes() }}
                 <span class="sr-solo">
-                  {{ pendientes.pendientes() === 1 ? 'corrección esperando' : 'correcciones esperando' }}
+                  {{
+                    pendientes.pendientes() === 1
+                      ? 'corrección esperando'
+                      : 'correcciones esperando'
+                  }}
                 </span>
               </span>
             }
@@ -64,10 +74,27 @@ export class App {
   protected readonly pendientes = inject(PendientesService);
   private readonly router = inject(Router);
 
+  /**
+   * Un latido del badge cuando el numero SUBE. Nada cuando baja: que bajen las
+   * pendientes es consecuencia de lo que la profesora acaba de hacer, y ya lo
+   * vio irse de la cola. Lo que no vio es lo que entro mientras miraba otra
+   * pantalla — eso es lo unico que merece llamarle la atencion.
+   */
+  protected readonly pulso = signal(false);
+  private cuantasAntes = 0;
+
   constructor() {
     // El sondeo sigue a la sesion: arranca cuando entra una profesora y se corta
     // cuando sale. Al alumno no se le sondea nada — no porque sea caro, sino
     // porque CI-37 prohibe avisarle a el.
+    effect(() => {
+      const cuantas = this.pendientes.pendientes();
+      if (cuantas > this.cuantasAntes) {
+        this.pulso.set(true);
+      }
+      this.cuantasAntes = cuantas;
+    });
+
     effect(() => {
       if (this.sesion.esProfesor()) {
         this.pendientes.arrancar();

@@ -29,8 +29,8 @@ import { Curso } from '../core/modelos';
       }
 
       <ul class="lista">
-        @for (c of cursos(); track c.cursoCohorteId) {
-          <li>
+        @for (c of cursos(); track c.cursoCohorteId; let idx = $index) {
+          <li [style.--orden]="idx">
             <div>
               <p class="titulo-desafio">{{ c.nombre }}</p>
               <span class="etiqueta">{{ c.periodo }}</span>

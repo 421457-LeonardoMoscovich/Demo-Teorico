@@ -50,8 +50,8 @@
   --glow-foco: 0 0 0 3px #00e5ff33;
   --sombra-nota: 0 0 18px #8b5cf6aa;
 
-  --pixel: "Press Start 2P", ui-monospace, monospace;
-  --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --pixel: 'Press Start 2P', ui-monospace, monospace;
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radio: 4px;
@@ -62,13 +62,14 @@
   --dur-press: 130ms;
   --dur-color: 140ms;
   --dur-entrada: 220ms;
+  --dur-salida: 180ms;
 
   color-scheme: dark;
 }
 
 /* El modo claro es el difícil: el cian sobre blanco es ilegible como TEXTO,
    así que acá abajo es relleno y borde, y el texto va en violeta o casi negro. */
-:root[data-tema="light"] {
+:root[data-tema='light'] {
   --fondo: #f8fafc;
   --papel: #ffffff;
   --papel-alt: #eef1f6;
@@ -794,7 +795,7 @@ input.peso {
   white-space: nowrap;
 }
 
-:root[data-tema="light"] .fuente {
+:root[data-tema='light'] .fuente {
   /* El cian no se lee como texto sobre blanco: en claro el rotulo va en
      violeta y el cian queda de borde. */
   color: var(--violeta);
@@ -992,10 +993,10 @@ button:focus-visible,
   outline-offset: 3px;
 }
 
-:root[data-tema="light"] button:focus-visible,
-:root[data-tema="light"] .boton:focus-visible,
-:root[data-tema="light"] .barra a:focus-visible,
-:root[data-tema="light"] .chip:focus-visible {
+:root[data-tema='light'] button:focus-visible,
+:root[data-tema='light'] .boton:focus-visible,
+:root[data-tema='light'] .barra a:focus-visible,
+:root[data-tema='light'] .chip:focus-visible {
   /* Mismo problema de siempre: el cian no se ve sobre blanco. */
   outline-color: var(--violeta);
 }
@@ -1345,4 +1346,329 @@ button:focus-visible,
 .reutilizar .fila {
   border-top: 1px solid var(--linea);
   padding-top: 10px;
+}
+
+/* ------------------------------------------------ entrada de la pagina --- */
+
+/* Cada navegacion monta el componente de la ruta como hermano del
+   `router-outlet`. Solo opacidad, y corta: la pagina entera desplazandose en
+   cada click cansa a la decima navegacion, y el contenido de adentro ya trae
+   su propio escalonado. Sin `display:block` el host es inline y el navegador
+   ignora cualquier transform que le pongamos. */
+
+/* El cruce real: la pantalla que se va y la que entra se superponen 180ms.
+   Solo opacidad —la animacion que trae el navegador por defecto—: un
+   desplazamiento lateral estaria mintiendo, porque la barra es un menu plano,
+   no una pila, y "Banco" no esta a la derecha de "Cursos" en ningun sentido.
+
+   Bajo `prefers-reduced-motion` el cruce se conserva: un fundido no es
+   movimiento, y es justo lo que evita el salto que la opcion quiere evitar. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+  animation-timing-function: var(--ease-out);
+}
+
+/* `display:block` siempre: el host de la ruta es inline por defecto y el
+   navegador ignora cualquier transform que se le ponga. */
+main > :not(router-outlet) {
+  display: block;
+}
+
+/* Respaldo para el navegador que todavia no tiene la API. No cruza nada —no
+   puede— pero la pantalla nueva entra fundida en vez de aparecer de golpe. */
+@supports not (view-transition-name: none) {
+  main > :not(router-outlet) {
+    transition: opacity 160ms var(--ease-out);
+  }
+
+  @starting-style {
+    main > :not(router-outlet) {
+      opacity: 0;
+    }
+  }
+}
+
+/* ------------------------------------------------- filas escalonadas --- */
+
+/* Las filas que llegan del backend no entran todas en el mismo frame:
+   escalonadas, el ojo lee "son N cosas separadas" en vez de "aparecio un
+   bloque". El tope en 6 es lo que evita que un banco de veinte preguntas
+   tarde un segundo entero en terminar de armarse. */
+
+.pregunta,
+.correccion,
+.lista > li,
+.evento {
+  --orden: 0;
+  transition:
+    opacity var(--dur-entrada) var(--ease-out),
+    transform var(--dur-entrada) var(--ease-out);
+  transition-delay: calc(min(var(--orden), 6) * 45ms);
+}
+
+@starting-style {
+  .pregunta,
+  .correccion,
+  .lista > li,
+  .evento {
+    opacity: 0;
+    /* 6px: la fila se acomoda en su lugar, no viaja hasta el. */
+    transform: translateY(6px);
+  }
+}
+
+/* ---- la fila corregida se va, no desaparece ---- */
+
+/* Es la unica salida de toda la app, y esta es la razon: cuando la profesora
+   puntua, la fila sale del arreglo y las de abajo pegan un salto hacia arriba.
+   Con tres pendientes en pantalla eso deja la duda de cual se fue. Corriendose
+   hacia afuera queda dicho. El reflow posterior sigue siendo instantaneo —para
+   colapsarlo habria que animar altura, y no vale ese precio aca. */
+
+.correccion.saliendo {
+  opacity: 0;
+  transform: translateX(-12px);
+  pointer-events: none;
+  /* Sin esto hereda el retraso del escalonado y la salida arranca tarde. */
+  transition-delay: 0s;
+  transition-duration: var(--dur-salida);
+}
+
+/* ---- la rubrica ---- */
+
+/* El `<details>` abre de golpe y empuja la fila de puntaje media pantalla
+   abajo. Se funde el contenido en vez de animar la altura: el salto del
+   contenedor ocurre igual, pero deja de leerse como un parpadeo. */
+
+.rubrica[open] p {
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+@starting-style {
+  .rubrica[open] p {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* ---- el badge de la barra ---- */
+
+.badge {
+  transition:
+    opacity var(--dur-entrada) var(--ease-out),
+    transform var(--dur-entrada) var(--ease-out);
+}
+
+@starting-style {
+  .badge {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* Un latido cuando el numero SUBE —nunca cuando baja, que eso es consecuencia
+   de lo que la profesora acaba de hacer. Keyframe y no transicion porque va y
+   vuelve, y se puede: el sondeo es cada diez segundos, esto no se dispara dos
+   veces seguidas. La clase se limpia en `animationend`, asi que el proximo
+   aviso reinicia limpio. */
+
+@keyframes latido {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.badge.pulso {
+  animation: latido 320ms var(--ease-out);
+}
+
+/* ---- menos movimiento ---- */
+
+/* Se conserva el fundido en todo —es lo que comunica que algo aparecio o se
+   fue— y se sacan el desplazamiento, el escalonado y el latido. */
+
+@media (prefers-reduced-motion: reduce) {
+  .pregunta,
+  .correccion,
+  .lista > li,
+  .evento {
+    transition-delay: 0s;
+  }
+
+  .correccion.saliendo {
+    transform: none;
+  }
+
+  .badge.pulso {
+    animation: none;
+  }
+
+  @starting-style {
+    .pregunta,
+    .correccion,
+    .lista > li,
+    .evento,
+    .rubrica[open] p,
+    .badge {
+      transform: none;
+    }
+  }
+}
+
+/* ------------------------------------------------------------ frontera --- */
+
+/* El bloque que dice lo que NO se configura en esta pantalla. Va en gris y con
+   borde punteado a proposito: es informacion, no un control: si tuviera el
+   tratamiento de una tarjeta activa, alguien va a intentar tocarlo. */
+
+.frontera {
+  border: 2px dashed var(--linea);
+  border-radius: var(--radio);
+  padding: 16px 18px;
+  margin: 20px 0;
+}
+
+.frontera h3 {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.frontera .ayuda {
+  margin-bottom: 14px;
+}
+
+.linea-frontera {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--tinta-tenue);
+  margin: 0 0 8px;
+}
+
+.linea-frontera:last-child {
+  margin-bottom: 0;
+}
+
+/* La referencia al contrato queda al final de la linea y no pegada al texto:
+   es una cita, no parte de la frase. */
+.linea-frontera .version {
+  margin-left: auto;
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .linea-frontera .version {
+    margin-left: 0;
+  }
+}
+
+/* El campo de devolucion cuelga de su opcion: sangrado y mas chico, para que
+   la fila de la opcion siga leyendose como la unidad principal. */
+.devolucion-opcion {
+  margin: -4px 0 12px 0;
+  font-size: 13px;
+}
+
+/* --------------------------------------------------------- devolucion --- */
+
+/* Lo que el profesor le explica al alumno una vez corregido (CI-58).
+   Sangrada y sobre papel-alt: es una voz distinta de la del sistema —la del
+   profesor— y tiene que leerse como un comentario al margen y no como un
+   campo mas del desglose. */
+
+.devolucion {
+  margin: 12px 0 0 40px;
+  padding: 14px 16px;
+  background: var(--papel-alt);
+  border-left: 3px solid var(--violeta);
+  border-radius: var(--radio);
+}
+
+.devolucion p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* La devolucion de una opcion arranca con la opcion, para que se entienda de
+   cual habla sin volver al enunciado. */
+.devolucion .por-opcion {
+  margin-top: 10px;
+  color: var(--tinta-tenue);
+}
+
+.devolucion .por-opcion .etiqueta {
+  /* El texto de una opcion puede ser largo; la pastilla no puede obligar a la
+     fila a no cortarse nunca. */
+  white-space: normal;
+  margin-right: 8px;
+}
+
+@media (max-width: 720px) {
+  .devolucion {
+    margin-left: 16px;
+  }
+}
+
+/* ------------------------------------------------------- vista previa --- */
+
+/* El item como lo va a ver el alumno (CI-59). Enmarcado en cian —el color del
+   rotulo de procedencia— porque es lo mismo que dice ese rotulo: esto no es
+   nuestra pantalla, es la del otro lado. */
+
+.previa {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border: 2px solid var(--cian);
+  border-radius: var(--radio);
+  background: var(--papel-alt);
+}
+
+.previa .ayuda {
+  margin-bottom: 12px;
+}
+
+.previa .titulo-desafio {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Las opciones van deshabilitadas: se miran, no se contestan. */
+.previa label.check {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.previa details {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--tinta-tenue);
+}
+
+.previa summary {
+  cursor: pointer;
+  font-family: var(--pixel);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.previa pre {
+  margin-top: 10px;
+  font-size: 11.5px;
 }

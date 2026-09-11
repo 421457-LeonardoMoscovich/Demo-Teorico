@@ -28,18 +28,44 @@ export interface Opcion {
   texto: string;
 }
 
+export type EstadoDeItem = 'BORRADOR' | 'LISTO';
+
 export interface ItemResumen {
   id: string;
   tipo: TipoDeItem;
   enunciado: string;
   version: number;
   autocorregible: boolean;
+  /** Un BORRADOR no entra a ningún cuestionario (CI-59). */
+  estado: EstadoDeItem;
+}
+
+/**
+ * El ítem como lo va a ver el alumno. Es la MISMA forma que sirve el examen, no
+ * una maqueta: por eso la vista previa vale como prueba de que el criterio no
+ * viaja (CI-17).
+ */
+export interface VistaPreviaItem {
+  itemVersionId: string;
+  tipo: TipoDeItem;
+  enunciado: string;
+  orden: number;
+  puntaje: number;
+  payload: any;
 }
 
 export interface ItemDetalle extends ItemResumen {
   itemVersionId: string;
   payload: any;
   criterio: any;
+  /** La retroalimentación completa: este DTO es solo del profesor (CI-58). */
+  devolucion: Devolucion | null;
+}
+
+/** Lo que el alumno lee DESPUÉS de que su respuesta ya fue corregida (CI-58). */
+export interface Devolucion {
+  general: string | null;
+  porOpcion: { id: string; texto: string }[] | null;
 }
 
 /** La ficha de cinco campos que va al Tema 03 (CI-04). */
@@ -118,6 +144,12 @@ export interface ItemCorregido {
   correcto: boolean | null;
   pendiente: boolean;
   respuesta: any;
+  /**
+   * Ya viene recortada por el backend a lo que este alumno marcó: la del resto
+   * de las opciones diría cuál era la correcta. Null si el ítem no tiene o si
+   * todavía lo espera un humano.
+   */
+  devolucion: Devolucion | null;
 }
 
 export interface Resultado {

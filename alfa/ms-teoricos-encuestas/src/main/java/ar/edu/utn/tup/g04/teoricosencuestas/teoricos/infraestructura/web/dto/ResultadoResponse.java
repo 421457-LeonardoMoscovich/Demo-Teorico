@@ -1,5 +1,6 @@
 package ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto;
 
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.Devolucion;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
@@ -45,6 +46,12 @@ public record ResultadoResponse(
             Integer obtenido,
             Boolean correcto,
             boolean pendiente,
-            JsonNode respuesta) {
+            JsonNode respuesta,
+            /**
+             * La retroalimentacion (CI-58), ya recortada a lo que este alumno
+             * marco. Null cuando el item no tiene o cuando todavia lo espera un
+             * humano: no hay nada que explicar de algo que nadie leyo.
+             */
+            Devolucion devolucion) {
     }
 }

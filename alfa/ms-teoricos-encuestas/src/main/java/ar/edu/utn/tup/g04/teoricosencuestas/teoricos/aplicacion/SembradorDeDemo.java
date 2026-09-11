@@ -1,6 +1,7 @@
 package ar.edu.utn.tup.g04.teoricosencuestas.teoricos.aplicacion;
 
 import ar.edu.utn.tup.g04.teoricosencuestas.comun.identidad.ProveedorDeIdentidadFalso;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.EstadoDeItem;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.TipoDeItem;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +44,14 @@ public class SembradorDeDemo {
         this.json = json;
     }
 
-    private record Semilla(TipoDeItem tipo, String enunciado, String payload, String criterio) {}
+    private record Semilla(TipoDeItem tipo, String enunciado, String payload, String criterio,
+                           String devolucion) {
+
+        /** La mayoria de las semillas no lleva devolucion. */
+        Semilla(TipoDeItem tipo, String enunciado, String payload, String criterio) {
+            this(tipo, enunciado, payload, criterio, null);
+        }
+    }
 
     @EventListener(ApplicationReadyEvent.class)
     public void sembrar() {
@@ -56,7 +64,10 @@ public class SembradorDeDemo {
 
         for (Semilla s : SEMILLAS) {
             banco.crear(profesorId, s.tipo(), new BancoDeItemsService.Contenido(
-                    s.enunciado(), leer(s.payload()), leer(s.criterio())));
+                    s.enunciado(), leer(s.payload()), leer(s.criterio()),
+                    s.devolucion() == null ? null : leer(s.devolucion()),
+                    // El banco sembrado nace listo: es material terminado.
+                    EstadoDeItem.LISTO));
         }
         log.info("[demo] sembrados {} items en el banco de la profesora", SEMILLAS.size());
     }
@@ -86,6 +97,9 @@ public class SembradorDeDemo {
                     {"correctas":["b"]}
                     """),
 
+            // La unica semilla con puntaje parcial (CI-55) y retroalimentacion
+            // (CI-58). Es a proposito que sea una sola: en la demo se compara
+            // contra las otras, que siguen siendo todo-o-nada y mudas.
             new Semilla(TipoDeItem.OPCION_MULTIPLE,
                     "¿Qué problemas resuelve un API Gateway en una arquitectura de microservicios?",
                     """
@@ -97,7 +111,20 @@ public class SembradorDeDemo {
                      "multiple":true}
                     """,
                     """
-                    {"correctas":["a","b","d"]}
+                    {"correctas":["a","b","d"],
+                     "pesos":[
+                       {"id":"a","porcentaje":34},
+                       {"id":"b","porcentaje":33},
+                       {"id":"d","porcentaje":33},
+                       {"id":"c","porcentaje":-34}]}
+                    """,
+                    """
+                    {"general":"El gateway resuelve problemas de BORDE: entrada, identidad y acoplamiento del cliente. Nada de lo que resuelve tiene que ver con la consistencia de los datos.",
+                     "porOpcion":[
+                       {"id":"c","texto":"Esta es la trampa de la pregunta. Un gateway enruta pedidos; no tiene forma de coordinar transacciones entre servicios que no comparten base. Para eso hacen falta sagas."},
+                       {"id":"a","texto":"Sí: el cliente habla con una sola dirección en vez de con doce."},
+                       {"id":"b","texto":"Sí, y es la razón más fuerte: si cada servicio validara el token por su cuenta, la regla viviría en doce lugares."},
+                       {"id":"d","texto":"Sí: el cliente deja de romperse cuando un servicio se parte en dos."}]}
                     """),
 
             new Semilla(TipoDeItem.VERDADERO_FALSO,

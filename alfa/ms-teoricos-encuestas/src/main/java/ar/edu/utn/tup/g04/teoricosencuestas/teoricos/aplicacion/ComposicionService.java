@@ -95,7 +95,11 @@ public class ComposicionService {
             }
             // Que el item exista, este vigente y sea de este profesor. Si no lo es,
             // el mensaje es el mismo que si no existiera: no confirmamos items ajenos.
-            banco.exigirPropio(profesorId, linea.itemId());
+            // Que el item este LISTO, ademas de existir (CI-59). Es la unica
+            // barrera: una vez compuesto, el borrador ya no puede volver.
+            if (!banco.exigirPropio(profesorId, linea.itemId()).getEstado().sePuedeComponer()) {
+                throw new ExcepcionDeNegocio(ClaveError.ITEM_EN_BORRADOR, "items[" + i + "].itemId");
+            }
             suma += linea.puntaje();
         }
 

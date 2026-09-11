@@ -2,11 +2,14 @@ package ar.edu.utn.tup.g04.teoricosencuestas.teoricos.aplicacion;
 
 import ar.edu.utn.tup.g04.teoricosencuestas.comun.error.ClaveError;
 import ar.edu.utn.tup.g04.teoricosencuestas.comun.error.ExcepcionDeNegocio;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.EstadoDeItem;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.TipoDeItem;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.CriterioDeCorreccion;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.Devolucion;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.MapeadorJson;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.PayloadDeItem;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.ValidadorDePayload;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ContenidoItemRepository;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ItemEntity;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ItemRepository;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ItemVersionEntity;
@@ -31,23 +34,34 @@ public class BancoDeItemsService {
 
     private final ItemRepository items;
     private final ItemVersionRepository versiones;
+    private final ContenidoItemRepository lineas;
     private final ValidadorDePayload validador;
     private final MapeadorJson json;
 
     public BancoDeItemsService(ItemRepository items, ItemVersionRepository versiones,
-                               ValidadorDePayload validador, MapeadorJson json) {
+                               ContenidoItemRepository lineas, ValidadorDePayload validador,
+                               MapeadorJson json) {
         this.items = items;
         this.versiones = versiones;
+        this.lineas = lineas;
         this.validador = validador;
         this.json = json;
     }
 
-    public record Contenido(String enunciado, JsonNode payload, JsonNode criterio) {}
+    public record Contenido(String enunciado, JsonNode payload, JsonNode criterio,
+                            JsonNode devolucion, EstadoDeItem estado) {
+
+        /** El estado por defecto es LISTO: el que no dice nada, publica. */
+        public EstadoDeItem estadoOListo() {
+            return estado == null ? EstadoDeItem.LISTO : estado;
+        }
+    }
 
     @Transactional
     public ItemVersionEntity crear(UUID profesorId, TipoDeItem tipo, Contenido contenido) {
         validar(tipo, contenido);
-        ItemEntity item = items.save(new ItemEntity(UUID.randomUUID(), profesorId, tipo));
+        ItemEntity item = items.save(
+                new ItemEntity(UUID.randomUUID(), profesorId, tipo, contenido.estadoOListo()));
         return publicar(item, contenido);
     }
 
@@ -60,7 +74,27 @@ public class BancoDeItemsService {
     public ItemVersionEntity publicarVersion(UUID profesorId, UUID itemId, Contenido contenido) {
         ItemEntity item = exigirPropio(profesorId, itemId);
         validar(item.getTipo(), contenido);
+        aplicarEstado(item, contenido.estadoOListo());
         return publicar(item, contenido);
+    }
+
+    /**
+     * Cambiar el estado al publicar una version (CI-59).
+     *
+     * La unica transicion que se rechaza es LISTO -> BORRADOR cuando el item ya
+     * cuelga de un cuestionario. Con referencia flotante (CI-13) el cuestionario
+     * sirve siempre la ultima version, asi que ese borrador le llegaria al
+     * alumno igual: el estado seria invisible justo en el caso que existe para
+     * frenar. Rechazarlo es mas honesto que fingir que lo detuvo.
+     */
+    private void aplicarEstado(ItemEntity item, EstadoDeItem nuevo) {
+        if (item.getEstado() == nuevo) {
+            return;
+        }
+        if (nuevo == EstadoDeItem.BORRADOR && lineas.existsByClaveItemId(item.getId())) {
+            throw new ExcepcionDeNegocio(ClaveError.ITEM_YA_COMPUESTO, "estado");
+        }
+        item.cambiarEstado(nuevo);
     }
 
     private ItemVersionEntity publicar(ItemEntity item, Contenido contenido) {
@@ -69,6 +103,7 @@ public class BancoDeItemsService {
                 UUID.randomUUID(), item.getId(), version, contenido.enunciado(),
                 json.escribir(contenido.payload()),
                 contenido.criterio() == null ? null : json.escribir(contenido.criterio()),
+                contenido.devolucion() == null ? null : json.escribir(contenido.devolucion()),
                 Instant.now()));
         item.marcarVersionActual(version);
         items.save(item);
@@ -80,7 +115,10 @@ public class BancoDeItemsService {
         CriterioDeCorreccion criterio = contenido.criterio() == null
                 ? null
                 : json.leerCriterio(tipo, contenido.criterio());
-        validador.validar(tipo, contenido.enunciado(), payload, criterio);
+        Devolucion devolucion = contenido.devolucion() == null
+                ? null
+                : json.leerDevolucion(contenido.devolucion());
+        validador.validar(tipo, contenido.enunciado(), payload, criterio, devolucion);
     }
 
     @Transactional

@@ -28,6 +28,11 @@ public class ValidadorDePayload {
 
     public void validar(TipoDeItem tipo, String enunciado,
                         PayloadDeItem payload, CriterioDeCorreccion criterio) {
+        validar(tipo, enunciado, payload, criterio, null);
+    }
+
+    public void validar(TipoDeItem tipo, String enunciado, PayloadDeItem payload,
+                        CriterioDeCorreccion criterio, Devolucion devolucion) {
 
         if (tipo.estaDiferido()) {
             throw new ExcepcionDeNegocio(ClaveError.TIPO_DIFERIDO, "tipo", HttpStatus.UNPROCESSABLE_ENTITY);
@@ -59,6 +64,50 @@ public class ValidadorDePayload {
                     exigir(payload, PayloadDeItem.Abierta.class),
                     exigir(criterio, CriterioDeCorreccion.Abierta.class));
             default -> throw new ExcepcionDeNegocio(ClaveError.TIPO_DESCONOCIDO, "tipo");
+        }
+
+        if (devolucion != null && !devolucion.vacia()) {
+            validarDevolucion(tipo, payload, devolucion);
+        }
+    }
+
+    /**
+     * La devolucion por opcion tiene que apuntar a opciones que existen (CI-58).
+     *
+     * Sin esto se puede guardar un texto atado a un id equivocado, y el efecto
+     * es peor que no tener devolucion: el alumno no la ve nunca —se filtra por
+     * lo que marco, y nunca marco un id inexistente— asi que el profesor cree
+     * que escribio una devolucion que en la practica no existe. Falla en
+     * silencio, que es la clase de bug que este validador existe para impedir.
+     *
+     * El texto general no se valida: cualquier texto sirve, y vacio es valido
+     * (significa que el profesor solo escribio devoluciones por opcion).
+     */
+    private void validarDevolucion(TipoDeItem tipo, PayloadDeItem payload, Devolucion d) {
+        List<Devolucion.PorOpcion> porOpcion =
+                d.porOpcion() == null ? List.of() : d.porOpcion();
+        if (porOpcion.isEmpty()) {
+            return;
+        }
+        if (!(payload instanceof PayloadDeItem.OpcionMultiple p)) {
+            // V/F, emparejar, ordenar y abierta no tienen opciones que elegir,
+            // asi que una devolucion por opcion ahi no significa nada.
+            throw new ExcepcionDeNegocio(ClaveError.DEVOLUCION_SIN_OPCIONES, "devolucion.porOpcion");
+        }
+        Set<String> ids = new HashSet<>();
+        for (PayloadDeItem.Opcion o : p.opciones() == null ? List.<PayloadDeItem.Opcion>of() : p.opciones()) {
+            ids.add(o.id());
+        }
+        Set<String> vistos = new HashSet<>();
+        for (int i = 0; i < porOpcion.size(); i++) {
+            String campo = "devolucion.porOpcion[" + i + "].id";
+            String id = porOpcion.get(i).id();
+            if (id == null || !ids.contains(id)) {
+                throw new ExcepcionDeNegocio(ClaveError.DEVOLUCION_DE_OPCION_INEXISTENTE, campo);
+            }
+            if (!vistos.add(id)) {
+                throw new ExcepcionDeNegocio(ClaveError.ID_DUPLICADO, campo);
+            }
         }
     }
 
@@ -109,6 +158,65 @@ public class ValidadorDePayload {
         }
         if (!p.multiple() && correctas.size() > 1) {
             throw new ExcepcionDeNegocio(ClaveError.UNICA_CORRECTA_ESPERADA, "criterio.correctas");
+        }
+        if (c.tienePesos()) {
+            validarPesos(c, ids, correctas);
+        }
+    }
+
+    /**
+     * El puntaje parcial por opcion (CI-55).
+     *
+     * Las dos reglas centrales son las mismas que Moodle aplica y muestra como
+     * error al pie del formulario:
+     *
+     * <ul>
+     *   <li><b>los positivos suman 100%</b> — si sumaran 80, el alumno perfecto
+     *       nunca podria sacar el puntaje completo del item, y el peso que el
+     *       profesor eligio al componer dejaria de significar lo que dice;</li>
+     *   <li><b>las marcadas correctas suman 100% entre ellas</b> — ata las dos
+     *       representaciones del criterio para que no puedan contradecirse. Sin
+     *       esto se puede guardar un item donde `correctas` dice una cosa y los
+     *       porcentajes pagan otra, y cual de las dos gana depende de si el
+     *       criterio tiene pesos: exactamente el bug silencioso que esta clase
+     *       existe para hacer imposible.</li>
+     * </ul>
+     *
+     * Una opcion sin porcentaje vale 0, como en Moodle: no hace falta
+     * enumerarlas todas para dejar las distractoras en cero.
+     */
+    private void validarPesos(CriterioDeCorreccion.OpcionMultiple c,
+                              Set<String> ids, List<String> correctas) {
+        Set<String> vistos = new HashSet<>();
+        int positivos = 0;
+        for (int i = 0; i < c.pesos().size(); i++) {
+            CriterioDeCorreccion.Ponderada peso = c.pesos().get(i);
+            String campo = "criterio.pesos[" + i + "]";
+            if (peso.id() == null || !ids.contains(peso.id())) {
+                throw new ExcepcionDeNegocio(ClaveError.PESO_DE_OPCION_INEXISTENTE, campo + ".id");
+            }
+            if (!vistos.add(peso.id())) {
+                throw new ExcepcionDeNegocio(ClaveError.ID_DUPLICADO, campo + ".id");
+            }
+            if (peso.porcentaje() < -100 || peso.porcentaje() > 100) {
+                throw new ExcepcionDeNegocio(ClaveError.PESO_FUERA_DE_RANGO, campo + ".porcentaje");
+            }
+            if (peso.porcentaje() > 0) {
+                positivos += peso.porcentaje();
+            }
+        }
+        if (positivos != 100) {
+            throw new ExcepcionDeNegocio(ClaveError.POSITIVOS_NO_SUMAN_100, "criterio.pesos");
+        }
+
+        int sumaDeLasCorrectas = 0;
+        for (CriterioDeCorreccion.Ponderada peso : c.pesos()) {
+            if (correctas.contains(peso.id())) {
+                sumaDeLasCorrectas += peso.porcentaje();
+            }
+        }
+        if (sumaDeLasCorrectas != 100) {
+            throw new ExcepcionDeNegocio(ClaveError.CORRECTAS_NO_SUMAN_100, "criterio.correctas");
         }
     }
 

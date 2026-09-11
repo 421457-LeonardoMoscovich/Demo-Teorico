@@ -16,6 +16,7 @@ import {
   Sesion,
   TipoDeItem,
   VistaAlumno,
+  VistaPreviaItem,
 } from './modelos';
 
 /** Nuestro microservicio. */
@@ -47,6 +48,11 @@ export class ApiService {
 
   item(id: string): Observable<ItemDetalle> {
     return this.http.get<ItemDetalle>(`${URL_TEORICOS}/teoricos/items/${id}`);
+  }
+
+  /** El ítem como se lo va a servir al alumno, antes de componerlo (CI-59). */
+  vistaPrevia(id: string): Observable<VistaPreviaItem> {
+    return this.http.get<VistaPreviaItem>(`${URL_TEORICOS}/teoricos/items/${id}/vista-previa`);
   }
 
   crearItem(cuerpo: {

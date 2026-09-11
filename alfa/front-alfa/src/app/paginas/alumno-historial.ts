@@ -31,8 +31,8 @@ import { EntregaDelAlumno } from '../core/modelos';
 
       <p class="ayuda">
         Cada intento queda guardado y ninguno pisa al anterior. Si rendiste dos veces el mismo
-        desafío, vas a ver los dos — y cada uno corregido contra la versión de las preguntas que
-        vos viste ese día.
+        desafío, vas a ver los dos — y cada uno corregido contra la versión de las preguntas que vos
+        viste ese día.
       </p>
 
       @if (cargando()) {
@@ -46,8 +46,8 @@ import { EntregaDelAlumno } from '../core/modelos';
       }
 
       <ul class="lista">
-        @for (e of entregas(); track e.entregaId) {
-          <li>
+        @for (e of entregas(); track e.entregaId; let idx = $index) {
+          <li [style.--orden]="idx">
             <div>
               <p class="titulo-desafio">{{ e.cuestionario || 'Cuestionario dado de baja' }}</p>
               <span class="etiqueta">intento {{ e.intento }}</span>

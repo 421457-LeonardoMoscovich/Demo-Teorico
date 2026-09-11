@@ -65,6 +65,14 @@ public class MapeadorJson {
         return convertir(json, clase, "criterio");
     }
 
+    /**
+     * La devolucion no depende del tipo: una sola forma para los cinco. Por eso
+     * no hay switch aca, a diferencia de payload, criterio y respuesta.
+     */
+    public Devolucion leerDevolucion(JsonNode json) {
+        return convertir(json, Devolucion.class, "devolucion");
+    }
+
     public RespuestaDeItem leerRespuesta(TipoDeItem tipo, JsonNode json) {
         Class<? extends RespuestaDeItem> clase = switch (tipo) {
             case OPCION_MULTIPLE -> RespuestaDeItem.OpcionMultiple.class;
