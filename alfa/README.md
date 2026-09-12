@@ -98,8 +98,8 @@ habilitó a leer esto ahora, y la **clave de despacho** dice que quien entrega e
 
 Dos usuarios, clave igual al usuario: **`profe`** y **`alumno`**.
 
-**El banco viene sembrado**: al arrancar, si está vacío, se cargan 10 ítems —los cuatro tipos
-autocorregibles más dos de respuesta abierta— con contenido real de la materia
+**El banco viene sembrado**: al arrancar, si está vacío, se cargan 12 ítems —los seis tipos
+autocorregibles más dos de respuesta abierta, ya etiquetados— con contenido real de la materia
 (`SembradorDeDemo`). Es andamiaje de la demo — se apaga con
 `DEMO_SEMBRAR=false` y los tests lo apagan solos. Como sólo siembra sobre un banco vacío, para
 volver al estado inicial hay que borrar el volumen: `docker compose down -v`.
@@ -169,6 +169,12 @@ sequenceDiagram
 3. **Armar el cuestionario**: agregar ítems del banco, repartir los pesos hasta 100 →
    **Publicar**. Aparece la **ficha de cinco campos**, que es literalmente todo lo que viaja al
    Tema 03, y el único campo que él interpreta es `tipo`.
+
+   Si falta una pregunta, **+ Escribir una pregunta nueva** la escribe ahí mismo: es el mismo
+   formulario del Banco montado adentro, así que la pregunta queda en el banco igual —no es una
+   pregunta "del cuestionario"— y además entra a este cuestionario ya seleccionada. Un ítem
+   nunca pertenece a un curso: pertenece al profesor, y es el **cuestionario** el que se cuelga
+   de la unidad de un curso. Por eso el mismo ítem puede estar en dos materias a la vez.
 4. Volver al roadmap: el desafío quedó **dentro de esa unidad**.
 5. **Salir** → entrar como **alumno** → su curso → el mismo roadmap → **Empezar**.
    Ahí el Tema 03 crea el intento y firma el vale de lectura.
@@ -232,6 +238,61 @@ producto. Tiene dos cosas que hasta ahora sólo se veían desde una terminal:
   cómo fallar, y el mensaje de error lo dice con todas las letras. Apaga sólo `/desafios`: los
   cursos siguen en pie, porque el Tema 02 es otro equipo y no se cae con ellos.
 
+### Los tipos de pregunta, y por qué son estos
+
+Ocho tipos, y **seis se corrigen solos**. Los cinco primeros venían del PRD; **respuesta corta** y
+**numérica** salieron de mirar el catálogo de Moodle, que es el que la cátedra usa:
+
+| Tipo | Cómo se corrige |
+|---|---|
+| Opción múltiple | Todo o nada, o ponderado por opción con negativos (CI-55) |
+| Verdadero / falso, Emparejar, Ordenar | Todo o nada |
+| **Respuesta corta** | Contra una lista de respuestas aceptadas, cada una con su porcentaje |
+| **Numérica** | Un valor con tolerancia ±, con los bordes adentro |
+| Respuesta abierta | Un humano, contra la rúbrica (D-01) |
+
+Dos decisiones de la respuesta corta que conviene señalar en la demo:
+
+- **La comparación es laxa por defecto** —ni mayúsculas ni acentos—, y hay dos interruptores para
+  volverla estricta. Escribir «Circuit Breaker» no es un error de concepto; castigarlo convierte la
+  pregunta en un dictado. La **ñ nunca se confunde con la n**: no es una vocal acentuada, es otra
+  letra, y «ano» no es «año».
+- **Gana la primera que coincide, no la que más paga.** Con «paris» al 100 y «parís» al 80, quien
+  escriba sin tilde saca 80. Si evaluáramos todas y nos quedáramos con la mejor, ese 80 no se
+  aplicaría nunca y el profesor no tendría forma de castigar una variante.
+
+Y un 36 sobre 60 en una respuesta corta dice **Parcial**, no «Incorrecta», por la misma razón que
+el puntaje parcial por opción.
+
+**Lo que del catálogo de Moodle NO entra, y por qué:**
+
+| Tipo | Por qué no |
+|---|---|
+| Arrastrar y soltar (×3) | Necesitan subir imágenes, y no hay almacenamiento de archivos |
+| Calculada (×3), Emparejamiento aleatorio | Cada alumno vería números o pares distintos, y guardarlos al servirlos rompe **CI-19**: la lectura no escribe. Se podría con el mismo truco del barajado —semilla `SHA-256(contenidoId + alumnoId)`— pero eso ya es diseño nuevo |
+| Respuestas anidadas (Cloze) | Es un mini-lenguaje de marcado propio; es un proyecto en sí mismo |
+
+### Las etiquetas del banco
+
+Un ítem **no pertenece a ningún curso**, y ese es el punto: `item` tiene `profesor_id` y no
+`curso_id`. El que se cuelga de la unidad de un curso es el **cuestionario**, y por eso la misma
+pregunta puede entrar en dos materias y un cuestionario se puede reutilizar en otra cohorte.
+
+Lo que sí hace falta con un banco grande es encontrar la pregunta, y para eso están las etiquetas:
+libres, varias por ítem, con autocompletado de las que el profesor ya usó y filtro por etiqueta en
+el Banco y al armar. Moodle resuelve esto con **Categoría**, que es una sola por pregunta; elegimos
+varias porque una sola obliga a decidir hoy cuál es el eje —¿la unidad? ¿el tema? ¿la dificultad?—
+y el profesor descubre a mitad del cuatrimestre que necesitaba otro.
+
+Tres detalles que se notan al usarlas:
+
+- **Se normalizan**: minúsculas y sin acentos. Sin eso, «Microservicios», «microservicios» y
+  «MICROSERVICIOS» son tres etiquetas y el filtro deja de servir justo cuando el banco crece.
+- **Cuelgan del ítem, no de la versión** (igual que `estado`, ver `V7`): reetiquetar no publica una
+  versión nueva, porque el contenido de la pregunta no cambió.
+- **No mandar el campo no es lo mismo que mandarlo vacío**: ausente deja las que el ítem ya tiene
+  —así un cliente viejo no las borra sin querer— y vacío las saca todas.
+
 ### Mis entregas, y reutilizar un cuestionario
 
 Dos cosas más que hacen visible lo que el modelo ya garantizaba:
@@ -273,7 +334,7 @@ cd ms-teoricos-encuestas
 mvn verify
 ```
 
-63 tests: 30 de dominio puro (corrección de los cuatro tipos, validaciones de payload) y 33 de
+129 tests: 79 de dominio puro (corrección de los seis tipos, validaciones de payload) y 50 de
 integración contra PostgreSQL real, conectándose con los **roles reales** y no con el
 superusuario — si falta un permiso, queremos que falle en el build y no en la demo.
 
@@ -288,6 +349,8 @@ Los que valen la pena leer:
 | `BancoAjenoNoSeVeIT` | El banco de cada profesor es invisible para el resto |
 | `CorreccionHumanaIT` | **El que prueba que el contrato con el 03 siempre fue asincrónico.** El evento no sale hasta que el profesor pone el último puntaje |
 | `BarajadoPorAlumnoIT` | Dos alumnos ven otro orden, el mismo alumno ve siempre el suyo, y el desglose sale como él las vio |
+| `RespuestaCortaYNumericaTest` | Que la comparación sea laxa por defecto, que gane la primera aceptada y no la que más paga, y que los bordes de la tolerancia entren |
+| `EtiquetasDelBancoIT` | Que la etiqueta no sea una puerta al banco ajeno, y que reetiquetar no invente historial |
 
 ### Si los tests no arrancan
 

@@ -2,6 +2,7 @@ package ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload;
 
 import ar.edu.utn.tup.g04.teoricosencuestas.comun.error.ClaveError;
 import ar.edu.utn.tup.g04.teoricosencuestas.comun.error.ExcepcionDeNegocio;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.Normalizacion;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.TipoDeItem;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -60,6 +61,12 @@ public class ValidadorDePayload {
             case ORDENAR -> validarOrdenar(
                     exigir(payload, PayloadDeItem.Ordenar.class),
                     exigir(criterio, CriterioDeCorreccion.Ordenar.class));
+            case RESPUESTA_CORTA -> validarRespuestaCorta(
+                    exigir(payload, PayloadDeItem.RespuestaCorta.class),
+                    exigir(criterio, CriterioDeCorreccion.RespuestaCorta.class));
+            case NUMERICA -> validarNumerica(
+                    exigir(payload, PayloadDeItem.Numerica.class),
+                    exigir(criterio, CriterioDeCorreccion.Numerica.class));
             case ABIERTA -> validarAbierta(
                     exigir(payload, PayloadDeItem.Abierta.class),
                     exigir(criterio, CriterioDeCorreccion.Abierta.class));
@@ -128,6 +135,73 @@ public class ValidadorDePayload {
         }
         if (c.rubrica() == null || c.rubrica().isBlank()) {
             throw new ExcepcionDeNegocio(ClaveError.RUBRICA_REQUERIDA, "criterio.rubrica");
+        }
+    }
+
+    /**
+     * Exactamente una regla de fondo: tiene que haber una respuesta que valga el
+     * 100%.
+     *
+     * Sin ella el item es incorregible en el peor sentido —se puede contestar
+     * perfecto y no sacar el puntaje completo—, y el peso que el profesor
+     * eligio al componer deja de significar lo que dice. Es la misma regla que
+     * ya aplica el puntaje parcial por opcion (CI-55), por la misma razon.
+     *
+     * Las repetidas se rechazan sobre el texto YA normalizado con los
+     * interruptores del propio criterio, y con la MISMA funcion que usa el
+     * corrector: con la comparacion laxa prendida,
+     * "paris" y "PARIS" son la misma respuesta escrita dos veces, y la segunda
+     * es inalcanzable. Dejarla pasar seria guardar una regla que no se aplica
+     * nunca — el tipo de cosa que despues nadie entiende por que no funciona.
+     */
+    private void validarRespuestaCorta(PayloadDeItem.RespuestaCorta p,
+                                       CriterioDeCorreccion.RespuestaCorta c) {
+        if (p.consigna() == null || p.consigna().isBlank()) {
+            throw new ExcepcionDeNegocio(ClaveError.CONSIGNA_REQUERIDA, "payload.consigna");
+        }
+        List<CriterioDeCorreccion.Aceptada> aceptadas =
+                c.aceptadas() == null ? List.of() : c.aceptadas();
+        if (aceptadas.isEmpty()) {
+            throw new ExcepcionDeNegocio(ClaveError.SIN_RESPUESTA_ACEPTADA, "criterio.aceptadas");
+        }
+
+        Set<String> vistas = new HashSet<>();
+        boolean hayUnaAlCien = false;
+        for (int i = 0; i < aceptadas.size(); i++) {
+            CriterioDeCorreccion.Aceptada a = aceptadas.get(i);
+            String campo = "criterio.aceptadas[" + i + "]";
+            if (a.texto() == null || a.texto().isBlank()) {
+                throw new ExcepcionDeNegocio(ClaveError.RESPUESTA_ACEPTADA_VACIA, campo + ".texto");
+            }
+            if (a.porcentaje() <= 0 || a.porcentaje() > 100) {
+                throw new ExcepcionDeNegocio(ClaveError.PORCENTAJE_ACEPTADA_FUERA_DE_RANGO,
+                        campo + ".porcentaje");
+            }
+            if (!vistas.add(Normalizacion.paraComparar(
+                    a.texto(), c.distingueMayusculas(), c.distingueAcentos()))) {
+                throw new ExcepcionDeNegocio(ClaveError.RESPUESTA_ACEPTADA_REPETIDA, campo + ".texto");
+            }
+            hayUnaAlCien |= a.porcentaje() == 100;
+        }
+        if (!hayUnaAlCien) {
+            throw new ExcepcionDeNegocio(ClaveError.SIN_ACEPTADA_AL_100, "criterio.aceptadas");
+        }
+    }
+
+    /**
+     * La tolerancia negativa se rechaza en vez de tomarle el valor absoluto:
+     * escribir -0.1 es un error de carga del profesor, y corregirselo en
+     * silencio esconde que no entendio el campo.
+     */
+    private void validarNumerica(PayloadDeItem.Numerica p, CriterioDeCorreccion.Numerica c) {
+        if (p.consigna() == null || p.consigna().isBlank()) {
+            throw new ExcepcionDeNegocio(ClaveError.CONSIGNA_REQUERIDA, "payload.consigna");
+        }
+        if (c.valor() == null || !Double.isFinite(c.valor())) {
+            throw new ExcepcionDeNegocio(ClaveError.VALOR_NUMERICO_REQUERIDO, "criterio.valor");
+        }
+        if (c.tolerancia() != null && (!Double.isFinite(c.tolerancia()) || c.tolerancia() < 0)) {
+            throw new ExcepcionDeNegocio(ClaveError.TOLERANCIA_NEGATIVA, "criterio.tolerancia");
         }
     }
 

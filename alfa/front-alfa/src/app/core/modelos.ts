@@ -5,6 +5,10 @@ export type TipoDeItem =
   | 'VERDADERO_FALSO'
   | 'EMPAREJAR'
   | 'ORDENAR'
+  /** Texto corto contra una lista de respuestas aceptadas. */
+  | 'RESPUESTA_CORTA'
+  /** Un numero con tolerancia. */
+  | 'NUMERICA'
   /** La unica que no se corrige sola: abre la cola del profesor (D-01). */
   | 'ABIERTA';
 
@@ -13,6 +17,8 @@ export const TIPOS: { valor: TipoDeItem; etiqueta: string }[] = [
   { valor: 'VERDADERO_FALSO', etiqueta: 'Verdadero / falso' },
   { valor: 'EMPAREJAR', etiqueta: 'Emparejar conceptos' },
   { valor: 'ORDENAR', etiqueta: 'Ordenar secuencia' },
+  { valor: 'RESPUESTA_CORTA', etiqueta: 'Respuesta corta' },
+  { valor: 'NUMERICA', etiqueta: 'Numérica' },
   { valor: 'ABIERTA', etiqueta: 'Respuesta abierta' },
 ];
 
@@ -38,6 +44,18 @@ export interface ItemResumen {
   autocorregible: boolean;
   /** Un BORRADOR no entra a ningún cuestionario (CI-59). */
   estado: EstadoDeItem;
+  /**
+   * Cómo el profesor organiza SU banco. No es un vínculo a un curso: un ítem no
+   * pertenece a ninguna materia, el CUESTIONARIO es el que se cuelga de la
+   * unidad de un curso.
+   */
+  etiquetas: string[];
+}
+
+/** Una etiqueta del vocabulario del profesor, con cuántos ítems la usan. */
+export interface EtiquetaConUso {
+  etiqueta: string;
+  cuantos: number;
 }
 
 /**

@@ -184,6 +184,12 @@ export class AlumnoResultadoPage {
       return r.seleccionadas.length ? r.seleccionadas.map(leer).join(' · ') : 'nada';
     }
     if (typeof r.valor === 'boolean') return r.valor ? 'Verdadero' : 'Falso';
+    // Numérica. La unidad sale del payload estampado, igual que los textos: es
+    // rótulo de la pregunta, no parte de lo que el alumno escribió.
+    if (typeof r.valor === 'number') {
+      return p.unidad ? `${r.valor} ${p.unidad}` : String(r.valor);
+    }
+    if (r.valor === null && 'valor' in r) return 'nada';
     if (Array.isArray(r.pares)) {
       return (
         r.pares.map((par: string[]) => `${leer(par[0])} → ${leer(par[1])}`).join(' · ') || 'nada'

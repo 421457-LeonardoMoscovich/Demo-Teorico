@@ -8,6 +8,7 @@ import {
   Desafio,
   ItemDetalle,
   EntregaDelAlumno,
+  EtiquetaConUso,
   EventoPublicado,
   ItemResumen,
   MiContenido,
@@ -41,9 +42,18 @@ export class ApiService {
 
   // ---- banco de ítems (Tema 04, profesor) ----
 
-  items(tipo?: TipoDeItem | ''): Observable<ItemResumen[]> {
-    const query = tipo ? `?tipo=${tipo}` : '';
+  /** Los dos filtros son opcionales y se combinan con Y. */
+  items(tipo?: TipoDeItem | '', etiqueta?: string): Observable<ItemResumen[]> {
+    const partes: string[] = [];
+    if (tipo) partes.push(`tipo=${tipo}`);
+    if (etiqueta) partes.push(`etiqueta=${encodeURIComponent(etiqueta)}`);
+    const query = partes.length > 0 ? `?${partes.join('&')}` : '';
     return this.http.get<ItemResumen[]>(`${URL_TEORICOS}/teoricos/items${query}`);
+  }
+
+  /** El vocabulario del profesor: alimenta el autocompletado y el filtro. */
+  etiquetas(): Observable<EtiquetaConUso[]> {
+    return this.http.get<EtiquetaConUso[]>(`${URL_TEORICOS}/teoricos/items/etiquetas`);
   }
 
   item(id: string): Observable<ItemDetalle> {

@@ -49,6 +49,33 @@ public sealed interface CriterioDeCorreccion {
 
     record Ordenar(List<String> secuencia) implements CriterioDeCorreccion {}
 
+    /** Una de las respuestas que el profesor acepta, y cuanto paga. */
+    record Aceptada(String texto, int porcentaje) {}
+
+    /**
+     * Las respuestas que valen, en orden: gana la PRIMERA que coincide.
+     *
+     * El orden importa y es la misma regla de Moodle: con "paris" al 100% y
+     * "parís" al 80%, quien escriba sin tilde tiene que sacar 80 aunque las dos
+     * coincidan bajo la comparacion laxa. Evaluar todas y quedarse con la mejor
+     * volveria imposible castigar una variante.
+     *
+     * Los dos interruptores estan en NEGATIVO —`distingue…`— porque apagados es
+     * lo que el profesor espera: escribir "Microservicio" cuando la respuesta
+     * era "microservicio" no es un error de concepto. Prenderlos es la
+     * excepcion, y quien la prende sabe por que.
+     */
+    record RespuestaCorta(List<Aceptada> aceptadas,
+                          boolean distingueMayusculas,
+                          boolean distingueAcentos) implements CriterioDeCorreccion {}
+
+    /**
+     * `tolerancia` es absoluta y en las mismas unidades que el valor: 9.8 con
+     * tolerancia 0.1 acepta de 9.7 a 9.9, con los bordes adentro. Cero es
+     * valido y significa exacto.
+     */
+    record Numerica(Double valor, Double tolerancia) implements CriterioDeCorreccion {}
+
     /** Rubrica en texto para el corrector humano o el LLM. Fuera de la alfa. */
     record Abierta(String rubrica) implements CriterioDeCorreccion {}
 }

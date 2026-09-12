@@ -45,11 +45,12 @@ public class SembradorDeDemo {
     }
 
     private record Semilla(TipoDeItem tipo, String enunciado, String payload, String criterio,
-                           String devolucion) {
+                           String devolucion, List<String> etiquetas) {
 
         /** La mayoria de las semillas no lleva devolucion. */
-        Semilla(TipoDeItem tipo, String enunciado, String payload, String criterio) {
-            this(tipo, enunciado, payload, criterio, null);
+        Semilla(TipoDeItem tipo, String enunciado, String payload, String criterio,
+                List<String> etiquetas) {
+            this(tipo, enunciado, payload, criterio, null, etiquetas);
         }
     }
 
@@ -67,7 +68,8 @@ public class SembradorDeDemo {
                     s.enunciado(), leer(s.payload()), leer(s.criterio()),
                     s.devolucion() == null ? null : leer(s.devolucion()),
                     // El banco sembrado nace listo: es material terminado.
-                    EstadoDeItem.LISTO));
+                    EstadoDeItem.LISTO,
+                    s.etiquetas()));
         }
         log.info("[demo] sembrados {} items en el banco de la profesora", SEMILLAS.size());
     }
@@ -95,7 +97,8 @@ public class SembradorDeDemo {
                     """,
                     """
                     {"correctas":["b"]}
-                    """),
+                    """,
+                    List.of("capas", "arquitectura")),
 
             // La unica semilla con puntaje parcial (CI-55) y retroalimentacion
             // (CI-58). Es a proposito que sea una sola: en la demo se compara
@@ -125,7 +128,8 @@ public class SembradorDeDemo {
                        {"id":"a","texto":"Sí: el cliente habla con una sola dirección en vez de con doce."},
                        {"id":"b","texto":"Sí, y es la razón más fuerte: si cada servicio validara el token por su cuenta, la regla viviría en doce lugares."},
                        {"id":"d","texto":"Sí: el cliente deja de romperse cuando un servicio se parte en dos."}]}
-                    """),
+                    """,
+                    List.of("gateway", "microservicios")),
 
             new Semilla(TipoDeItem.VERDADERO_FALSO,
                     "Base de datos por servicio",
@@ -134,7 +138,8 @@ public class SembradorDeDemo {
                     """,
                     """
                     {"esVerdadero":false}
-                    """),
+                    """,
+                    List.of("datos", "microservicios")),
 
             new Semilla(TipoDeItem.VERDADERO_FALSO,
                     "Idempotencia en el consumo de eventos",
@@ -143,7 +148,8 @@ public class SembradorDeDemo {
                     """,
                     """
                     {"esVerdadero":true}
-                    """),
+                    """,
+                    List.of("eventos", "microservicios")),
 
             new Semilla(TipoDeItem.EMPAREJAR,
                     "Emparejá cada patrón con el problema que resuelve.",
@@ -159,7 +165,8 @@ public class SembradorDeDemo {
                     """,
                     """
                     {"pares":[["i1","d2"],["i2","d1"],["i3","d3"]]}
-                    """),
+                    """,
+                    List.of("patrones", "microservicios")),
 
             new Semilla(TipoDeItem.EMPAREJAR,
                     "Emparejá cada nivel de aislamiento con la anomalía que todavía permite.",
@@ -175,7 +182,8 @@ public class SembradorDeDemo {
                     """,
                     """
                     {"pares":[["i1","d2"],["i2","d3"],["i3","d1"]]}
-                    """),
+                    """,
+                    List.of("datos", "transacciones")),
 
             new Semilla(TipoDeItem.ORDENAR,
                     "Ordená las fases del ciclo de vida de una request que entra por el gateway.",
@@ -189,7 +197,8 @@ public class SembradorDeDemo {
                     """,
                     """
                     {"secuencia":["e1","e2","e3","e4","e5"]}
-                    """),
+                    """,
+                    List.of("gateway", "microservicios")),
 
             new Semilla(TipoDeItem.ORDENAR,
                     "Ordená los pasos de una saga coreografiada que falla en el segundo servicio.",
@@ -202,7 +211,36 @@ public class SembradorDeDemo {
                     """,
                     """
                     {"secuencia":["e1","e2","e3","e4"]}
-                    """),
+                    """,
+                    List.of("patrones", "transacciones")),
+
+            // Los dos tipos que entraron del catalogo de Moodle. La corta lleva
+            // dos aceptadas y la segunda paga menos: es la que hace visible que
+            // el orden de la lista es la regla de desempate.
+            new Semilla(TipoDeItem.RESPUESTA_CORTA,
+                    "¿Qué patrón evita seguir golpeando un servicio que ya está caído?",
+                    """
+                    {"consigna":"Una o dos palabras."}
+                    """,
+                    """
+                    {"aceptadas":[
+                       {"texto":"circuit breaker","porcentaje":100},
+                       {"texto":"cortacircuitos","porcentaje":100},
+                       {"texto":"breaker","porcentaje":60}],
+                     "distingueMayusculas":false,
+                     "distingueAcentos":false}
+                    """,
+                    List.of("patrones", "microservicios")),
+
+            new Semilla(TipoDeItem.NUMERICA,
+                    "¿Cuántas bases de datos comparte un microservicio con otro, según el patrón base por servicio?",
+                    """
+                    {"consigna":"Respondé con un número.","unidad":"bases"}
+                    """,
+                    """
+                    {"valor":0,"tolerancia":0}
+                    """,
+                    List.of("datos", "microservicios")),
 
             // Las dos abiertas son las que obligan a que exista la cola: no las
             // puede puntuar nadie mas que la profesora. La rubrica va con la
@@ -215,7 +253,8 @@ public class SembradorDeDemo {
                     """,
                     """
                     {"rubrica":"Completo (todo el puntaje): nombra el acoplamiento de esquema y una consecuencia sobre el despliegue independiente. Parcial (mitad): nombra el acoplamiento pero no la consecuencia. Nulo: describe la separación sin explicar por qué importa."}
-                    """),
+                    """,
+                    List.of("datos", "microservicios")),
 
             new Semilla(TipoDeItem.ABIERTA,
                     "¿Cuándo elegirías coreografía por sobre orquestación? Justificá con un caso.",
@@ -225,5 +264,6 @@ public class SembradorDeDemo {
                     """,
                     """
                     {"rubrica":"Completo: distingue los dos estilos Y trae un caso donde el acoplamiento del orquestador sería el problema. Parcial: distingue los estilos sin caso, o trae un caso que no discrimina. Nulo: repite las definiciones."}
-                    """));
+                    """,
+                    List.of("patrones", "microservicios")));
 }

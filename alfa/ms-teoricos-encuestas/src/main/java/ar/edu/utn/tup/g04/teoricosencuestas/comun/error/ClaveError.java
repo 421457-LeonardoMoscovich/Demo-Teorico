@@ -32,7 +32,16 @@ public enum ClaveError {
     SECUENCIA_NO_ES_PERMUTACION("La secuencia correcta tiene que usar todos los elementos, una vez cada uno"),
     ELEMENTOS_INSUFICIENTES("Hacen falta al menos dos elementos"),
     ID_DUPLICADO("Hay ids repetidos"),
-    CONSIGNA_REQUERIDA("La consigna de una respuesta abierta no puede estar vacia"),
+    SIN_RESPUESTA_ACEPTADA("Hay que cargar al menos una respuesta que se acepte como correcta"),
+    SIN_ACEPTADA_AL_100("Alguna de las respuestas aceptadas tiene que valer el 100%: si no, contestar perfecto no da el puntaje completo"),
+    RESPUESTA_ACEPTADA_VACIA("Una respuesta aceptada no puede estar vacia"),
+    RESPUESTA_ACEPTADA_REPETIDA("Esa respuesta ya esta en la lista: con esta configuracion las dos son la misma y la segunda no se alcanza nunca"),
+    PORCENTAJE_ACEPTADA_FUERA_DE_RANGO("El porcentaje de una respuesta aceptada tiene que estar entre 1 y 100"),
+    VALOR_NUMERICO_REQUERIDO("Hace falta el valor numerico correcto"),
+    TOLERANCIA_NEGATIVA("La tolerancia no puede ser negativa"),
+    RESPUESTA_NO_NUMERICA("Eso no es un numero"),
+
+    CONSIGNA_REQUERIDA("La consigna no puede estar vacia"),
     RUBRICA_REQUERIDA("Una respuesta abierta necesita una rubrica: es lo unico que guia a quien corrige"),
     EXTENSION_NO_POSITIVA("La extension maxima tiene que ser mayor que cero"),
 
@@ -44,6 +53,9 @@ public enum ClaveError {
     ITEM_REPETIDO("Un item no puede aparecer dos veces en el mismo cuestionario"),
     ITEM_EN_BORRADOR("El item esta en borrador: terminalo y marcalo listo antes de usarlo"),
     ITEM_YA_COMPUESTO("El item ya esta en un cuestionario: no se puede volver a borrador"),
+    ETIQUETA_VACIA("Una etiqueta no puede estar vacia"),
+    ETIQUETA_DEMASIADO_LARGA("Una etiqueta no puede pasar de 40 caracteres"),
+    DEMASIADAS_ETIQUETAS("Un item no puede tener mas de 8 etiquetas"),
 
     CONTENIDO_INEXISTENTE("El cuestionario no existe"),
     VALE_REQUERIDO("Hace falta un vale de lectura emitido por el Tema 03 (CI-18)"),

@@ -7,6 +7,7 @@ import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.MapeadorJso
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ItemEntity;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ItemVersionEntity;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.CrearItemRequest;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.EtiquetaResponse;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.ItemDetalleResponse;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.ItemResumenResponse;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.VistaAlumnoResponse;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -67,10 +69,37 @@ public class ItemController {
         return detalle(banco.exigirPropio(identidad.id(), id), version);
     }
 
+    @Operation(summary = "El banco del profesor",
+            description = """
+                    Los dos filtros son opcionales y se combinan con Y: `?tipo=NUMERICA&etiqueta=concurrencia`
+                    trae las numéricas etiquetadas concurrencia.
+
+                    La etiqueta se compara normalizada —minúsculas, sin acentos—, así que
+                    `Concurrencia` encuentra lo etiquetado `concurrencia`.
+                    """)
     @GetMapping
-    public List<ItemResumenResponse> listar(@RequestParam(required = false) TipoDeItem tipo) {
-        return banco.listar(identidad.id(), tipo).stream()
-                .map(item -> resumen(item, banco.versionVigente(item)))
+    public List<ItemResumenResponse> listar(@RequestParam(required = false) TipoDeItem tipo,
+                                            @RequestParam(required = false) String etiqueta) {
+        List<ItemEntity> encontrados = banco.listar(identidad.id(), tipo, etiqueta);
+        Map<UUID, List<String>> porItem = banco.etiquetasDe(encontrados);
+        return encontrados.stream()
+                .map(item -> resumen(item, banco.versionVigente(item),
+                        porItem.getOrDefault(item.getId(), List.of())))
+                .toList();
+    }
+
+    @Operation(summary = "Las etiquetas que el profesor ya usa",
+            description = """
+                    El vocabulario propio, con cuántos ítems vigentes usa cada una. Alimenta el
+                    autocompletado al etiquetar y el filtro del banco.
+
+                    Va ordenado por uso y no alfabético: lo que el profesor etiqueta todo el
+                    tiempo tiene que estar arriba.
+                    """)
+    @GetMapping("/etiquetas")
+    public List<EtiquetaResponse> etiquetas() {
+        return banco.vocabulario(identidad.id()).stream()
+                .map(e -> new EtiquetaResponse(e.getEtiqueta(), e.getCuantos()))
                 .toList();
     }
 
@@ -110,9 +139,11 @@ public class ItemController {
         banco.darDeBaja(identidad.id(), id);
     }
 
-    private ItemResumenResponse resumen(ItemEntity item, ItemVersionEntity version) {
+    private ItemResumenResponse resumen(ItemEntity item, ItemVersionEntity version,
+                                        List<String> etiquetas) {
         return new ItemResumenResponse(item.getId(), item.getTipo(), version.getEnunciado(),
-                version.getVersion(), item.getTipo().esAutocorregible(), item.getEstado());
+                version.getVersion(), item.getTipo().esAutocorregible(), item.getEstado(),
+                etiquetas);
     }
 
     private ItemDetalleResponse detalle(ItemEntity item, ItemVersionEntity version) {
@@ -121,6 +152,7 @@ public class ItemController {
                 json.aNodo(version.getPayload()),
                 version.getCriterio() == null ? null : json.aNodo(version.getCriterio()),
                 version.getDevolucion() == null ? null : json.aNodo(version.getDevolucion()),
-                item.getEstado());
+                item.getEstado(),
+                banco.etiquetasDe(item.getId()));
     }
 }

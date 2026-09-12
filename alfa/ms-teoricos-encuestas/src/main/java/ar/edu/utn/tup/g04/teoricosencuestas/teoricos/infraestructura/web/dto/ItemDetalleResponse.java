@@ -4,6 +4,7 @@ import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.EstadoDeItem;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.TipoDeItem;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -20,5 +21,6 @@ public record ItemDetalleResponse(
         JsonNode criterio,
         /** Completa y sin recortar: es el profesor el que la escribio (CI-58). */
         JsonNode devolucion,
-        EstadoDeItem estado) {
+        EstadoDeItem estado,
+        List<String> etiquetas) {
 }

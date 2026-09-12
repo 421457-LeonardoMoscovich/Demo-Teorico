@@ -3,9 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../core/api.service';
+import { FormularioItemComponent } from './formulario-item';
 import {
   ContenidoRef,
   ErrorApi,
+  ItemDetalle,
   ItemResumen,
   MiContenido,
   TIPOS,
@@ -29,24 +31,95 @@ interface Elegido {
 @Component({
   selector: 'app-profesor-armar',
   standalone: true,
-  imports: [FormsModule, JsonPipe],
+  imports: [FormsModule, JsonPipe, FormularioItemComponent],
   template: `
     <div class="columnas">
       <section class="tarjeta">
         <h2>Ítems disponibles</h2>
         <p class="ayuda">Elegí de tu banco. Se agregan al final del cuestionario.</p>
+
+        <!--
+          Escribir una pregunta acá adentro y no en el Banco. Es el mismo
+          formulario —el mismo componente y el mismo endpoint—, así que la
+          pregunta queda en el banco igual: lo único que cambia es que no hay
+          que irse de la pantalla y perder los pesos ya repartidos.
+        -->
+        @if (creando()) {
+          <div class="previa">
+            <app-formulario-item textoCrear="Guardar y agregar" (guardado)="alCrear($event)" />
+            <button type="button" class="secundario" (click)="creando.set(false)">Cerrar</button>
+          </div>
+        } @else {
+          <button type="button" class="secundario" (click)="creando.set(true)">
+            + Escribir una pregunta nueva
+          </button>
+          <p class="ayuda">
+            Queda guardada en tu banco como cualquier otra y entra a este cuestionario ya
+            seleccionada.
+          </p>
+        }
+
+        <!--
+          El filtro por etiqueta. Es acá donde más sirve: con el banco grande,
+          armar un parcial es buscar cuatro preguntas de un tema entre
+          doscientas. Filtra en memoria y no vuelve al backend: la lista ya está
+          traída, y una llamada por clic haría parpadear la columna entera.
+        -->
+        @if (etiquetasDelBanco().length > 0) {
+          <div class="chips">
+            <button
+              type="button"
+              class="chip"
+              [class.activo]="porEtiqueta() === ''"
+              (click)="porEtiqueta.set('')"
+            >
+              todas
+            </button>
+            @for (e of etiquetasDelBanco(); track e) {
+              <button
+                type="button"
+                class="chip"
+                [class.activo]="porEtiqueta() === e"
+                (click)="porEtiqueta.set(porEtiqueta() === e ? '' : e)"
+              >
+                {{ e }}
+              </button>
+            }
+          </div>
+        }
+
         <ul class="lista">
           @for (i of disponibles(); track i.id) {
             <li>
               <div>
                 <span class="etiqueta">{{ etiqueta(i.tipo) }}</span>
                 <p>{{ i.enunciado }}</p>
+                @if (i.etiquetas.length > 0) {
+                  <div class="chips">
+                    @for (e of i.etiquetas; track e) {
+                      <button
+                        type="button"
+                        class="chip"
+                        [class.activo]="porEtiqueta() === e"
+                        (click)="porEtiqueta.set(porEtiqueta() === e ? '' : e)"
+                      >
+                        {{ e }}
+                      </button>
+                    }
+                  </div>
+                }
               </div>
               <button type="button" (click)="agregar(i)">Agregar</button>
             </li>
           }
           @if (disponibles().length === 0) {
-            <li class="vacio">No queda ningún ítem sin usar.</li>
+            <li class="vacio">
+              @if (porEtiqueta()) {
+                Ningún ítem sin usar con esa etiqueta.
+              } @else {
+                No queda ningún ítem sin usar.
+              }
+            </li>
           }
         </ul>
       </section>
@@ -237,6 +310,9 @@ export class ProfesorArmarPage {
   readonly ficha = signal<ContenidoRef | null>(null);
   readonly publicando = signal(false);
 
+  /** Si el formulario de alta en linea esta abierto. */
+  readonly creando = signal(false);
+
   /**
    * Signal y no un campo comun: `listo` es un computed y solo recalcula cuando
    * cambia una signal. Con un campo suelto, escribir el titulo no habilitaba el
@@ -256,9 +332,22 @@ export class ProfesorArmarPage {
   readonly unidadId = signal('');
   readonly unidadTitulo = signal('');
 
+  /** La etiqueta por la que se filtra la columna izquierda. Vacio = todas. */
+  readonly porEtiqueta = signal('');
+
+  /** Solo las etiquetas que aparecen en el banco de esta pantalla. */
+  readonly etiquetasDelBanco = computed(() => {
+    const todas = new Set<string>();
+    this.banco().forEach((i) => i.etiquetas?.forEach((e) => todas.add(e)));
+    return [...todas].sort();
+  });
+
   readonly disponibles = computed(() => {
     const usados = new Set(this.elegidos().map((e) => e.item.id));
-    return this.banco().filter((i) => !usados.has(i.id));
+    const etiqueta = this.porEtiqueta();
+    return this.banco().filter(
+      (i) => !usados.has(i.id) && (etiqueta === '' || (i.etiquetas ?? []).includes(etiqueta)),
+    );
   });
 
   readonly suma = computed(() => this.elegidos().reduce((t, e) => t + (e.puntaje || 0), 0));
@@ -340,6 +429,31 @@ export class ProfesorArmarPage {
   agregar(item: ItemResumen): void {
     this.elegidos.update((lista) => [...lista, { item, puntaje: 0, manual: false }]);
     this.reajustarLibres();
+  }
+
+  /**
+   * La pregunta recien escrita sin salir de la pantalla. Entra al banco igual
+   * que cualquier otra —es el mismo POST— y ademas se agrega al cuestionario
+   * con el peso repartido, que es lo unico que esta pantalla hace de mas.
+   *
+   * El borrador es la excepcion: queda en el banco pero NO se agrega, porque el
+   * backend rechaza componer con un BORRADOR (CI-59). Agregarlo daria un error
+   * recien al publicar, con los pesos ya repartidos.
+   */
+  alCrear(item: ItemDetalle): void {
+    this.banco.update((b) => [item, ...b]);
+    if (item.estado === 'BORRADOR') {
+      this.error.set({
+        clave: 'ITEM_EN_BORRADOR',
+        campo: null,
+        mensaje:
+          'Guardada en el banco como borrador. Un borrador no entra a ningún cuestionario: ' +
+          'publicala desde el Banco y después agregala.',
+      });
+      return;
+    }
+    this.error.set(null);
+    this.agregar(item);
   }
 
   quitar(i: number): void {

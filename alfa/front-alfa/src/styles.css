@@ -524,9 +524,19 @@ button.peligro {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  /* Los botones de fila en pixel font miden mas que media columna. Sin wrap se
+     salian de la tarjeta y se pisaban con la columna de al lado. */
+  flex-wrap: wrap;
   gap: 14px;
   padding: 16px 0;
   border-top: 2px solid var(--linea);
+}
+
+/* El texto se queda con el ancho sobrante y puede achicarse; min-width:0 es lo
+   que deja que un enunciado largo corte en vez de estirar la fila. */
+.lista li > div:first-child {
+  flex: 1 1 220px;
+  min-width: 0;
 }
 
 .lista li p {
@@ -537,8 +547,19 @@ button.peligro {
 
 .acciones-fila {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
-  flex: none;
+  /* Se achica y envuelve antes que desbordar la tarjeta. */
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: auto;
+}
+
+/* Un numero no necesita el ancho de un renglon, y estirado deja la unidad
+   ("bases", "kg") pegada al borde derecho, lejos de lo que rotula. */
+.respuesta-numerica {
+  max-width: 220px;
 }
 
 .titulo-desafio {

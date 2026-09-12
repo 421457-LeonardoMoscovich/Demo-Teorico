@@ -12,6 +12,13 @@ interface Borrador {
   pares: Record<string, string>;
   secuencia: string[];
   texto: string;
+  /**
+   * NUMERICA. `number | null` y no string porque eso es lo que entrega ngModel
+   * sobre un <input type="number">: Angular parsea por nosotros y pone null
+   * mientras lo escrito no sea un numero valido. Guardar el texto crudo seria
+   * pelearle al accessor.
+   */
+  numero: number | null;
 }
 
 @Component({
@@ -97,6 +104,35 @@ interface Borrador {
                     </select>
                   </div>
                 }
+              }
+
+              @case ('RESPUESTA_CORTA') {
+                <p class="afirmacion">{{ i.payload.consigna }}</p>
+                <input
+                  [name]="'c' + i.itemVersionId"
+                  [ngModel]="borrador(i).texto"
+                  (ngModelChange)="escribir(i, $event)"
+                  placeholder="Tu respuesta"
+                  autocomplete="off"
+                />
+              }
+
+              @case ('NUMERICA') {
+                <p class="afirmacion">{{ i.payload.consigna }}</p>
+                <div class="fila">
+                  <input
+                    class="respuesta-numerica"
+                    type="number"
+                    step="any"
+                    [name]="'n' + i.itemVersionId"
+                    [ngModel]="borrador(i).numero"
+                    (ngModelChange)="escribirNumero(i, $event)"
+                    placeholder="Tu respuesta"
+                  />
+                  @if (i.payload.unidad) {
+                    <span class="concepto">{{ i.payload.unidad }}</span>
+                  }
+                </div>
               }
 
               @case ('ABIERTA') {
@@ -256,6 +292,7 @@ export class AlumnoResponderPage {
             pares: {},
             secuencia: i.tipo === 'ORDENAR' ? i.payload.elementos.map((e: Opcion) => e.id) : [],
             texto: '',
+            numero: null,
           };
         }
 
@@ -310,6 +347,7 @@ export class AlumnoResponderPage {
         pares: {},
         secuencia: [],
         texto: '',
+        numero: null,
       }
     );
   }
@@ -341,6 +379,10 @@ export class AlumnoResponderPage {
 
   escribir(i: ItemParaAlumno, texto: string): void {
     this.actualizar(i, { texto });
+  }
+
+  escribirNumero(i: ItemParaAlumno, numero: number | null): void {
+    this.actualizar(i, { numero: numero ?? null });
   }
 
   palabras(i: ItemParaAlumno): number {
@@ -389,8 +431,14 @@ export class AlumnoResponderPage {
         return i.payload.izquierda.every((z: Opcion) => b.pares[z.id]);
       case 'ORDENAR':
         return b.secuencia.length > 0;
+      case 'RESPUESTA_CORTA':
       case 'ABIERTA':
         return b.texto.trim().length > 0;
+      case 'NUMERICA':
+        // Contestada es "hay un numero". Lo que el alumno haya tipeado y no sea
+        // uno llega como null desde el propio input, asi que no hay que
+        // distinguir "vacio" de "invalido": los dos son no contestada.
+        return b.numero !== null && Number.isFinite(b.numero);
     }
   }
 
@@ -433,6 +481,12 @@ export class AlumnoResponderPage {
           };
         case 'ORDENAR':
           return { itemVersionId: i.itemVersionId, contenido: { secuencia: b.secuencia } };
+        case 'RESPUESTA_CORTA':
+          return { itemVersionId: i.itemVersionId, contenido: { texto: b.texto } };
+        case 'NUMERICA':
+          // `null` cuando no escribio un numero: el corrector le pone 0
+          // explicitamente, igual que a cualquier item en blanco.
+          return { itemVersionId: i.itemVersionId, contenido: { valor: b.numero } };
         case 'ABIERTA':
           return { itemVersionId: i.itemVersionId, contenido: { texto: b.texto } };
       }
