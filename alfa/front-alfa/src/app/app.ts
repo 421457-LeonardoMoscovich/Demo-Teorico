@@ -3,11 +3,12 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { SesionService } from './core/sesion.service';
 import { TemaService } from './core/tema.service';
 import { PendientesService } from './core/pendientes.service';
+import { ConfirmacionExito } from './comun/confirmacion-exito';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ConfirmacionExito],
   template: `
     <nav class="barra">
       <span class="marca">Teóricos · G04 <em>alfa</em></span>
@@ -65,6 +66,9 @@ import { PendientesService } from './core/pendientes.service';
     <main>
       <router-outlet />
     </main>
+
+    <!-- Uno solo para toda la app: las pantallas lo piden por el servicio. -->
+    <app-confirmacion-exito />
   `,
   styleUrl: './app.css',
 })

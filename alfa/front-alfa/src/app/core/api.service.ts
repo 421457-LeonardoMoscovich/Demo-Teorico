@@ -12,6 +12,8 @@ import {
   EventoPublicado,
   ItemResumen,
   MiContenido,
+  Navegacion,
+  ReglaDeSorteo,
   Pendiente,
   Resultado,
   Sesion,
@@ -92,7 +94,10 @@ export class ApiService {
     cursoCohorteId: string;
     titulo: string;
     escala: string;
+    navegacion: Navegacion;
     items: { itemId: string; orden: number; puntaje: number }[];
+    /** El sorteo por etiqueta, o null si el cuestionario es todo fijo. */
+    regla: ReglaDeSorteo | null;
   }): Observable<ContenidoRef> {
     return this.http.post<ContenidoRef>(`${URL_TEORICOS}/teoricos/contenidos`, cuerpo);
   }

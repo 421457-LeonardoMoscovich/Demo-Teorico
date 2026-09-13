@@ -72,8 +72,7 @@ public class EvaluacionController {
     @PostMapping
     public ResponseEntity<AcuseResponse> despachar(@Valid @RequestBody DespachoRequest req) {
         EvaluacionEntity evaluacion = evaluaciones.despachar(req.aDespacho());
-        String correccion = composicion.modoDeCorreccion(
-                composicion.resolver(evaluacion.getContenidoId()));
+        String correccion = composicion.modoDeCorreccionDe(evaluacion.getContenidoId());
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(new AcuseResponse(evaluacion.getId(), AcuseResponse.ACEPTADA, correccion));
     }

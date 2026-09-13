@@ -8,8 +8,6 @@ import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.Corrector;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.TipoDeItem;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.Devolucion;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.MapeadorJson;
-import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ContenidoItemEntity;
-import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ContenidoItemRepository;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.EvaluacionDetalleEntity;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.EvaluacionDetalleRepository;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.EvaluacionEntity;
@@ -57,7 +55,6 @@ public class EvaluacionService {
     private final EvaluacionRepository evaluaciones;
     private final EvaluacionDetalleRepository detalles;
     private final RespuestaRepository respuestas;
-    private final ContenidoItemRepository lineas;
     private final ItemRepository items;
     private final ItemVersionRepository versiones;
     private final ComposicionService composicion;
@@ -66,14 +63,13 @@ public class EvaluacionService {
     private final MapeadorJson json;
 
     public EvaluacionService(EvaluacionRepository evaluaciones, EvaluacionDetalleRepository detalles,
-                             RespuestaRepository respuestas, ContenidoItemRepository lineas,
+                             RespuestaRepository respuestas,
                              ItemRepository items, ItemVersionRepository versiones,
                              ComposicionService composicion, List<Corrector> correctores,
                              PublicadorDeEventos publicador, MapeadorJson json) {
         this.evaluaciones = evaluaciones;
         this.detalles = detalles;
         this.respuestas = respuestas;
-        this.lineas = lineas;
         this.items = items;
         this.versiones = versiones;
         this.composicion = composicion;
@@ -97,9 +93,15 @@ public class EvaluacionService {
 
         composicion.exigir(despacho.contenidoId());
 
-        Map<UUID, ContenidoItemEntity> porItem = new LinkedHashMap<>();
-        for (ContenidoItemEntity linea : lineas.findByClaveContenidoIdOrderByOrdenAsc(despacho.contenidoId())) {
-            porItem.put(linea.getItemId(), linea);
+        // El cuestionario DE ESTE ALUMNO, no el del cuestionario en abstracto:
+        // con sorteo (V10) cada uno recibio su propio subconjunto, y lo que hay
+        // que exigir y puntuar es ese. Se vuelve a derivar en vez de leerlo de
+        // algun lado porque no esta guardado en ningun lado — esa es toda la
+        // idea, y es lo que mantiene la lectura sin estado (CI-19).
+        Map<UUID, ComposicionService.ItemResuelto> porItem = new LinkedHashMap<>();
+        for (ComposicionService.ItemResuelto resuelto
+                : composicion.resolverPara(despacho.contenidoId(), despacho.alumnoId())) {
+            porItem.put(resuelto.item().getId(), resuelto);
         }
 
         Map<UUID, ItemVersionEntity> versionPorItem = new HashMap<>();
@@ -134,10 +136,11 @@ public class EvaluacionService {
         // leerla, y la estampa de version tiene que quedar fijada YA.
         int pendientes = 0;
 
-        for (ContenidoItemEntity linea : porItem.values()) {
-            ItemVersionEntity version = versionPorItem.get(linea.getItemId());
-            RespuestaRecibida recibida = respuestaPorItem.get(linea.getItemId());
-            ItemEntity item = items.findByIdAndBajaLogicaIsNull(linea.getItemId())
+        for (ComposicionService.ItemResuelto linea : porItem.values()) {
+            UUID itemId = linea.item().getId();
+            ItemVersionEntity version = versionPorItem.get(itemId);
+            RespuestaRecibida recibida = respuestaPorItem.get(itemId);
+            ItemEntity item = items.findByIdAndBajaLogicaIsNull(itemId)
                     .orElseThrow(() -> new ExcepcionDeNegocio(ClaveError.ITEM_INEXISTENTE, "respuestas"));
 
             respuestas.save(new RespuestaEntity(UUID.randomUUID(), evaluacion.getId(),
@@ -145,13 +148,17 @@ public class EvaluacionService {
 
             Integer obtenido = null;
             if (item.getTipo().esAutocorregible()) {
-                obtenido = corregirUno(item.getTipo(), version, recibida, linea.getPuntaje());
+                obtenido = corregirUno(item.getTipo(), version, recibida, linea.puntaje());
             } else {
                 pendientes++;
             }
 
+            // El orden guardado es el BASE —el mismo que devolvio resolverPara—
+            // y no el que vio el alumno: el desglose le aplica despues la misma
+            // permutacion que la vista, y para eso los dos tienen que partir de
+            // la misma lista.
             detalles.save(new EvaluacionDetalleEntity(UUID.randomUUID(), evaluacion.getId(),
-                    version.getId(), linea.getOrden(), linea.getPuntaje(), obtenido));
+                    version.getId(), linea.orden(), linea.puntaje(), obtenido));
         }
 
         if (pendientes > 0) {

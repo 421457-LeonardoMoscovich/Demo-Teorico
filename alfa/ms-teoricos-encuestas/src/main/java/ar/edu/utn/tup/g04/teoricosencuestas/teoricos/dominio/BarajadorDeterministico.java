@@ -52,6 +52,25 @@ public final class BarajadorDeterministico {
         return copia;
     }
 
+    /**
+     * Elige {@code cuantos} de la lista, para ESTE alumno. Misma maquina y
+     * misma semilla que el barajado, por la misma razon: el subconjunto se
+     * deriva, no se guarda, asi que recargar devuelve el mismo y reconstruirlo
+     * al corregir tambien.
+     *
+     * La lista de entrada tiene que llegar en un orden ESTABLE —la poblacion
+     * ordenada por id— o el sorteo dejaria de ser reproducible: la misma
+     * semilla sobre dos listas con distinto orden da subconjuntos distintos.
+     */
+    public static <T> List<T> elegir(List<T> poblacion, UUID contenidoId, UUID alumnoId,
+                                     int cuantos) {
+        if (poblacion == null || poblacion.isEmpty() || cuantos <= 0) {
+            return List.of();
+        }
+        List<T> mezclada = barajar(poblacion, contenidoId, alumnoId);
+        return List.copyOf(mezclada.subList(0, Math.min(cuantos, mezclada.size())));
+    }
+
     static long semilla(UUID contenidoId, UUID alumnoId) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")

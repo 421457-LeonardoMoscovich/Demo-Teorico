@@ -119,6 +119,11 @@ public abstract class BaseIT {
         return bearer(new Usuario(idAlumno, "alumno", "Luis Alumno", Rol.ALUMNO));
     }
 
+    /** Otro alumno cualquiera. Lo necesita todo test de sorteo o de barajado. */
+    protected String bearerAlumno(UUID id) {
+        return bearer(new Usuario(id, "alumno-" + id, "Otro Alumno", Rol.ALUMNO));
+    }
+
     protected String bearerDeOtroProfesor(UUID id) {
         return bearer(new Usuario(id, "otro", "Otro Profesor", Rol.PROFESOR));
     }

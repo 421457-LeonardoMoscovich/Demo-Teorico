@@ -20,6 +20,8 @@ public record MiContenidoResponse(
         String titulo,
         UUID cursoCohorteId,
         String escala,
+        /** LIBRE | SECUENCIAL: como lo recorre el alumno. */
+        String navegacion,
         Instant creadoEn,
         ContenidoRefResponse ficha) {
 

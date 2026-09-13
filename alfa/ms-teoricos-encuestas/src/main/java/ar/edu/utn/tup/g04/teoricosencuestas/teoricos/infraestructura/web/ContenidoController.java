@@ -69,7 +69,8 @@ public class ContenidoController {
     public ResponseEntity<ContenidoRefResponse> componer(
             @Valid @RequestBody ComponerContenidoRequest req) {
         ContenidoEntity contenido = composicion.componer(
-                identidad.id(), req.cursoCohorteId(), req.titulo(), req.escala(), req.aLineas());
+                identidad.id(), req.cursoCohorteId(), req.titulo(), req.escala(),
+                req.navegacionOEstandar(), req.aLineas(), req.reglaODada());
         return ResponseEntity.status(HttpStatus.CREATED).body(ficha(contenido));
     }
 
@@ -88,18 +89,27 @@ public class ContenidoController {
         return composicion.listarDelProfesor(identidad.id()).stream()
                 .map(c -> new MiContenidoResponse(
                         c.getId(), c.getTitulo(), c.getCursoCohorteId(), c.getEscala(),
-                        c.getCreadoEn(), ficha(c)))
+                        c.getNavegacion(), c.getCreadoEn(), ficha(c)))
                 .toList();
     }
 
+    @Operation(summary = "El cuestionario como lo ve su dueña, con las claves de corrección",
+            description = """
+                    Lista las preguntas **fijas**, las que reciben todos. Si el cuestionario tiene
+                    un **sorteo**, las sorteadas no se listan y no es un olvido: no existen hasta
+                    que hay un alumno. Lo que se devuelve de ellas es la regla y **cuántos
+                    candidatos hay hoy** en esa etiqueta, que es lo único que la profesora puede
+                    mirar para saber qué tan variado es el examen que está entregando.
+                    """)
     @GetMapping("/{id}/vista-profesor")
     public VistaProfesorResponse vistaProfesor(@PathVariable UUID id) {
         ContenidoEntity contenido = composicion.exigirPropio(identidad.id(), id);
         List<ComposicionService.ItemResuelto> resueltos = composicion.resolver(id);
         return new VistaProfesorResponse(
                 contenido.getId(), contenido.getTitulo(), contenido.getVersion(),
-                contenido.getEscala(), composicion.puntajeTotal(resueltos),
-                composicion.modoDeCorreccion(resueltos), composicion.resumen(resueltos),
+                contenido.getEscala(), composicion.puntajeTotalDe(id),
+                composicion.modoDeCorreccionDe(id), composicion.resumenDe(id),
+                reglaDe(contenido, resueltos),
                 resueltos.stream().map(r -> new VistaProfesorResponse.ItemParaProfesor(
                         r.item().getId(), r.version().getId(), r.item().getTipo(),
                         r.version().getEnunciado(), r.version().getVersion(),
@@ -146,11 +156,14 @@ public class ContenidoController {
             @RequestHeader(value = ValeDeLectura.HEADER, required = false) String vale) {
         ValeDeLectura.Contenido delVale = vales.validar(vale, id);
         ContenidoEntity contenido = composicion.exigir(id);
-        List<ComposicionService.ItemResuelto> resueltos = composicion.resolver(id);
+        // resolverPara y no resolver: si el cuestionario tiene sorteo, ESTE
+        // alumno recibe su propio subconjunto, derivado y no guardado.
+        List<ComposicionService.ItemResuelto> resueltos = composicion.resolverPara(id, delVale.alumnoId());
 
-        // El puntaje total se calcula ANTES de barajar: es del cuestionario, no
-        // del orden en que le toco verlo a este alumno.
-        int total = composicion.puntajeTotal(resueltos);
+        // El puntaje total sale del cuestionario y no de lo que le toco: con
+        // sorteo los dos numeros coinciden igual —el peso de las sorteadas es
+        // uniforme—, y asi el alumno ve el mismo "sobre 100" que sus companeros.
+        int total = composicion.puntajeTotalDe(id);
         List<ComposicionService.ItemResuelto> paraEl =
                 composicion.enOrdenPara(resueltos, id, delVale.alumnoId());
 
@@ -165,13 +178,25 @@ public class ContenidoController {
                     json.leerPayload(r.item().getTipo(), json.aNodo(r.version().getPayload()))));
         }
         return new VistaAlumnoResponse(contenido.getId(), contenido.getTitulo(),
-                contenido.getVersion(), total, items);
+                contenido.getVersion(), total, contenido.getNavegacion(), items);
     }
 
     private ContenidoRefResponse ficha(ContenidoEntity contenido) {
-        List<ComposicionService.ItemResuelto> resueltos = composicion.resolver(contenido.getId());
         return new ContenidoRefResponse(
                 ContenidoRefResponse.TIPO_TEORICO, contenido.getId(), contenido.getVersion(),
-                composicion.resumen(resueltos), composicion.modoDeCorreccion(resueltos));
+                composicion.resumenDe(contenido.getId()),
+                composicion.modoDeCorreccionDe(contenido.getId()));
+    }
+
+    /** La regla con cuantos candidatos tiene HOY, que es lo que cambia sola. */
+    private VistaProfesorResponse.ReglaResponse reglaDe(
+            ContenidoEntity contenido, List<ComposicionService.ItemResuelto> fijas) {
+        return composicion.reglaDe(contenido.getId())
+                .map(r -> new VistaProfesorResponse.ReglaResponse(
+                        r.getEtiqueta(), r.getCuantos(), r.getPuntaje(),
+                        composicion.candidatos(contenido.getProfesorId(), r.getEtiqueta(),
+                                fijas.stream().map(f -> f.item().getId())
+                                        .collect(java.util.stream.Collectors.toSet())).size()))
+                .orElse(null);
     }
 }

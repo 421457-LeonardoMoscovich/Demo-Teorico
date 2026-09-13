@@ -166,9 +166,12 @@ sequenceDiagram
 2. En una unidad, **+ Crear desafío** → elegir el tipo. Se ofrecen `Teórico` y
    `Práctico · Tema 05` **deshabilitado**: la tabla de tipo → servicio la tiene el front, no el
    Tema 03 (CI-02 y CI-16).
-3. **Armar el cuestionario**: agregar ítems del banco, repartir los pesos hasta 100 →
-   **Publicar**. Aparece la **ficha de cinco campos**, que es literalmente todo lo que viaja al
-   Tema 03, y el único campo que él interpreta es `tipo`.
+3. **Armar el cuestionario**: **+ Elegir preguntas del banco** abre un cajón lateral con buscador
+   y casillas —el banco no vive en la pantalla, aparece cuando se lo pide—; **+ Sortear por
+   etiqueta** agrega preguntas al azar. Repartir los pesos hasta 100, elegir **cómo lo recorre el
+   alumno** → **Publicar**. Sale el cartel de confirmación y abajo queda la
+   **ficha de cinco campos**, que es literalmente todo lo que viaja al Tema 03, y el único campo
+   que él interpreta es `tipo`.
 
    Si falta una pregunta, **+ Escribir una pregunta nueva** la escribe ahí mismo: es el mismo
    formulario del Banco montado adentro, así que la pregunta queda en el banco igual —no es una
@@ -178,7 +181,9 @@ sequenceDiagram
 4. Volver al roadmap: el desafío quedó **dentro de esa unidad**.
 5. **Salir** → entrar como **alumno** → su curso → el mismo roadmap → **Empezar**.
    Ahí el Tema 03 crea el intento y firma el vale de lectura.
-6. Responder → **Entregar**. El botón va al **Tema 03**, no a nosotros.
+6. Responder. Las consignas vienen **de a una**, con la barra de pasos arriba; si el
+   cuestionario es **secuencial**, el botón de volver está apagado y los pasos no se pueden
+   clickear. En la última, **Entregar**: ese botón va al **Tema 03**, no a nosotros.
 7. Ver la nota y el desglose por pregunta.
 
 ### El recorrido largo: la corrección humana
@@ -334,7 +339,7 @@ cd ms-teoricos-encuestas
 mvn verify
 ```
 
-129 tests: 79 de dominio puro (corrección de los seis tipos, validaciones de payload) y 50 de
+146 tests: 79 de dominio puro (corrección de los seis tipos, validaciones de payload) y 67 de
 integración contra PostgreSQL real, conectándose con los **roles reales** y no con el
 superusuario — si falta un permiso, queremos que falle en el build y no en la demo.
 
@@ -351,6 +356,8 @@ Los que valen la pena leer:
 | `BarajadoPorAlumnoIT` | Dos alumnos ven otro orden, el mismo alumno ve siempre el suyo, y el desglose sale como él las vio |
 | `RespuestaCortaYNumericaTest` | Que la comparación sea laxa por defecto, que gane la primera aceptada y no la que más paga, y que los bordes de la tolerancia entren |
 | `EtiquetasDelBancoIT` | Que la etiqueta no sea una puerta al banco ajeno, y que reetiquetar no invente historial |
+| `NavegacionDelCuestionarioIT` | Que la navegación llegue al alumno, que el que no la elige siga como antes, y que **no** entre en la ficha del Tema 03 |
+| `SorteoPorEtiquetaIT` | **El del sorteo.** Dos alumnos reciben preguntas distintas, el mismo alumno siempre las suyas, y contestar una que no le tocó se rechaza |
 
 ### Si los tests no arrancan
 
@@ -375,6 +382,73 @@ ALFA_DB_URL=jdbc:postgresql://localhost:5432/g04_test mvn verify
 ```
 
 `g04_test` la crea `docker/postgres/00-roles.sql` al inicializar el volumen.
+
+---
+
+## Cómo se recorre el cuestionario
+
+Las consignas se sirven **de a una por pantalla**, y la profesora elige al armar si el alumno
+puede volver:
+
+| Modo | Qué hace |
+|---|---|
+| `LIBRE` | Va y vuelve por las consignas, y puede saltar a cualquiera desde la barra de pasos |
+| `SECUENCIAL` | Una vez que pasa a la siguiente, no vuelve. Tampoco puede saltear hacia adelante |
+
+**Avanzar sin contestar se permite en los dos.** Esa pregunta se entrega en blanco y el corrector
+le pone 0 explícitamente, que es lo que el sistema ya hacía; bloquear el botón obligaría a
+escribir cualquier cosa en una respuesta abierta para poder seguir.
+
+Vive en el **contenido** (`teoricos.contenido.navegacion`, V9) y no en el front, porque es una
+regla de la evaluación —la decide quien arma, igual que el peso de cada pregunta—. Si viviera en
+el front, recargar la alcanzaría para esquivarla y no quedaría registrada el día que un alumno
+reclame.
+
+**No entra en la ficha de cinco campos.** El Tema 03 no necesita saber cómo se recorre algo que
+nunca abre: es la caja opaca haciendo exactamente su trabajo (CI-04). Lo prueba
+`NavegacionDelCuestionarioIT`.
+
+Lo que **no** es: una barrera de seguridad. Las preguntas ya están en la máquina del alumno, así
+que volver atrás con la consola del navegador es posible. Impedirlo de verdad exigiría servir de
+a una desde el backend y guardar por dónde va cada alumno, o sea **estado de lectura**, que es
+justamente lo que CI-19 dice que no tenemos. Lo que sí es firme: la nota sale de lo que se
+entrega, no de cómo se navegó.
+
+---
+
+## Preguntas al azar por etiqueta
+
+Un cuestionario puede llevar, además de sus preguntas fijas, una **regla**: "cinco al azar de
+`microservicios`, 20 puntos cada una". Las dos cosas conviven — "estas dos las tienen todos, y
+otras tres al azar" es como se arma un parcial de verdad.
+
+**El sorteo es por alumno, no una tirada al armar.** Dos compañeros abren el mismo cuestionario y
+reciben preguntas distintas.
+
+Lo que hace que eso no rompa CI-19: el subconjunto **se deriva** de `(contenidoId, alumnoId)` con
+la misma máquina que el barajado (`BarajadorDeterministico`, SHA-256). La misma entrada da siempre
+la misma salida, así que el alumno recarga y le tocan las mismas, y el corrector reconstruye su
+examen sin tener que haberlo guardado. **No hay una sola fila que diga qué le tocó a quién**: la
+lectura sigue sin escribir nada.
+
+Las decisiones que hay que poder defender:
+
+| Decisión | Por qué |
+|---|---|
+| La población es **viva** | Se sortea sobre lo que exista al leer. Cargar una pregunta nueva enriquece los cuestionarios ya publicados; la contracara es que dos alumnos que rinden en días distintos pueden haber sorteado de poblaciones distintas |
+| El peso de las sorteadas es **uniforme** | Si cada una valiera distinto, dos alumnos rendirían exámenes de pesos distintos y las notas dejarían de ser comparables |
+| Una pregunta **fija** no vuelve a salir sorteada | Verla dos veces en el mismo examen es el error que peor queda |
+| Si la bolsa se achica y ya no alcanza, **la lectura falla** | Servir cuatro de cinco dejaría al alumno rindiendo sobre 80 sin que nadie se lo diga |
+| El modo de corrección se calcula sobre **toda la bolsa** | La ficha sale una sola vez y el Tema 03 no puede recibir "depende del alumno": alcanza que UNA de las que pueden salir espere a un humano para que todo el cuestionario sea DIFERIDO |
+
+**La ficha al Tema 03 no cambia**: sigue teniendo cinco campos, y `resumen` cuenta las sorteadas
+sin nombrarlas — *"4 preguntas · 100 puntos"*. El 03 no sabe que hay un sorteo adentro, que es
+exactamente lo que la caja opaca tiene que lograr.
+
+Un detalle de la pantalla que vale la pena: si el cuestionario es **solo** sorteo, la cantidad de
+preguntas tiene que dividir 100 —3 × 33 da 99 y no hay dónde poner el resto—. El armador arranca
+en 4 y, si se cambia a un número que no cierra, el totalizador lo explica y ofrece el arreglo en
+vez de dejar el botón Publicar apagado sin decir por qué.
 
 ---
 

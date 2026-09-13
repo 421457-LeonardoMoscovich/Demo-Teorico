@@ -15,7 +15,15 @@ public record VistaProfesorResponse(
         int puntajeTotal,
         String correccion,
         String resumen,
+        /**
+         * La regla de sorteo, o null si el cuestionario es todo fijo. Lleva
+         * `candidatos`, que es la unica forma que tiene la profesora de ver que
+         * tan grande es la bolsa de la que sale el examen de cada alumno.
+         */
+        ReglaResponse regla,
         List<ItemParaProfesor> items) {
+
+    public record ReglaResponse(String etiqueta, int cuantos, int puntaje, int candidatos) {}
 
     public record ItemParaProfesor(
             UUID itemId,

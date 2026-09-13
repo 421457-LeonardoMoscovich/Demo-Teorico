@@ -104,11 +104,43 @@ export interface ItemParaAlumno {
   payload: any;
 }
 
+/**
+ * Cómo recorre el alumno las consignas. La elige la profesora al armar y viaja
+ * con el cuestionario: es una regla de la evaluación, no una preferencia de
+ * quien contesta.
+ */
+export type Navegacion = 'LIBRE' | 'SECUENCIAL';
+
+export const NAVEGACIONES: { valor: Navegacion; etiqueta: string; ayuda: string }[] = [
+  {
+    valor: 'LIBRE',
+    etiqueta: 'Libre',
+    ayuda: 'Va y vuelve por las consignas en el orden que quiera.',
+  },
+  {
+    valor: 'SECUENCIAL',
+    etiqueta: 'Secuencial',
+    ayuda: 'Una vez que pasa a la siguiente, no puede volver.',
+  },
+];
+
+/**
+ * El sorteo por etiqueta. Lo que se guarda es la REGLA, no las preguntas: cada
+ * alumno recibe su propio subconjunto, derivado al leer y nunca guardado.
+ */
+export interface ReglaDeSorteo {
+  etiqueta: string;
+  cuantos: number;
+  /** Lo que vale cada sorteada. Uniforme: el peso no puede depender de cuál tocó. */
+  puntaje: number;
+}
+
 export interface VistaAlumno {
   contenidoId: string;
   titulo: string;
   version: number;
   puntajeTotal: number;
+  navegacion: Navegacion;
   items: ItemParaAlumno[];
 }
 
@@ -203,6 +235,7 @@ export interface MiContenido {
   titulo: string;
   cursoCohorteId: string;
   escala: string;
+  navegacion: Navegacion;
   creadoEn: string;
   ficha: ContenidoRef;
 }

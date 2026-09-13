@@ -23,6 +23,11 @@
   --violeta: #8b5cf6;
   --magenta: #ff2e93;
   --amarillo: #ffd60a;
+  /* El verde es el unico color que dice "salio bien" sin explicacion. Entra
+     recien ahora, y solo para eso: si se usara tambien de acento, dejaria de
+     significar algo. */
+  --verde: #39ff8b;
+  --verde-glow: #39ff8b99;
 
   --on-cian: #0b0716;
   --on-violeta: #0b0716;
@@ -43,6 +48,7 @@
   --glow-violeta: , 0 0 14px #8b5cf699;
   --glow-violeta-fuerte: , 0 0 22px #8b5cf699;
   --glow-violeta-suave: , 0 0 6px #8b5cf699;
+  --glow-verde: , 0 0 24px #39ff8b66;
   --glow-amarillo: , 0 0 14px #ffd60a99;
   --glow-amarillo-fuerte: , 0 0 22px #ffd60a99;
   --glow-amarillo-suave: , 0 0 6px #ffd60a99;
@@ -55,6 +61,11 @@
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radio: 4px;
+
+  /* El alto de la barra. Es un token porque tres reglas lo necesitan —la barra
+     fija, el tope de las columnas y su alto maximo— y descubrir a mano que una
+     quedo en 68 y la otra en 64 cuesta una tarde. */
+  --alto-barra: 68px;
 
   /* Movimiento. Las curvas nativas de CSS son demasiado flojas para que un
      boton arcade se sienta mecanico; estas son las de siempre. */
@@ -81,6 +92,10 @@
   --violeta: #7c3aed;
   --magenta: #db2777;
   --amarillo: #ca8a04;
+  /* El verde neon sobre el papel blanco del cartel es casi invisible: en claro
+     baja a un verde que se lee como trazo. */
+  --verde: #12a150;
+  --verde-glow: transparent;
 
   --on-cian: #0b0716;
   --on-violeta: #ffffff;
@@ -98,6 +113,7 @@
   --glow-violeta: ;
   --glow-violeta-fuerte: ;
   --glow-violeta-suave: ;
+  --glow-verde: ;
   --glow-amarillo: ;
   --glow-amarillo-fuerte: ;
   --glow-amarillo-suave: ;
@@ -230,9 +246,14 @@ pre {
   align-items: center;
   gap: 28px;
   padding: 0 32px;
-  height: 68px;
+  height: var(--alto-barra);
   background: var(--papel);
   border-bottom: 2px solid var(--linea);
+  /* Fija: irse de una pantalla larga no puede costar dos scrolls, uno para
+     volver arriba y otro para llegar al link. */
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .barra .marca {
@@ -1692,4 +1713,478 @@ main > :not(router-outlet) {
 .previa pre {
   margin-top: 10px;
   font-size: 11.5px;
+}
+
+/* ------------------------------------------------- cartel de confirmación - */
+/* El velo es oscuro en los DOS temas y no sigue a `--fondo`: es un foco, y un
+   foco necesita que lo de atrás se apague. En modo claro un velo blanco sobre
+   fondo blanco no taparía nada y el cartel no se leería como una capa. */
+
+.velo-confirmacion {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0b0716cc;
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  animation: velo-entra var(--dur-entrada) var(--ease-out) both;
+}
+
+.velo-confirmacion.yendose {
+  animation: velo-sale var(--dur-salida) var(--ease-out) both;
+}
+
+.cartel-confirmacion {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  max-width: 420px;
+  text-align: center;
+  padding: 32px 28px;
+  background: var(--papel);
+  border: 2px solid var(--verde);
+  border-radius: var(--radio);
+  box-shadow: 0 12px 40px #00000066 var(--glow-verde);
+  animation: cartel-entra var(--dur-entrada) var(--ease-out) both;
+}
+
+.tilde {
+  width: 76px;
+  height: 76px;
+  overflow: visible;
+  fill: none;
+  stroke: var(--verde);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 10px var(--verde-glow));
+}
+
+/* El aro se dibuja primero y el trazo entra atrás: se lee como un gesto que
+   termina, no como dos formas que aparecen juntas. */
+.tilde-aro {
+  stroke-dasharray: 145;
+  stroke-dashoffset: 145;
+  animation: trazar 420ms var(--ease-out) forwards;
+}
+
+.tilde-trazo {
+  stroke-dasharray: 34;
+  stroke-dashoffset: 34;
+  animation: trazar 260ms var(--ease-out) 300ms forwards;
+}
+
+.cartel-mensaje {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 12px;
+  line-height: 1.8;
+  letter-spacing: 0.5px;
+  color: var(--tinta);
+}
+
+.cartel-detalle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--tinta-tenue);
+}
+
+@keyframes velo-entra {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes velo-sale {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes cartel-entra {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes trazar {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Quien pidió menos movimiento igual tiene que VER el tilde: no se anima el
+   trazo, se muestra dibujado. Apagar la animación sin esto lo dejaría con
+   stroke-dashoffset intacto, o sea invisible. */
+@media (prefers-reduced-motion: reduce) {
+  .velo-confirmacion,
+  .velo-confirmacion.yendose,
+  .cartel-confirmacion {
+    animation: none;
+  }
+
+  .tilde-aro,
+  .tilde-trazo {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* -------------------------------------- una consigna por pantalla (alumno) - */
+
+/* Sola en la pantalla no necesita la linea que la separaba de la siguiente. */
+.pregunta.sola {
+  border-top: none;
+  padding-top: 8px;
+}
+
+/* Los pasos. Sirven de dos cosas a la vez: decir cuantas faltan —que es lo
+   que se pierde al mostrar de a una— y marcar cuales ya tienen respuesta. */
+.pasos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 14px;
+}
+
+.paso {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-family: var(--pixel);
+  font-size: 10px;
+  color: var(--tinta-tenue);
+  background: var(--papel-alt);
+  border: 2px solid var(--linea);
+  border-radius: var(--radio);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-color) var(--ease-out),
+    color var(--dur-color) var(--ease-out);
+}
+
+.paso.hecha {
+  color: var(--verde);
+  border-color: var(--verde);
+}
+
+.paso.actual {
+  color: var(--on-cian);
+  background: var(--cian);
+  border-color: var(--cian);
+  box-shadow: 0 0 0 1px var(--cian) var(--glow-cian-suave);
+}
+
+/* En SECUENCIAL todos los pasos menos el actual estan deshabilitados: no es un
+   boton roto, es el modo. Por eso no se atenua hasta desaparecer —sigue siendo
+   el mapa de cuanto falta— y solo se le saca el cursor de mano. */
+.paso:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.paso.actual:disabled {
+  opacity: 1;
+}
+
+.navegacion-consignas {
+  justify-content: space-between;
+  margin: 18px 0 4px;
+}
+
+.aviso-secuencial {
+  border-left: 2px solid var(--amarillo);
+  padding-left: 12px;
+}
+
+/* El selector de navegacion, en el armado. */
+.navegacion {
+  margin: 18px 0 6px;
+  padding: 14px 16px;
+  border: 2px solid var(--linea);
+  border-radius: var(--radio);
+}
+
+.navegacion legend {
+  font-family: var(--pixel);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--tinta-tenue);
+  padding: 0 6px;
+}
+
+.navegacion .ayuda-inline {
+  display: block;
+  font-size: 12.5px;
+  color: var(--tinta-tenue);
+}
+
+
+/* -------------------------------------------- barra de accion del armado - */
+/*
+  Pegada al pie de su columna: el total y Publicar se miran despues de CADA
+  peso que se cambia, y tenerlos al fondo obligaba a bajar, mirar, y volver a
+  subir por cada ajuste.
+
+  Va adentro de la columna —que es la que scrollea— y no fija a la ventana:
+  pertenece a este formulario, no a la pantalla.
+*/
+.barra-accion {
+  position: sticky;
+  /* -28px y no 0: el sticky se frena contra el borde del CONTENIDO, y la
+     tarjeta tiene 28px de padding abajo. Con 0 quedaba una franja donde se veia
+     pasar el texto por el costado de la barra. */
+  bottom: -28px;
+  z-index: 5;
+  display: grid;
+  gap: 12px;
+  /* Los margenes negativos son el padding de .tarjeta: la barra llega hasta el
+     borde de la columna, si no queda flotando con el fondo asomando a los
+     costados justo donde pasa el contenido que scrollea por debajo. */
+  margin: 20px -28px -28px;
+  padding: 16px 28px;
+  background: var(--papel);
+  border-top: 2px solid var(--linea);
+  /* La sombra hacia arriba dice que hay contenido pasando por debajo; sin ella
+     la barra se lee como el final de la lista y no como una capa. */
+  box-shadow: 0 -10px 18px -10px var(--sombra);
+}
+
+.barra-accion .totalizador {
+  margin: 0;
+}
+
+@media (max-width: 1080px) {
+  .barra-accion {
+    margin: 20px -20px -20px;
+    padding: 16px 20px;
+  }
+}
+
+/* ------------------------------------------------------- prosa plegada --- */
+/*
+  La explicacion de por que cada cosa es como es NO se borra: es la mitad del
+  trabajo y es lo que se defiende. Se pliega, que es otra cosa — sigue a un
+  clic, y deja de costar una pantalla de scroll cada vez que alguien entra a
+  cargar una pregunta.
+*/
+.porque {
+  margin: 0 0 20px;
+  border: 2px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--papel-alt);
+}
+
+.porque > summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-family: var(--pixel);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--tinta-tenue);
+  list-style: none;
+}
+
+.porque > summary::-webkit-details-marker {
+  display: none;
+}
+
+/*
+  El triangulito lo dibujamos con bordes, no con un glifo: el nativo no se
+  puede colorear, y `content: '▸'` no existe en Press Start 2P —cae al
+  fallback y se ve como un punto—.
+*/
+.porque > summary::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-right: 10px;
+  vertical-align: 1px;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid var(--tinta-tenue);
+  transition: transform var(--dur-color) var(--ease-out);
+}
+
+.porque[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.porque > summary:focus-visible {
+  outline: none;
+  box-shadow: var(--glow-foco);
+}
+
+.porque .cuerpo {
+  padding: 0 14px 4px;
+}
+
+.porque .cuerpo > :last-child {
+  margin-bottom: 14px;
+}
+
+
+/* ------------------------------------------------------------- el cajon - */
+/*
+  El banco se mira en un cajon y no en una columna fija al costado. Un catalogo
+  de treinta preguntas puesto en pantalla por si acaso es lo que hacia larga
+  esta pantalla: nadie lo lee entero, busca dos y las agrega.
+
+  Fixed y no sticky: es una capa sobre la pagina, no una parte de ella. Por eso
+  tampoco mueve nada de lo que hay debajo cuando se abre.
+*/
+.cajon-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: #0b071699;
+  animation: velo-entra var(--dur-entrada) var(--ease-out) both;
+}
+
+.cajon {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 31;
+  width: min(460px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--papel);
+  border-left: 2px solid var(--linea);
+  box-shadow: -12px 0 40px #00000055;
+  animation: cajon-entra var(--dur-entrada) var(--ease-out) both;
+}
+
+@keyframes cajon-entra {
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cajon,
+  .cajon-fondo {
+    animation: none;
+  }
+}
+
+.cajon-cabecera,
+.cajon-pie {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--papel);
+}
+
+.cajon-cabecera {
+  border-bottom: 2px solid var(--linea);
+}
+
+.cajon-cabecera h3 {
+  margin-right: auto;
+}
+
+.cajon-pie {
+  border-top: 2px solid var(--linea);
+}
+
+/* Lo unico que scrollea es la lista, y eso es lo que un cajon SI puede hacer:
+   es una capa entera, no una caja perdida adentro de la pagina. */
+.cajon-cuerpo {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  scrollbar-gutter: stable;
+}
+
+.buscador {
+  margin-bottom: 14px;
+}
+
+.cajon .lista li {
+  padding: 4px 0;
+}
+
+.cajon label.check {
+  align-items: flex-start;
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .cajon {
+    width: 100vw;
+    border-left: none;
+  }
+}
+
+/* ------------------------------------------------------ regla de sorteo - */
+
+.regla-sorteo {
+  margin: 18px 0;
+  padding: 16px 18px;
+  border: 2px dashed var(--violeta);
+  border-radius: var(--radio);
+  background: var(--papel-alt);
+}
+
+.regla-sorteo.mal {
+  border-color: var(--magenta);
+}
+
+.regla-sorteo h3 {
+  margin-bottom: 12px;
+}
+
+.regla-sorteo .fila {
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.regla-sorteo label {
+  margin-bottom: 0;
+}
+
+/* La etiqueta elegible del cajon de sorteo: una fila entera clickeable. */
+.etiqueta-sorteable {
+  width: 100%;
+  justify-content: space-between;
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 14px;
+  background: var(--papel-alt);
+  border: 2px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  color: var(--tinta);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .etiqueta-sorteable:hover:not(:disabled) {
+    border-color: var(--cian);
+  }
+}
+
+.etiqueta-sorteable:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* --------------------------------------------------------- paginador --- */
+
+.paginador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 2px solid var(--linea);
+}
+
+.paginador .ayuda {
+  margin: 0;
 }

@@ -1,6 +1,7 @@
 import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../core/api.service';
+import { ConfirmacionService } from '../core/confirmacion.service';
 import { ErrorApi, EtiquetaConUso, ItemDetalle, TIPOS, TipoDeItem } from '../core/modelos';
 
 interface FilaSimple {
@@ -453,10 +454,6 @@ interface FilaPar {
           }
         </p>
       }
-      @if (ok()) {
-        <p class="ok" role="status">{{ ok() }}</p>
-      }
-
       <label class="check">
         <input type="checkbox" name="borrador" [(ngModel)]="borrador" />
         Guardar como borrador
@@ -504,6 +501,7 @@ interface FilaPar {
 })
 export class FormularioItemComponent {
   private readonly api = inject(ApiService);
+  private readonly confirmaciones = inject(ConfirmacionService);
 
   /** Id del item a editar. null = se esta creando uno nuevo. */
   readonly editarId = input<string | null>(null);
@@ -519,7 +517,6 @@ export class FormularioItemComponent {
 
   readonly tipos = TIPOS;
   readonly error = signal<ErrorApi | null>(null);
-  readonly ok = signal('');
   readonly guardando = signal(false);
 
   tipo: TipoDeItem = 'OPCION_MULTIPLE';
@@ -593,7 +590,6 @@ export class FormularioItemComponent {
 
   private abrir(id: string): void {
     this.error.set(null);
-    this.ok.set('');
     this.api.item(id).subscribe({
       next: (d) => {
         this.editando.set(d);
@@ -631,7 +627,6 @@ export class FormularioItemComponent {
 
   reiniciarPorTipo(): void {
     this.error.set(null);
-    this.ok.set('');
     this.contador = 0;
     this.opciones = [this.nueva('o'), this.nueva('o')];
     this.derecha = [this.nueva('d'), this.nueva('d')];
@@ -867,7 +862,6 @@ export class FormularioItemComponent {
 
   guardar(): void {
     this.error.set(null);
-    this.ok.set('');
     this.guardando.set(true);
 
     const cuerpo = {
@@ -887,10 +881,22 @@ export class FormularioItemComponent {
     peticion.subscribe({
       next: (guardado) => {
         this.guardando.set(false);
-        this.ok.set(
+        // El aviso es un cartel al medio y ya no un parrafo al pie: el
+        // formulario se limpia solo, y una linea chica abajo de un formulario
+        // vacio no alcanza para distinguir "se guardo" de "se borro lo que
+        // escribi". Se va solo porque cargar items es repetitivo.
+        this.confirmaciones.mostrar(
           enEdicion
-            ? `Publicada la versión ${guardado.version}. La ${enEdicion.version} queda intacta.`
-            : 'Ítem guardado.',
+            ? {
+                mensaje: `Versión ${guardado.version} publicada`,
+                detalle:
+                  `La versión ${enEdicion.version} queda intacta: quien la esté ` +
+                  'contestando se corrige contra la que vio (D-04).',
+              }
+            : {
+                mensaje: 'Ítem creado',
+                detalle: 'Ya está en tu banco y lo podés agregar a un cuestionario.',
+              },
         );
         this.editando.set(null);
         this.limpiar();

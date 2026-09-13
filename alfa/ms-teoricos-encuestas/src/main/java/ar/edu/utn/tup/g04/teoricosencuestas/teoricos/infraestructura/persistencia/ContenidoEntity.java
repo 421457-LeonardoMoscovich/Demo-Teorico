@@ -37,6 +37,10 @@ public class ContenidoEntity {
     @Column(nullable = false, length = 16)
     private String escala;
 
+    /** LIBRE | SECUENCIAL. Como recorre el alumno las consignas (V9). */
+    @Column(nullable = false, length = 16)
+    private String navegacion;
+
     @Column(name = "baja_logica")
     private Instant bajaLogica;
 
@@ -47,13 +51,14 @@ public class ContenidoEntity {
     }
 
     public ContenidoEntity(UUID id, UUID profesorId, UUID cursoCohorteId, String titulo,
-                           String escala, Instant creadoEn) {
+                           String escala, String navegacion, Instant creadoEn) {
         this.id = id;
         this.profesorId = profesorId;
         this.cursoCohorteId = cursoCohorteId;
         this.titulo = titulo;
         this.version = 1;
         this.escala = escala;
+        this.navegacion = navegacion;
         this.creadoEn = creadoEn;
     }
 
@@ -63,6 +68,7 @@ public class ContenidoEntity {
     public String getTitulo() { return titulo; }
     public int getVersion() { return version; }
     public String getEscala() { return escala; }
+    public String getNavegacion() { return navegacion; }
     public Instant getBajaLogica() { return bajaLogica; }
     public Instant getCreadoEn() { return creadoEn; }
 

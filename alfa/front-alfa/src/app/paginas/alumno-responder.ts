@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../core/api.service';
 import { IntentoStore } from '../core/intento.store';
-import { ItemParaAlumno, Opcion, VistaAlumno } from '../core/modelos';
+import { ItemParaAlumno, Navegacion, Opcion, VistaAlumno } from '../core/modelos';
 
 /** Lo que el alumno lleva contestado, por ítem. */
 interface Borrador {
@@ -35,16 +35,49 @@ interface Borrador {
             <span class="etiqueta">{{ v.puntajeTotal }} puntos</span>
           </div>
           <span class="contestadas" role="status" aria-live="polite">
-            {{ contestadas() }} de {{ v.items.length }} contestadas
+            Pregunta {{ indice() + 1 }} de {{ v.items.length }} ·
+            {{ contestadas() }} contestadas
           </span>
         </header>
+
+        <!--
+          Los pasos. En LIBRE son botones y se puede saltar a cualquiera; en
+          SECUENCIAL son solo el mapa de donde esta parado, porque volver es
+          justamente lo que ese modo no permite.
+        -->
+        <nav class="pasos" [attr.aria-label]="'Preguntas del cuestionario'">
+          @for (i of v.items; track i.itemVersionId; let idx = $index) {
+            <button
+              type="button"
+              class="paso"
+              [class.actual]="idx === indice()"
+              [class.hecha]="estaContestada(i)"
+              [disabled]="!sePuedeIrA(idx)"
+              [attr.aria-current]="idx === indice() ? 'step' : null"
+              [attr.aria-label]="
+                'Pregunta ' + (idx + 1) + (estaContestada(i) ? ', contestada' : ', sin contestar')
+              "
+              (click)="irA(idx)"
+            >
+              {{ idx + 1 }}
+            </button>
+          }
+        </nav>
+
+        @if (esSecuencial()) {
+          <p class="ayuda aviso-secuencial">
+            Este cuestionario es <strong>secuencial</strong>: una vez que pasás a la siguiente no
+            podés volver. Podés avanzar sin contestar, pero esa pregunta queda en blanco y vale 0.
+          </p>
+        }
 
         @if (avisoDeRecuperacion(); as aviso) {
           <p [class]="descartadas() > 0 ? 'error' : 'ok'" role="status">{{ aviso }}</p>
         }
 
         @for (i of v.items; track i.itemVersionId; let idx = $index) {
-          <article class="pregunta" [style.--orden]="idx">
+          @if (idx === indice()) {
+          <article class="pregunta sola" [style.--orden]="0">
             <h3>
               <span class="posicion">{{ i.orden }}</span>
               {{ i.enunciado }}
@@ -182,13 +215,36 @@ interface Borrador {
               }
             }
           </article>
+          }
         }
+
+        <div class="acciones-fila navegacion-consignas">
+          <button
+            type="button"
+            class="secundario"
+            [disabled]="!sePuedeVolver()"
+            (click)="anterior()"
+          >
+            <span aria-hidden="true">←</span> Anterior
+          </button>
+          @if (!esUltima()) {
+            <button type="button" (click)="siguiente()">
+              Siguiente <span aria-hidden="true">→</span>
+            </button>
+          }
+        </div>
 
         @if (error()) {
           <p class="error" role="alert">{{ error() }}</p>
         }
 
         <div class="acciones">
+          @if (!esUltima() && !confirmando()) {
+            <p class="ayuda">
+              El cuestionario se entrega entero, desde la última pregunta. Lo que vas contestando
+              se guarda en este navegador: si se cierra, volvés a donde estabas.
+            </p>
+          }
           @if (confirmando()) {
             <p class="error" role="alert">
               Te quedan {{ v.items.length - contestadas() }} sin contestar. Se entregan en blanco y
@@ -202,15 +258,17 @@ interface Borrador {
                 Seguir contestando
               </button>
             </div>
-          } @else {
+          } @else if (esUltima()) {
             <button type="button" (click)="entregar()" [disabled]="entregando()">
               {{ entregando() ? 'Entregando…' : 'Entregar' }}
             </button>
           }
-          <p class="ayuda">
-            El botón Entregar va al Tema 03, no a nosotros: es él quien valida que el intento siga
-            siendo válido y recién entonces nos despacha la respuesta.
-          </p>
+          @if (esUltima()) {
+            <p class="ayuda">
+              El botón Entregar va al Tema 03, no a nosotros: es él quien valida que el intento
+              siga siendo válido y recién entonces nos despacha la respuesta.
+            </p>
+          }
         </div>
       </section>
     } @else {
@@ -268,6 +326,18 @@ export class AlumnoResponderPage {
     );
   });
 
+  /** En cual esta parado. Con una consigna por pantalla, es todo el recorrido. */
+  readonly indice = signal(0);
+
+  readonly esSecuencial = computed(() => this.vista()?.navegacion === 'SECUENCIAL');
+
+  readonly esUltima = computed(() => {
+    const total = this.vista()?.items.length ?? 0;
+    return total === 0 || this.indice() >= total - 1;
+  });
+
+  readonly sePuedeVolver = computed(() => this.indice() > 0 && !this.esSecuencial());
+
   readonly contestadas = computed(() => {
     const v = this.vista();
     if (!v) return 0;
@@ -319,6 +389,13 @@ export class AlumnoResponderPage {
         }
 
         this.borradores.set(iniciales);
+
+        // Recargar no devuelve a la pregunta 1: se retoma en la primera sin
+        // contestar. En SECUENCIAL ademas evita que recargar sea la forma
+        // obvia de volver atras —no lo impide, pero deja de ser el camino
+        // natural—; y en LIBRE es, simplemente, donde el alumno estaba.
+        const primeraSinContestar = v.items.findIndex((i) => !this.estaContestada(i));
+        this.indice.set(primeraSinContestar === -1 ? v.items.length - 1 : primeraSinContestar);
       },
       error: (e) =>
         this.error.set(
@@ -337,6 +414,43 @@ export class AlumnoResponderPage {
   volverAMisCursos(): void {
     this.intentos.limpiar();
     this.router.navigateByUrl('/alumno/cursos');
+  }
+
+  /**
+   * A donde se puede saltar desde donde esta. En SECUENCIAL, solo a la actual:
+   * ni atras —que es la regla— ni adelante salteando, porque saltar a la 5
+   * dejaria las del medio en blanco sin que el alumno las haya visto nunca.
+   */
+  sePuedeIrA(destino: number): boolean {
+    if (this.esSecuencial()) return destino === this.indice();
+    return destino !== this.indice();
+  }
+
+  irA(destino: number): void {
+    if (!this.sePuedeIrA(destino)) return;
+    this.indice.set(destino);
+    this.confirmando.set(false);
+    this.alPrincipio();
+  }
+
+  siguiente(): void {
+    if (this.esUltima()) return;
+    this.indice.update((i) => i + 1);
+    this.alPrincipio();
+  }
+
+  anterior(): void {
+    if (!this.sePuedeVolver()) return;
+    this.indice.update((i) => i - 1);
+    this.alPrincipio();
+  }
+
+  /**
+   * Cambiar de consigna es cambiar de pantalla: si la anterior era larga, el
+   * alumno se queda mirando el medio de la nueva y cree que empieza ahi.
+   */
+  private alPrincipio(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   borrador(i: ItemParaAlumno): Borrador {
@@ -420,7 +534,8 @@ export class AlumnoResponderPage {
     this.actualizar(i, { secuencia: s });
   }
 
-  private estaContestada(i: ItemParaAlumno): boolean {
+  /** Publica porque la barra de pasos marca cuales ya tienen respuesta. */
+  estaContestada(i: ItemParaAlumno): boolean {
     const b = this.borrador(i);
     switch (i.tipo) {
       case 'OPCION_MULTIPLE':
