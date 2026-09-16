@@ -13,6 +13,22 @@
 
 ---
 
+## La forma exacta de cada mensaje
+
+Este documento explica **por qué** cada decisión es como es, y es lo que hay que leer para
+discutirla. La **forma** de cada mensaje —campos, tipos, códigos de error, las tres credenciales
+y cuándo va cada una— está publicada como OpenAPI por la alfa ejecutable:
+
+```
+http://localhost:8081/swagger-ui/index.html    para leerlo y probarlo
+http://localhost:8081/v3/api-docs              para generarse un cliente
+```
+
+Se levanta con `docker compose up` desde `alfa/`. Si alguna vez el spec y este documento se
+contradicen, **manda este documento**: acá está el argumento, allá solamente la forma.
+
+---
+
 ## 0. Estrategia general
 
 **Regla de asimetría.** Con lo que **consumimos** somos tolerantes y degradables: toda
@@ -89,7 +105,13 @@ lo puede correr el otro grupo contra su implementación; una tabla en Markdown n
 | CI-52 | **Campo `revision` en el payload del evento.** Revisión 1 es la corrección original; de 2 en adelante son recálculos. **Regla del 03: aceptar si la revisión es mayor a la guardada, ignorar si es igual o menor** | Resuelve el choque con CI-26 (un evento por entrega) y **tapa un agujero que habíamos dejado abierto: la apelación de CI-35 también produce un segundo evento** —el profesor sobrescribe la nota tras revisar— y no habíamos definido cómo viajaba. Un solo campo cubre los dos casos. **No contradice CI-25:** ahí `entregaId` es la clave de idempotencia del despacho **que nos entra**; `revision` ordena los eventos **que salen** |
 | CI-53 | **La estampa de versión por ítem es lo autoritativo, no `contenidoRef.version`** | Si el alumno abrió en la v3 y el profesor editó antes del envío, el `contenidoRef.version` cacheado del 03 puede decir 4. No importa: corregimos por la estampa de cada ítem. Se deja escrito para que nadie intente "arreglar" esa diferencia. **Corolario:** no existe carrera entre el profesor editando y nosotros corrigiendo — CI-12 ya nos había inmunizado sin que nos diéramos cuenta |
 | CI-54 | **No se edita contenido de un curso archivado** (RF-CUR-09 lo deja en modo lectura). Nos enteramos del estado del curso por `cursos.ciclo-vida` | **Sale gratis:** ya vamos a estar suscritos a ese tópico para el módulo de encuestas, que necesita el cierre de curso para disparar los instrumentos. Misma suscripción, dos usos, cero integración nueva |
-| CI-19 | **La lectura del contenido no tiene estado.** El mismo contenido se le sirve igual a todos: no necesitamos saber quién está mirando para armar la respuesta, ni guardamos nada al servirla | Verificado en el PRD (2026-09-08): **no hay barajado de preguntas ni cronómetro por desafío**. El único "al azar" es la selección del pool de recuperación de vida (RF-REC-04), que es otra cosa. Si mañana apareciera el barajado, el orden tendría que ser estable entre recargas o el alumno vería las preguntas mezcladas al refrescar — eso obliga a guardar el orden **por alumno y por intento**, y la lectura deja de ser pura y pasa a escribir. Si apareciera el cronómetro, registrar "abrió a las 14:32" sería del **03**, porque la entrega y sus estados son de ellos |
+| CI-19 | **La lectura del contenido no tiene estado.** No guardamos nada al servirla. Lo que sí hacemos, desde 2026-09-10, es **barajar las preguntas por alumno** | Revisado. La redacción original decía que barajar obligaba a persistir el orden **por alumno y por intento** —porque si no, el alumno recarga y ve otra cosa— y que por eso la lectura dejaba de ser pura. **Eso vale para un barajado al azar y no para uno derivado.** La permutación sale de `SHA-256(contenidoId + alumnoId)`: es la misma cada vez que se calcula, así que recargar da lo mismo, reconstruirla para el desglose da lo mismo, y no hay nada que guardar. El principio de CI-19 sobrevive intacto; lo que cambió es que la respuesta ahora depende de **quién** pregunta, y eso ya lo sabíamos porque el vale trae el `alumnoId`. La semilla **no** incluye el intento: el vale no lo lleva y meterlo cambiaría el contrato con el 03 por una ganancia discutible. **Nota de alcance:** el PRD (verificado 2026-09-08) no pide barajado — es una decisión de producto del Grupo 04, tomada a sabiendas. El cronómetro sigue afuera, y ahí el argumento no cambió: registrar "abrió a las 14:32" es del **03**, porque la entrega y sus estados son de ellos. Lo fija `BarajadoPorAlumnoIT` |
+| CI-55 | **Opción múltiple admite puntaje parcial por opción.** Cada opción lleva un porcentaje del peso del ítem; los negativos descuentan. **Revierte el todo-o-nada** que este mismo documento daba por cerrado | *(Reversión del 2026-09-11.)* El argumento que sostenía el todo-o-nada estaba escrito en `CorrectorAutomatico`: repartir puntaje adentro de un ítem era *"inventar una regla académica que nadie pidió"*. **Ese argumento se cayó el día que vimos Moodle**: la cátedra lo usa, pondera cada opción por separado desde siempre, y valida que las positivas sumen 100% — no es una regla que inventamos, es la que el profesor ya tiene en la mano. **Por qué los negativos:** sin ellos, marcar todas las opciones garantiza el 100% y el ítem deja de evaluar. **Compatibilidad, que es la parte que importa:** el campo `pesos` es opcional, y sin él se corrige exactamente como antes. Los criterios ya guardados no tienen `pesos`, así que **ninguna nota ya emitida cambia de valor** — CI-12 y CI-44 quedan intactos sin migrar un solo registro. Lo fija `PuntajeParcialPorOpcionTest`, que prueba el caso viejo junto al nuevo. **Alcance:** solo opción múltiple. En *ordenar*, un elemento fuera de lugar corre a todos los demás y "cuántos acertó" no significa nada; en *emparejar* sería defendible, pero nadie lo pidió |
+| CI-56 | **Rechazada la navegación secuencial** (una pregunta por página, sin volver atrás), que Moodle ofrece en *Esquema* | Obliga a guardar por dónde va cada alumno, y eso rompe CI-19 de frente: la lectura dejaría de no tener estado. Y el estado no sería gratis — habría que persistirlo por alumno **y por intento**, que es exactamente el costo que el barajado derivado evitó. **Lo que se pierde es poco:** en Moodle la secuencial existe para desalentar la copia en exámenes presenciales, y la copia acá se ataca por otro lado (barajado por alumno, CI-19). **Lo que se ganaría de romperla es menor que lo que se pierde**, así que no se rompe |
+| CI-57 | **Rechazada la pregunta aleatoria del banco** (el cuestionario toma N ítems al azar de una categoría) | Es la más tentadora del lote y la más cara. CI-13 ya acepta que dos alumnos del mismo desafío vean **versiones** distintas del mismo enunciado; esto es otra cosa: verían **preguntas distintas**, de dificultad distinta, y sus notas dejarían de ser comparables dentro de la cohorte. Es el mismo argumento con el que CI-34 rechazó el pool de modelos, y ahí ya lo dimos por bueno: el ranking se calcula sobre la cohorte, así que la comparabilidad es parte de la nota. Rompe además la analítica de dificultad por ítem, que está en nuestra columna del reparto. **Si alguna vez entra**, tiene que entrar con las categorías del banco ya hechas y una regla explícita de equivalencia entre ítems — no como un `ORDER BY random()` |
+| CI-58 | **La retroalimentación del ítem vive en una columna propia y se sirve RECORTADA: solo el texto general y el de las opciones que ese alumno marcó** | *(2026-09-11, del contraste contra Moodle — §5c.)* **Dos decisiones, no una.** La primera es dónde vive: columna `devolucion` aparte y no un campo más adentro de `criterio`, aunque el criterio ya tenga la garantía de no viajar al alumno. Son cosas distintas — el criterio dice **cómo se puntúa** y lo consume el corrector; la devolución dice **qué se le explica** y no la consume nadie más que la pantalla de resultado. Se nota en ABIERTA, donde el criterio es la rúbrica que guía a quien corrige: meter ahí el texto que lee el alumno sería juntar el instructivo del corrector con la devolución del corregido. La segunda es cuánta se sirve: **nunca la lista completa.** La devolución de una opción dice si esa opción estaba bien, así que mandarlas todas es servir la clave con otras palabras — misma regla por la que el desglose no lleva criterio (con reintentos ilimitados, RF-REC-04, regalar la respuesta convierte el reintento en copiar). Y tampoco sale mientras el ítem esté pendiente: explicarle al alumno por qué su respuesta está bien antes de que un humano la haya leído no significa nada. El recorte vive en el dominio (`Devolucion.paraLoMarcado`) y no en la pantalla, para que no dependa de que el front se acuerde de filtrar. Lo fija `DevolucionRecortadaTest`. **Pendiente relacionado:** Moodle controla esto fino con su matriz de *opciones de revisión* (qué ve el alumno, y en cuál de cuatro momentos). No la implementamos; si alguna vez entra, este recorte es su caso por defecto |
+| CI-59 | **Los ítems tienen estado `BORRADOR \| LISTO`, y un borrador no se puede componer. El estado vive en `item`, no en `item_version`. Un ítem ya compuesto no puede volver a borrador** | *(2026-09-11, del contraste contra Moodle — §5c.)* Tapa un agujero que teníamos sin saberlo: **hoy un ítem a medio cargar entra a un cuestionario igual que uno terminado**, y el alumno se lo come. **Por qué en `item` y no en la versión:** una versión es inmutable por trigger (D-04), así que con el estado ahí, pasar de borrador a listo obligaría a publicar una versión nueva — y no lo es: la pregunta no cambió, cambió la decisión del profesor sobre si ya se puede usar. Versionar eso ensucia el historial que D-04 existe para mantener legible. **Por qué no se puede volver a borrador una vez compuesto:** con referencia flotante (CI-13) el cuestionario sirve siempre la última versión, así que ese borrador le llegaría al alumno igual — el estado sería invisible justo en el caso para el que existe. Rechazarlo es más honesto que fingir que lo detuvo. **Compatibilidad:** `DEFAULT 'LISTO'` en la migración y en el DTO, así que todo lo que ya existe y todo el que no mande el campo sigue funcionando igual. Lo fija `BorradorYVistaPreviaIT` |
+| CI-60 | **La vista previa del ítem devuelve la MISMA clase que se le sirve al alumno** (`VistaAlumnoResponse.ItemParaAlumno`), no una maqueta propia | Es lo único que la hace valer como prueba y no como adorno. Si fuera un DTO aparte armado "para mostrar", podría estar limpia mientras el endpoint real filtra —o al revés— y el profesor vería una pantalla que no corresponde a lo que el alumno recibe. Compartiendo la clase, **no puede haber una vista previa limpia sobre un endpoint que no lo está**: es CI-17 otra vez, y otra vez resuelto por construcción y no por disciplina. Efecto lateral que conviene en la demo: abrir la vista previa de un ítem de respuesta abierta y mostrar que la rúbrica no está en el JSON es la forma más corta de explicar CI-17 sin hablar de arquitectura |
 
 ---
 
@@ -559,6 +581,67 @@ querer una versión anterior.
 **Conclusión metodológica:** las dos pasadas de control (el Paso 8 y esta) encontraron
 cosas que los pasos individuales no. Conviene repetirla al terminar el recorrido de
 encuestas, antes de publicar nada a los otros grupos.
+
+---
+
+## 5c. Contraste contra Moodle — 2026-09-11
+
+El profesor nos pasó veinte capturas del armado de un cuestionario en Moodle, para que
+viéramos cómo funciona su parte. No es una lista de requisitos: es **el estándar contra el
+que va a leer nuestro trabajo**, y por eso conviene tener dicho, función por función, por qué
+la tenemos o por qué no.
+
+La pasada completa dio cuatro grupos:
+
+**1. Lo que ya teníamos, y no sabíamos que era un punto a favor (5).** Versionado de ítems
+con "última versión" visible, barajado de respuestas, multi-respuesta, pesos por pregunta con
+totalizador, escala del cuestionario. Todo esto Moodle lo tiene y nosotros también. No hay
+trabajo que hacer; hay que **saber señalarlo**.
+
+**2. Lo que tomamos (1 en esta tanda).** El puntaje parcial por opción → **CI-55**, que
+revierte una decisión que este documento daba por cerrada. Es el hallazgo más valioso de las
+veinte capturas, y no por la función: por el argumento. El todo-o-nada se defendía diciendo
+que el parcial era *"una regla académica que nadie pidió"*, y resultó que sí la pedía el
+sistema que la cátedra usa todos los días. **Una premisa falsa sostenía una decisión
+correcta-por-casualidad**, y eso es exactamente lo que una revisión tiene que encontrar.
+
+**3. Lo que rechazamos con fundamento (2).** Navegación secuencial → **CI-56**. Pregunta
+aleatoria del banco → **CI-57**. Las dos son implementables y las dos rompen algo ya
+decidido. Se escriben como rechazos, igual que CI-03b y CI-03c, porque **un rechazo
+argumentado vale más en la defensa que la función implementada**: demuestra que el contrato
+se usa para decidir y no para decorar.
+
+**4. Lo que es de otro grupo (4 pantallas enteras).** Y esta es la parte que más conviene
+mostrar, porque son cuatro ausencias que **el contrato ya explicaba antes de que las
+viéramos**:
+
+| Pantalla de Moodle | De quién es | Dónde ya estaba dicho |
+|---|---|---|
+| Temporalización: abrir, cerrar, límite de tiempo | Tema 03 | CI-15, CI-20; *"el cronómetro sigue afuera"* en CI-19 |
+| Intentos permitidos y método de calificación (más alta / promedio / primero / último) | Tema 03 | CI-45, textual: *"cuál intento cuenta lo decide el 03"* |
+| Calificación para aprobar | Tema 03 | CI-39: el umbral es economía, y la economía vive en un solo lugar |
+| Restricciones de acceso (fecha, grupo, calificación, perfil) | Temas 02 y 03 | CI-01: para el 03 somos una caja opaca, y el curso es del 02 |
+
+**Cómo se presenta esto:** no como "Moodle tiene cuatro cosas que nosotros no". Como
+**cuatro pantallas que un sistema monolítico mete en el mismo formulario y una plataforma de
+microservicios reparte entre tres equipos** — y el reparto estaba escrito de antemano, con
+su motivo, en decisiones que no se tomaron mirando estas capturas. Que la frontera aguante un
+contraste que no fue diseñada para aguantar es la mejor evidencia de que está bien puesta.
+
+**Tomada después:** la retroalimentación por opción y general → **CI-58**, con un giro que no
+estaba en Moodle: allá el alumno ve el feedback de todas las opciones, y acá solo el de las que
+marcó. No es una limitación nuestra, es una consecuencia de CI-28 — si el desglose no lleva la
+clave de corrección, la devolución tampoco puede llevarla disfrazada de texto.
+
+**Tomadas después, en la misma tanda:** la vista previa del ítem → **CI-60**, y el estado
+borrador/listo → **CI-59**. La segunda no salió de querer parecerse a Moodle: salió de que al
+mirar su campo *"Estado de pregunta"* nos dimos cuenta de que nosotros **no teníamos ninguna
+forma de frenar un ítem a medio escribir**. El contraste sirvió para encontrar un agujero
+propio, que es más de lo que se le pide a un contraste.
+
+**Pendiente de esta pasada:** las categorías del banco y la matriz de *opciones de revisión*
+(qué ve el alumno, y en cuál de cuatro momentos). Las dos son nuestras y ninguna choca con
+nada; la segunda es la que le pondría control fino al recorte que CI-58 hace por defecto.
 
 ---
 

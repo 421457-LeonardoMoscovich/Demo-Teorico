@@ -45,6 +45,8 @@ public class MapeadorJson {
             case VERDADERO_FALSO -> PayloadDeItem.VerdaderoFalso.class;
             case EMPAREJAR       -> PayloadDeItem.Emparejar.class;
             case ORDENAR         -> PayloadDeItem.Ordenar.class;
+            case RESPUESTA_CORTA -> PayloadDeItem.RespuestaCorta.class;
+            case NUMERICA        -> PayloadDeItem.Numerica.class;
             case ABIERTA         -> PayloadDeItem.Abierta.class;
             case CONVERSACION    -> PayloadDeItem.Conversacion.class;
             case DEBATE          -> PayloadDeItem.Debate.class;
@@ -58,11 +60,21 @@ public class MapeadorJson {
             case VERDADERO_FALSO -> CriterioDeCorreccion.VerdaderoFalso.class;
             case EMPAREJAR       -> CriterioDeCorreccion.Emparejar.class;
             case ORDENAR         -> CriterioDeCorreccion.Ordenar.class;
+            case RESPUESTA_CORTA -> CriterioDeCorreccion.RespuestaCorta.class;
+            case NUMERICA        -> CriterioDeCorreccion.Numerica.class;
             case ABIERTA         -> CriterioDeCorreccion.Abierta.class;
             case CONVERSACION, DEBATE ->
                     throw new ExcepcionDeNegocio(ClaveError.TIPO_DIFERIDO, "tipo");
         };
         return convertir(json, clase, "criterio");
+    }
+
+    /**
+     * La devolucion no depende del tipo: una sola forma para los cinco. Por eso
+     * no hay switch aca, a diferencia de payload, criterio y respuesta.
+     */
+    public Devolucion leerDevolucion(JsonNode json) {
+        return convertir(json, Devolucion.class, "devolucion");
     }
 
     public RespuestaDeItem leerRespuesta(TipoDeItem tipo, JsonNode json) {
@@ -71,6 +83,8 @@ public class MapeadorJson {
             case VERDADERO_FALSO -> RespuestaDeItem.VerdaderoFalso.class;
             case EMPAREJAR       -> RespuestaDeItem.Emparejar.class;
             case ORDENAR         -> RespuestaDeItem.Ordenar.class;
+            case RESPUESTA_CORTA -> RespuestaDeItem.RespuestaCorta.class;
+            case NUMERICA        -> RespuestaDeItem.Numerica.class;
             case ABIERTA         -> RespuestaDeItem.Abierta.class;
             case CONVERSACION, DEBATE ->
                     throw new ExcepcionDeNegocio(ClaveError.TIPO_DIFERIDO, "tipo");

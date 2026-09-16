@@ -52,14 +52,19 @@ public abstract class BaseIT {
      * dependen de nada externo.
      *
      * La salida de emergencia es la variable ALFA_DB_URL: si esta puesta, se usa
-     * esa base en vez de arrancar un contenedor. Existe porque hay entornos donde
-     * Testcontainers no puede hablar con el demonio de Docker aunque el CLI
-     * funcione — por ejemplo Docker Desktop en Windows sirviendo el engine por
-     * npipe. Ver el README: se corre con
+     * esa base en vez de arrancar un contenedor. Ver el README: se corre con
      *
      *     ALFA_DB_URL=jdbc:postgresql://localhost:5432/g04_test mvn verify
      *
      * y esa base tiene que tener los roles de docker/postgres/00-roles.sql.
+     *
+     * <p><b>Ya no hace falta usarla en Windows.</b> Este comentario decia que
+     * Testcontainers no podia hablar con Docker Desktop por npipe; el
+     * diagnostico estaba errado. Lo que pasaba eran dos cosas de entorno, las
+     * dos arregladas en el `argLine` del pom: la version de API que
+     * Testcontainers negocia con Docker 29, y una zona horaria que Windows
+     * resuelve a un id que no existe en IANA. La valvula queda para el caso
+     * legitimo —una maquina sin Docker— y no para tapar un test roto.
      */
     private static final String URL_EXTERNA = System.getenv("ALFA_DB_URL");
 
@@ -114,6 +119,11 @@ public abstract class BaseIT {
         return bearer(new Usuario(idAlumno, "alumno", "Luis Alumno", Rol.ALUMNO));
     }
 
+    /** Otro alumno cualquiera. Lo necesita todo test de sorteo o de barajado. */
+    protected String bearerAlumno(UUID id) {
+        return bearer(new Usuario(id, "alumno-" + id, "Otro Alumno", Rol.ALUMNO));
+    }
+
     protected String bearerDeOtroProfesor(UUID id) {
         return bearer(new Usuario(id, "otro", "Otro Profesor", Rol.PROFESOR));
     }
@@ -156,6 +166,20 @@ public abstract class BaseIT {
                 """,
                 """
                 {"esVerdadero":true}
+                """, bearer);
+    }
+
+    /**
+     * Un item de respuesta abierta: no lo corrige nadie automaticamente, asi que
+     * todo cuestionario que lo contenga queda esperando a un humano (D-01).
+     */
+    protected String itemAbierta(String bearer) throws Exception {
+        return crearItem("ABIERTA", "Explica por que un microservicio no lee la base de otro.",
+                """
+                {"consigna":"Desarrolla en no mas de 200 palabras.","extensionMaxima":200}
+                """,
+                """
+                {"rubrica":"Completo si nombra el acoplamiento de esquema Y una consecuencia sobre el despliegue."}
                 """, bearer);
     }
 

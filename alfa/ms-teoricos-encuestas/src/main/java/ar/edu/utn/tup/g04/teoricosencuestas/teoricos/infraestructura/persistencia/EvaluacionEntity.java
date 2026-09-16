@@ -88,9 +88,26 @@ public class EvaluacionEntity {
     public int getRevision() { return revision; }
     public Instant getCreadaEn() { return creadaEn; }
 
+    public static final String EN_ESPERA = "EN_ESPERA";
+    public static final String FINAL = "FINAL";
+
     public void cerrar(int nota, String corrector) {
         this.nota = nota;
         this.corrector = corrector;
-        this.estado = "FINAL";
+        this.estado = FINAL;
     }
+
+    /**
+     * Quedan items que espera un humano (D-01). La evaluacion existe, tiene sus
+     * respuestas guardadas y parte del puntaje ya hecho, pero NO tiene nota: la
+     * nota es del cuestionario entero o no es.
+     *
+     * Mientras esta asi no se emite el evento hacia el Tema 03. Ese silencio es
+     * el contrato: el 03 se entera cuando hay nota, no cuando hay entrega.
+     */
+    public void esperarCorreccionHumana() {
+        this.estado = EN_ESPERA;
+    }
+
+    public boolean esperaCorreccion() { return EN_ESPERA.equals(estado); }
 }

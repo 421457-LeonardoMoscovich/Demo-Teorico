@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -32,14 +33,25 @@ public class EvaluacionDetalleEntity {
     @Column(nullable = false)
     private int puntaje;
 
-    @Column(nullable = false)
-    private int obtenido;
+    /**
+     * NULL significa "todavia lo tiene que mirar un humano". No hay una columna
+     * `pendiente` aparte a proposito: dos campos que dicen lo mismo se terminan
+     * contradiciendo.
+     */
+    @Column
+    private Integer obtenido;
+
+    @Column(name = "corregido_por")
+    private UUID corregidoPor;
+
+    @Column(name = "corregido_en")
+    private Instant corregidoEn;
 
     protected EvaluacionDetalleEntity() {
     }
 
     public EvaluacionDetalleEntity(UUID id, UUID evaluacionId, UUID itemVersionId,
-                                   int orden, int puntaje, int obtenido) {
+                                   int orden, int puntaje, Integer obtenido) {
         this.id = id;
         this.evaluacionId = evaluacionId;
         this.itemVersionId = itemVersionId;
@@ -53,5 +65,19 @@ public class EvaluacionDetalleEntity {
     public UUID getItemVersionId() { return itemVersionId; }
     public int getOrden() { return orden; }
     public int getPuntaje() { return puntaje; }
-    public int getObtenido() { return obtenido; }
+    public Integer getObtenido() { return obtenido; }
+    public UUID getCorregidoPor() { return corregidoPor; }
+    public Instant getCorregidoEn() { return corregidoEn; }
+
+    public boolean estaPendiente() { return obtenido == null; }
+
+    /**
+     * CI-44: una correccion no se pisa. Si ya tiene puntaje, este metodo no es
+     * el camino —para eso existe el recalculo (CI-50), que esta en backlog.
+     */
+    public void puntuar(int obtenido, UUID profesorId, Instant cuando) {
+        this.obtenido = obtenido;
+        this.corregidoPor = profesorId;
+        this.corregidoEn = cuando;
+    }
 }

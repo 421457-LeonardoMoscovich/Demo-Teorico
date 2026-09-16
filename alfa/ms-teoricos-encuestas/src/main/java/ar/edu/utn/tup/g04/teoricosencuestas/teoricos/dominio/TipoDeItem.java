@@ -1,10 +1,18 @@
 package ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio;
 
 /**
- * Los siete tipos del PRD. No son homogeneos y el enum lo dice:
+ * Los nueve tipos. Siete son del PRD y dos —RESPUESTA_CORTA y NUMERICA— se
+ * agregaron mirando el catalogo de Moodle, que es el que la catedra usa: son
+ * los dos unicos de esa lista que se corrigen solos y entran en este modelo sin
+ * inventarle nada (las de arrastrar necesitan archivos, las calculadas
+ * necesitan que la lectura escriba, y CI-19 dice que no escribe).
  *
- *  - cuatro se corrigen solos y son los que implementa la alfa;
- *  - ABIERTA se corrige a mano o por IA (D-01): modelada, fuera de la alfa;
+ * No son homogeneos y el enum lo dice:
+ *
+ *  - seis se corrigen solos;
+ *  - ABIERTA se corrige a mano o por IA (D-01). Ya no es autocorregible pero SI
+ *    esta en la alfa: es la que obliga a que exista un estado de espera, y sin
+ *    ella el puerto Corrector es una promesa que nadie verifico;
  *  - CONVERSACION y DEBATE estan DIFERIDOS (D-09), no descartados: son dos
  *    formas de interaccion que el modelo de entrega unica no soporta.
  *
@@ -17,7 +25,19 @@ public enum TipoDeItem {
     VERDADERO_FALSO(true, false, true),
     EMPAREJAR(true, false, true),
     ORDENAR(true, false, true),
-    ABIERTA(false, false, false),
+
+    /**
+     * Texto corto contra una lista de respuestas aceptadas (Moodle: "Respuesta
+     * corta"). Se corrige sola porque el profesor enumera lo que vale; lo que no
+     * previo, no vale — y esa es exactamente la razon por la que una pregunta
+     * conceptual va en ABIERTA y no aca.
+     */
+    RESPUESTA_CORTA(true, false, true),
+
+    /** Un numero con tolerancia (Moodle: "Numerica"). */
+    NUMERICA(true, false, true),
+
+    ABIERTA(false, false, true),
     CONVERSACION(false, true, false),
     DEBATE(false, true, false);
 

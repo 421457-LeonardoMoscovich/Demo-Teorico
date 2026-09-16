@@ -6,9 +6,8 @@ import ar.edu.utn.tup.g04.teoricosencuestas.comun.eventos.EventoSobre;
 import ar.edu.utn.tup.g04.teoricosencuestas.comun.eventos.PublicadorDeEventos;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.Corrector;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.TipoDeItem;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.Devolucion;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.MapeadorJson;
-import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ContenidoItemEntity;
-import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ContenidoItemRepository;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.EvaluacionDetalleEntity;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.EvaluacionDetalleRepository;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.EvaluacionEntity;
@@ -56,7 +55,6 @@ public class EvaluacionService {
     private final EvaluacionRepository evaluaciones;
     private final EvaluacionDetalleRepository detalles;
     private final RespuestaRepository respuestas;
-    private final ContenidoItemRepository lineas;
     private final ItemRepository items;
     private final ItemVersionRepository versiones;
     private final ComposicionService composicion;
@@ -65,14 +63,13 @@ public class EvaluacionService {
     private final MapeadorJson json;
 
     public EvaluacionService(EvaluacionRepository evaluaciones, EvaluacionDetalleRepository detalles,
-                             RespuestaRepository respuestas, ContenidoItemRepository lineas,
+                             RespuestaRepository respuestas,
                              ItemRepository items, ItemVersionRepository versiones,
                              ComposicionService composicion, List<Corrector> correctores,
                              PublicadorDeEventos publicador, MapeadorJson json) {
         this.evaluaciones = evaluaciones;
         this.detalles = detalles;
         this.respuestas = respuestas;
-        this.lineas = lineas;
         this.items = items;
         this.versiones = versiones;
         this.composicion = composicion;
@@ -96,9 +93,15 @@ public class EvaluacionService {
 
         composicion.exigir(despacho.contenidoId());
 
-        Map<UUID, ContenidoItemEntity> porItem = new LinkedHashMap<>();
-        for (ContenidoItemEntity linea : lineas.findByClaveContenidoIdOrderByOrdenAsc(despacho.contenidoId())) {
-            porItem.put(linea.getItemId(), linea);
+        // El cuestionario DE ESTE ALUMNO, no el del cuestionario en abstracto:
+        // con sorteo (V10) cada uno recibio su propio subconjunto, y lo que hay
+        // que exigir y puntuar es ese. Se vuelve a derivar en vez de leerlo de
+        // algun lado porque no esta guardado en ningun lado — esa es toda la
+        // idea, y es lo que mantiene la lectura sin estado (CI-19).
+        Map<UUID, ComposicionService.ItemResuelto> porItem = new LinkedHashMap<>();
+        for (ComposicionService.ItemResuelto resuelto
+                : composicion.resolverPara(despacho.contenidoId(), despacho.alumnoId())) {
+            porItem.put(resuelto.item().getId(), resuelto);
         }
 
         Map<UUID, ItemVersionEntity> versionPorItem = new HashMap<>();
@@ -127,25 +130,64 @@ public class EvaluacionService {
                 UUID.randomUUID(), despacho.entregaId(), despacho.desafioId(), despacho.alumnoId(),
                 despacho.cursoCohorteId(), despacho.intento(), despacho.contenidoId(), Instant.now()));
 
-        int nota = 0;
-        String corrector = "AUTOMATICO";
+        // Se particiona por tipo: lo autocorregible se puntua ahora, lo que espera
+        // a un humano (D-01) se guarda con obtenido NULL. La respuesta del alumno
+        // se persiste igual en los dos casos —el que corrige despues necesita
+        // leerla, y la estampa de version tiene que quedar fijada YA.
+        int pendientes = 0;
 
-        for (ContenidoItemEntity linea : porItem.values()) {
-            ItemVersionEntity version = versionPorItem.get(linea.getItemId());
-            RespuestaRecibida recibida = respuestaPorItem.get(linea.getItemId());
-            ItemEntity item = items.findByIdAndBajaLogicaIsNull(linea.getItemId())
+        for (ComposicionService.ItemResuelto linea : porItem.values()) {
+            UUID itemId = linea.item().getId();
+            ItemVersionEntity version = versionPorItem.get(itemId);
+            RespuestaRecibida recibida = respuestaPorItem.get(itemId);
+            ItemEntity item = items.findByIdAndBajaLogicaIsNull(itemId)
                     .orElseThrow(() -> new ExcepcionDeNegocio(ClaveError.ITEM_INEXISTENTE, "respuestas"));
 
             respuestas.save(new RespuestaEntity(UUID.randomUUID(), evaluacion.getId(),
                     version.getId(), json.escribir(recibida.contenido()), Instant.now()));
 
-            int obtenido = corregirUno(item.getTipo(), version, recibida, linea.getPuntaje());
-            nota += obtenido;
+            Integer obtenido = null;
+            if (item.getTipo().esAutocorregible()) {
+                obtenido = corregirUno(item.getTipo(), version, recibida, linea.puntaje());
+            } else {
+                pendientes++;
+            }
 
+            // El orden guardado es el BASE —el mismo que devolvio resolverPara—
+            // y no el que vio el alumno: el desglose le aplica despues la misma
+            // permutacion que la vista, y para eso los dos tienen que partir de
+            // la misma lista.
             detalles.save(new EvaluacionDetalleEntity(UUID.randomUUID(), evaluacion.getId(),
-                    version.getId(), linea.getOrden(), linea.getPuntaje(), obtenido));
+                    version.getId(), linea.orden(), linea.puntaje(), obtenido));
         }
 
+        if (pendientes > 0) {
+            // Ni nota ni evento. El Tema 03 se entera cuando HAY nota, y todavia
+            // no la hay: la nota es del cuestionario entero o no es.
+            evaluacion.esperarCorreccionHumana();
+            evaluaciones.save(evaluacion);
+            return evaluacion;
+        }
+
+        cerrarYPublicar(evaluacion, "AUTOMATICO");
+        return evaluacion;
+    }
+
+    /**
+     * Suma el desglose y cierra. Es el unico lugar donde una evaluacion pasa a
+     * FINAL y el unico que publica, venga de un despacho todo-automatico o del
+     * profesor poniendo el ultimo puntaje a mano.
+     */
+    @Transactional
+    public EvaluacionEntity cerrarYPublicar(EvaluacionEntity evaluacion, String corrector) {
+        int nota = 0;
+        for (EvaluacionDetalleEntity d : detalles.findByEvaluacionIdOrderByOrdenAsc(evaluacion.getId())) {
+            if (d.estaPendiente()) {
+                throw new IllegalStateException(
+                        "No se puede cerrar una evaluacion con items sin corregir: " + evaluacion.getId());
+            }
+            nota += d.getObtenido();
+        }
         evaluacion.cerrar(nota, corrector);
         evaluaciones.save(evaluacion);
         publicar(evaluacion);
@@ -187,8 +229,39 @@ public class EvaluacionService {
                 EventoSobre.de(EVENTO, payload));
     }
 
-    public record Detalle(UUID itemVersionId, int orden, String enunciado,
-                          int puntaje, int obtenido, JsonNode respuesta) {}
+    /**
+     * `obtenido` en null = todavia lo espera un humano.
+     *
+     * `payload` es el de LA VERSION QUE EL ALUMNO VIO, no el vigente. Va para que
+     * el front pueda mostrar "Contestaste: Paris" en vez de "Contestaste: a" —las
+     * respuestas viajan por id, y un id no le dice nada a nadie. Sacarlo de la
+     * estampa y no del item de hoy es lo que hace que el desglose siga siendo
+     * legible despues de que el profesor edite la pregunta (CI-13).
+     *
+     * No lleva el criterio: con reintentos ilimitados eso convierte el reintento
+     * en copiar.
+     *
+     * `devolucion` (CI-58) SI viaja, y no contradice lo anterior porque viene
+     * recortada: solo el texto general y el de las opciones que este alumno
+     * marco. La devolucion de una opcion que no eligio diria si esa opcion era
+     * la correcta, que es el criterio contado de otra forma.
+     */
+    public record Detalle(UUID itemVersionId, int orden, String enunciado, JsonNode payload,
+                          int puntaje, Integer obtenido, JsonNode respuesta,
+                          Devolucion devolucion) {}
+
+    /**
+     * Todo lo que este alumno entrego, lo mas reciente primero.
+     *
+     * CI-44 dice que se guarda una correccion por entrega y NUNCA se pisa: cada
+     * intento queda. Esta consulta es lo que hace que eso se pueda ver — y de
+     * paso muestra el versionado, porque dos intentos del mismo desafio pueden
+     * haberse corregido contra versiones distintas del mismo item.
+     */
+    @Transactional(readOnly = true)
+    public List<EvaluacionEntity> historialDe(UUID alumnoId) {
+        return evaluaciones.findByAlumnoIdOrderByCreadaEnDesc(alumnoId);
+    }
 
     @Transactional(readOnly = true)
     public EvaluacionEntity porEntrega(UUID entregaId) {
@@ -199,9 +272,15 @@ public class EvaluacionService {
     /**
      * El desglose se arma sobre la estampa: el enunciado que sale de aca es el
      * que el alumno vio, no el que el item tiene hoy.
+     *
+     * Y sale EN EL ORDEN EN QUE EL LO VIO. Como cada alumno recibe las preguntas
+     * barajadas, mostrarle el resultado en el orden del profesor lo haria buscar
+     * a mano cual era cual. La permutacion no esta guardada: se reconstruye con
+     * la misma semilla, que es exactamente lo que la hace barata.
      */
     @Transactional(readOnly = true)
-    public List<Detalle> desglose(UUID evaluacionId) {
+    public List<Detalle> desglose(EvaluacionEntity evaluacion) {
+        UUID evaluacionId = evaluacion.getId();
         Map<UUID, String> respuestaPorVersion = new HashMap<>();
         for (RespuestaEntity r : respuestas.findByEvaluacionId(evaluacionId)) {
             respuestaPorVersion.put(r.getItemVersionId(), r.getContenido());
@@ -209,14 +288,71 @@ public class EvaluacionService {
 
         List<Detalle> resultado = new ArrayList<>();
         for (EvaluacionDetalleEntity d : detalles.findByEvaluacionIdOrderByOrdenAsc(evaluacionId)) {
-            String enunciado = versiones.findById(d.getItemVersionId())
-                    .map(ItemVersionEntity::getEnunciado)
-                    .orElse(null);
+            ItemVersionEntity version = versiones.findById(d.getItemVersionId()).orElse(null);
             String contestado = respuestaPorVersion.get(d.getItemVersionId());
-            resultado.add(new Detalle(d.getItemVersionId(), d.getOrden(), enunciado,
+            JsonNode respuesta = contestado == null ? null : json.aNodo(contestado);
+            resultado.add(new Detalle(
+                    d.getItemVersionId(), d.getOrden(),
+                    version == null ? null : version.getEnunciado(),
+                    version == null ? null : json.aNodo(version.getPayload()),
                     d.getPuntaje(), d.getObtenido(),
-                    contestado == null ? null : json.aNodo(contestado)));
+                    respuesta,
+                    devolucionDe(version, respuesta, d.getObtenido())));
         }
-        return resultado;
+
+        // Se reordena como lo vio el alumno y se renumera: para el, la primera
+        // que contesto es la 1.
+        List<Detalle> comoLoVio = composicion.enOrdenPara(
+                resultado, evaluacion.getContenidoId(), evaluacion.getAlumnoId());
+        List<Detalle> numerado = new ArrayList<>();
+        for (int i = 0; i < comoLoVio.size(); i++) {
+            Detalle d = comoLoVio.get(i);
+            numerado.add(new Detalle(d.itemVersionId(), i + 1, d.enunciado(), d.payload(),
+                    d.puntaje(), d.obtenido(), d.respuesta(), d.devolucion()));
+        }
+        return numerado;
+    }
+
+    /**
+     * La devolucion de un item, lista para mostrar (CI-58).
+     *
+     * Dos recortes, y los dos son de fondo:
+     *
+     * <ul>
+     *   <li><b>solo si el item ya esta corregido</b> — mientras `obtenido` sea
+     *       null el item espera a un humano, y explicarle al alumno por que su
+     *       respuesta esta bien antes de que nadie la haya leido no tiene
+     *       sentido;</li>
+     *   <li><b>solo las opciones que marco</b> — lo hace {@code paraLoMarcado},
+     *       y es lo que impide que la devolucion se convierta en la clave de
+     *       correccion contada con otras palabras.</li>
+     * </ul>
+     */
+    private Devolucion devolucionDe(ItemVersionEntity version, JsonNode respuesta,
+                                    Integer obtenido) {
+        if (version == null || version.getDevolucion() == null || obtenido == null) {
+            return null;
+        }
+        Devolucion cruda = json.leerDevolucion(json.aNodo(version.getDevolucion()));
+        Devolucion recortada = new Devolucion(cruda.general(), cruda.paraLoMarcado(marcadas(respuesta)));
+        return recortada.vacia() ? null : recortada;
+    }
+
+    /**
+     * Lo que el alumno marco, leido del jsonb de la respuesta sin mirar el tipo.
+     *
+     * Los tipos que no tienen `seleccionadas` devuelven la lista vacia, y con
+     * eso la devolucion por opcion desaparece sola: no hace falta preguntar por
+     * el tipo para saber que en un V/F no hay opciones que comentar.
+     */
+    private List<String> marcadas(JsonNode respuesta) {
+        if (respuesta == null || !respuesta.hasNonNull("seleccionadas")) {
+            return List.of();
+        }
+        List<String> ids = new ArrayList<>();
+        for (JsonNode n : respuesta.get("seleccionadas")) {
+            ids.add(n.asText());
+        }
+        return ids;
     }
 }

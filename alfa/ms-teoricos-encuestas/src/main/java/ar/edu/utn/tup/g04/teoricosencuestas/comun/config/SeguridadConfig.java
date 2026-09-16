@@ -62,6 +62,8 @@ public class SeguridadConfig {
                                  "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers(HttpMethod.POST, "/teoricos/evaluaciones").hasRole("SERVICIO")
                 .requestMatchers("/teoricos/items/**").hasRole("PROFESOR")
+                .requestMatchers("/teoricos/correcciones/**").hasRole("PROFESOR")
+                .requestMatchers("/teoricos/demo/**").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.POST, "/teoricos/contenidos").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/teoricos/contenidos").hasRole("PROFESOR")
                 .requestMatchers("/teoricos/contenidos/*/vista-profesor").hasRole("PROFESOR")

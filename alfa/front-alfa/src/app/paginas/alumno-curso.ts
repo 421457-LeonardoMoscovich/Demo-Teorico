@@ -60,6 +60,8 @@ import { Curso, Desafio, Unidad } from '../core/modelos';
                   </li>
                 }
               </ul>
+            } @else if (cargandoDesafios()) {
+              <p class="vacio">Buscando los desafíos de esta unidad…</p>
             } @else {
               <p class="vacio">Sin desafíos abiertos en esta unidad.</p>
             }
@@ -67,7 +69,7 @@ import { Curso, Desafio, Unidad } from '../core/modelos';
         }
 
         @if (error()) {
-          <p class="error">{{ error() }}</p>
+          <p class="error" role="alert">{{ error() }}</p>
         }
       </section>
     } @else {
@@ -86,6 +88,11 @@ export class AlumnoCursoPage {
 
   readonly curso = signal<Curso | null>(null);
   readonly desafios = signal<Desafio[]>([]);
+  /**
+   * Sin esto, mientras el Tema 03 responde cada unidad afirma que no tiene
+   * desafios. Es mentira por medio segundo, y en la demo se ve.
+   */
+  readonly cargandoDesafios = signal(true);
   readonly error = signal('');
 
   constructor() {
@@ -95,8 +102,14 @@ export class AlumnoCursoPage {
       error: () => this.error.set('El Tema 02 no encontró ese curso.'),
     });
     this.api.desafiosAbiertos(id).subscribe({
-      next: (d) => this.desafios.set(d),
-      error: () => this.error.set('No se pudo hablar con el Tema 03.'),
+      next: (d) => {
+        this.desafios.set(d);
+        this.cargandoDesafios.set(false);
+      },
+      error: () => {
+        this.cargandoDesafios.set(false);
+        this.error.set('No se pudo hablar con el Tema 03.');
+      },
     });
   }
 

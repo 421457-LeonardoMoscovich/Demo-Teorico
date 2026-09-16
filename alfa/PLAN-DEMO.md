@@ -164,25 +164,38 @@ selects y el radio marcado; y al entregar, el borrador desapareció de `sessionS
 
 **De la demo:**
 
-- **Respuesta abierta + cola de corrección** (~12-16 h). Es la que mejor defiende el diseño —el
-  puerto `Corrector` deja de ser una promesa— y destraba el modo `DIFERIDA` de la ficha (CI-07),
-  el estado de espera del alumno, y `CI-47`, que hoy es un `// TODO` porque no hay ítems de
-  corrección humana que rechazar. **No entra en cuatro días** y no cuenta una historia que las
-  cuatro de arriba no cuenten mejor.
+- ~~**Respuesta abierta + cola de corrección**~~ — **HECHA, después de todo.** Se decidió
+  entrarle igual, y valió: destrabó el modo `DIFERIDA` de la ficha (CI-07), el estado de espera
+  del alumno y `CI-47`. Dejó además dos conclusiones que el plan no anticipaba:
+
+  - **El puerto `Corrector` no admitía un adaptador humano.** Su firma, `int corregir(criterio,
+    respuesta, puntaje)`, es una función pura; una corrección humana es un trabajo pendiente que
+    espera a que alguien aparezca. El puerto quedó como estaba —para lo que el sistema sí puede
+    ejecutar— y la espera vive aparte, como cola. O sea: el puerto era una promesa que cubría la
+    mitad del problema, y ahora se sabe cuál mitad.
+  - **CI-47 estaba en el servicio equivocado.** Ver el README.
 - **OpenAPI publicado** (C-04, ~2 h), **test de arquitectura ArchUnit** (HU02, ~4 h) e **i18n**
   (HU04, ~6 h). Son del sprint, no de la demo. Si sobra tiempo, OpenAPI es el más barato y es un
   entregable hacia los otros grupos.
 - **Analítica de dificultad por ítem** (~4 h). Ya guardamos `evaluacion_detalle`: sale con un
   `GROUP BY`. Lo lindo no es la métrica sino el argumento — solo es posible porque los ítems
   tienen identidad versionada (D-04).
-- **Desglose con el texto de la respuesta en vez de los ids.** Hoy muestra `i1 → d1 · i2 → d2`.
-  Necesita que el endpoint de resultado devuelva el payload del ítem, que hoy no manda.
+- ~~**Desglose con el texto de la respuesta en vez de los ids**~~ — **HECHO.** El endpoint de
+  resultado ahora manda el payload **de la versión estampada**, no el vigente: por eso el
+  desglose sigue siendo legible después de que el profesor edite la pregunta. Lo fija
+  `EstampaDeVersionIT`, que además afirma que el criterio **no** viaja ahí.
 
 **Del producto, por contrato:**
 
-- **Cronómetro y barajado de preguntas.** Suenan a mejora obvia de un examen, pero **CI-19 los
-  verificó contra el PRD y no existen en la plataforma**. Agregarlos sería inventar producto, y
-  encima rompería que la lectura del contenido no tenga estado.
+- **Cronómetro.** CI-19 lo verificó contra el PRD y no existe en la plataforma. Y si apareciera,
+  registrar "abrió a las 14:32" sería del Tema 03: la entrega y sus estados son de ellos.
+- ~~**Barajado de preguntas**~~ — **HECHO, y con una corrección al argumento.** CI-19 decía que
+  barajar rompía que la lectura no tuviera estado, porque habría que guardar el orden por alumno.
+  Eso es cierto para un barajado al azar; no para uno derivado de `SHA-256(contenidoId +
+  alumnoId)`, que es estable entre recargas sin persistir nada. El principio de CI-19 quedó
+  intacto y la redacción se corrigió. **Sigue siendo producto fuera del PRD**, decidido a
+  sabiendas por el equipo: si en la defensa preguntan de dónde sale el requisito, la respuesta es
+  "de ningún lado, y está dicho en CI-19".
 - **Apelación (CI-35) y recálculo (CI-50).** Declarados y caros; el propio diseño los pone en
   "backlog posterior".
 - **Notificar al alumno que su nota está lista.** **CI-37 lo prohíbe explícitamente**: se

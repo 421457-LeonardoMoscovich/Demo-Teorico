@@ -77,12 +77,12 @@ public class DesafioController {
      * Es del Tema 03 guardarlo; el Tema 04 no lo conoce ni le hace falta.
      */
     public record Desafio(UUID desafioId, String titulo, UUID cursoCohorteId, String unidadId,
-                          ContenidoRef contenidoRef, boolean abierto) {}
+                          ContenidoRef contenidoRef, boolean abierto, boolean reintentosIlimitados) {}
 
     public record Intento(UUID entregaId, UUID desafioId, UUID alumnoId, int intento) {}
 
     public record CrearDesafioRequest(String titulo, UUID cursoCohorteId, String unidadId,
-                                      ContenidoRef contenidoRef) {}
+                                      ContenidoRef contenidoRef, Boolean reintentosIlimitados) {}
 
     /**
      * El front compone primero el contenido en el Tema 04 y despues crea el
@@ -93,8 +93,26 @@ public class DesafioController {
      */
     @PostMapping
     public Desafio crear(@RequestBody CrearDesafioRequest req) {
+        boolean ilimitados = Boolean.TRUE.equals(req.reintentosIlimitados());
+
+        // CI-47, y vive ACA y no en el Tema 04.
+        //
+        // La regla dice que un desafio con reintentos ilimitados no admite items
+        // de correccion humana. Estuvo un tiempo anotada como TODO del lado del
+        // 04, y era el lugar equivocado: por CI-03 la composicion del contenido
+        // ocurre ANTES de que el desafio exista, asi que en ese momento nadie
+        // sabe todavia cuantos reintentos va a admitir. El dato de los
+        // reintentos es del 03, y `correccion` ya viene en la ficha — es uno de
+        // los cinco campos. Con eso alcanza, y no hace falta que el 03 sepa una
+        // sola cosa mas sobre lo que hay adentro del cuestionario.
+        if (ilimitados && "DIFERIDA".equals(req.contenidoRef().correccion())) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "CI-47: un desafio con reintentos ilimitados no puede tener correccion diferida, "
+                    + "porque pondria al profesor a corregir la misma entrega infinitas veces");
+        }
+
         Desafio desafio = new Desafio(UUID.randomUUID(), req.titulo(), req.cursoCohorteId(),
-                req.unidadId(), req.contenidoRef(), true);
+                req.unidadId(), req.contenidoRef(), true, ilimitados);
         desafios.put(desafio.desafioId(), desafio);
         return desafio;
     }

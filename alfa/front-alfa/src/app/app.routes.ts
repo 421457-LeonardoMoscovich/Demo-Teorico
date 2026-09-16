@@ -41,6 +41,19 @@ export const routes: Routes = [
     loadComponent: () => import('./paginas/profesor-curso').then((m) => m.ProfesorCursoPage),
   },
   {
+    // Andamiaje de la demo, no del producto. Del profesor porque el envelope
+    // lleva notas y alumnoId de cualquiera.
+    path: 'profesor/demo',
+    canActivate: [exigeRol('PROFESOR')],
+    loadComponent: () => import('./paginas/demo').then((m) => m.DemoPage),
+  },
+  {
+    path: 'profesor/correcciones',
+    canActivate: [exigeRol('PROFESOR')],
+    loadComponent: () =>
+      import('./paginas/profesor-correcciones').then((m) => m.ProfesorCorreccionesPage),
+  },
+  {
     path: 'profesor/banco',
     canActivate: [exigeRol('PROFESOR')],
     loadComponent: () => import('./paginas/profesor-banco').then((m) => m.ProfesorBancoPage),
@@ -68,6 +81,11 @@ export const routes: Routes = [
     path: 'alumno/responder',
     canActivate: [exigeRol('ALUMNO')],
     loadComponent: () => import('./paginas/alumno-responder').then((m) => m.AlumnoResponderPage),
+  },
+  {
+    path: 'alumno/historial',
+    canActivate: [exigeRol('ALUMNO')],
+    loadComponent: () => import('./paginas/alumno-historial').then((m) => m.AlumnoHistorialPage),
   },
   {
     path: 'alumno/resultado',

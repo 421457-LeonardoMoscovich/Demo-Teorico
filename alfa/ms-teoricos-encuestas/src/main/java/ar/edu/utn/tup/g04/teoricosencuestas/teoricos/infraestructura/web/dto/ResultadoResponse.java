@@ -1,5 +1,6 @@
 package ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto;
 
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.Devolucion;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
@@ -22,19 +23,35 @@ public record ResultadoResponse(
         UUID desafioId,
         UUID alumnoId,
         int intento,
+        /** Null mientras el estado sea EN_ESPERA: la nota es del cuestionario entero o no es. */
         Integer nota,
         String estado,
         String corrector,
         int revision,
         List<ItemCorregido> detalle) {
 
+    /**
+     * `obtenido` y `correcto` en null significan que ese item todavia espera a
+     * un humano (D-01). Se modela como ausencia y no como un 0 con una bandera
+     * al lado: un 0 es una nota, y decirle 0 a algo que nadie corrigio todavia
+     * seria mentirle al alumno.
+     */
     public record ItemCorregido(
             UUID itemVersionId,
             int orden,
             String enunciado,
+            /** El payload de la version que vio el alumno: sirve para traducir ids a texto. */
+            JsonNode payload,
             int puntaje,
-            int obtenido,
-            boolean correcto,
-            JsonNode respuesta) {
+            Integer obtenido,
+            Boolean correcto,
+            boolean pendiente,
+            JsonNode respuesta,
+            /**
+             * La retroalimentacion (CI-58), ya recortada a lo que este alumno
+             * marco. Null cuando el item no tiene o cuando todavia lo espera un
+             * humano: no hay nada que explicar de algo que nadie leyo.
+             */
+            Devolucion devolucion) {
     }
 }

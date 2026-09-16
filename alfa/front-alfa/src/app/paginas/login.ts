@@ -34,7 +34,7 @@ import { SesionService } from '../core/sesion.service';
         </label>
 
         @if (error()) {
-          <p class="error">{{ error() }}</p>
+          <p class="error" role="alert">{{ error() }}</p>
         }
 
         <button type="submit" [disabled]="f.invalid || cargando()">

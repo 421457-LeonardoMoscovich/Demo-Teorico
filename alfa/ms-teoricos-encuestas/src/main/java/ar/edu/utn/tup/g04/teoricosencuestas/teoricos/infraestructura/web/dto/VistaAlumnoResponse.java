@@ -22,6 +22,20 @@ public record VistaAlumnoResponse(
         String titulo,
         int version,
         int puntajeTotal,
+        /**
+         * LIBRE | SECUENCIAL. El front sirve las consignas de a una y con esto
+         * decide si habilita el boton de volver. Es una regla de la evaluacion
+         * que eligio la profesora, no una preferencia del alumno, y por eso
+         * viaja con el cuestionario y no vive en el front.
+         *
+         * NO es una barrera de seguridad: quien quiera volver a una consigna
+         * que ya paso puede hacerlo con la consola del navegador, porque las
+         * preguntas ya estan en su maquina. Impedirlo de verdad exigiria servir
+         * de a una y guardar por donde va cada alumno, que es estado de lectura
+         * —lo que CI-19 justamente dice que no tenemos—. Lo que si es firme: la
+         * nota sale de lo que se entrega, no de como se navego.
+         */
+        String navegacion,
         List<ItemParaAlumno> items) {
 
     public record ItemParaAlumno(

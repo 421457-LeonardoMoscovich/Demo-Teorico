@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Lo que tiene que pasar:
  *   - se lo corrige contra LA VERSION QUE VIO, no contra la vigente;
  *   - la respuesta queda estampada con ese itemVersionId;
+ *   - el desglose le muestra el enunciado y el payload de ESA version;
  *   - el siguiente alumno que abra ya ve la version nueva.
  *
  * Esas tres cosas juntas son las que hacen que no haga falta congelar la
@@ -98,6 +99,13 @@ class EstampaDeVersionIT extends BaseIT {
         assertThat(detalle.get("enunciado").asText())
                 .as("el desglose muestra el enunciado que el alumno leyo, no el de hoy")
                 .isEqualTo("Version 1 del enunciado");
+        assertThat(detalle.get("payload").get("afirmacion").asText())
+                .as("y el payload tambien sale de la estampa: es lo que permite mostrar "
+                    + "\"Contestaste: Verdadero\" sobre la afirmacion que el alumno leyo")
+                .isEqualTo("Afirmacion de la version 1");
+        assertThat(detalle.has("criterio"))
+                .as("pero NUNCA el criterio: con reintentos ilimitados eso es copiar")
+                .isFalse();
 
         // Y el siguiente alumno que abra el MISMO cuestionario ya ve la v2:
         // la referencia es flotante, no pinneada.

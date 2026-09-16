@@ -20,5 +20,14 @@ public sealed interface RespuestaDeItem {
 
     record Ordenar(List<String> secuencia) implements RespuestaDeItem {}
 
+    record RespuestaCorta(String texto) implements RespuestaDeItem {}
+
+    /**
+     * Double y no String: el numero se parsea en el borde —donde el error es
+     * "eso no es un numero" y el alumno lo puede corregir— y no en el corrector,
+     * donde un texto invalido solo puede terminar en un cero silencioso.
+     */
+    record Numerica(Double valor) implements RespuestaDeItem {}
+
     record Abierta(String texto) implements RespuestaDeItem {}
 }

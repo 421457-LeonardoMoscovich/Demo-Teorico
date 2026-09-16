@@ -42,8 +42,10 @@ class CorreccionDeLosCuatroTiposTest {
 
         @Test
         void acertar_solo_una_de_dos_da_cero_y_no_la_mitad() {
-            // Todo o nada por item: el peso del item ya es la unidad de gradacion
-            // que eligio el profesor.
+            // Sin pesos el criterio sigue siendo todo o nada, y eso ahora es una
+            // afirmacion sobre la COMPATIBILIDAD: los items ya guardados en la
+            // base no tienen `pesos`, y CI-55 no les puede cambiar la nota.
+            // El parcial se prueba aparte, en PuntajeParcialPorOpcionTest.
             assertThat(corrector.corregir(TipoDeItem.OPCION_MULTIPLE, criterio,
                     new RespuestaDeItem.OpcionMultiple(List.of("a")), 40)).isZero();
         }

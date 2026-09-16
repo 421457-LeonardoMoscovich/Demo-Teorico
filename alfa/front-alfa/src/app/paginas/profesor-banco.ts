@@ -1,33 +1,64 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../core/api.service';
-import { ErrorApi, ItemDetalle, ItemResumen, TIPOS, TipoDeItem } from '../core/modelos';
+import { FormularioItemComponent } from './formulario-item';
+import {
+  ErrorApi,
+  EtiquetaConUso,
+  ItemResumen,
+  TIPOS,
+  TipoDeItem,
+  VistaPreviaItem,
+} from '../core/modelos';
 
-interface FilaSimple {
-  id: string;
-  texto: string;
-  correcta: boolean;
-}
-
-interface FilaPar {
-  id: string;
-  texto: string;
-  /** id del elemento de la derecha con el que empareja */
-  parId: string;
-}
+/**
+ * Cuantas preguntas se pintan de una. Seis y no diez: cada fila lleva
+ * enunciado, etiquetas y tres acciones, asi que diez ya no entran en una
+ * pantalla de portatil y volvemos al problema que la paginacion vino a sacar.
+ */
+const POR_PAGINA = 6;
 
 @Component({
   selector: 'app-profesor-banco',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, JsonPipe, FormularioItemComponent],
   template: `
-    <div class="columnas">
-      <section class="tarjeta">
+    @if (editando()) {
+      <section class="tarjeta ancho">
+        <div class="acciones-fila">
+          <button type="button" class="secundario" (click)="volverAlBanco()">
+            <span aria-hidden="true">←</span> Volver al banco
+          </button>
+        </div>
+        <app-formulario-item
+          [editarId]="editarId()"
+          (guardado)="alGuardar()"
+          (cancelado)="volverAlBanco()"
+        />
+      </section>
+    } @else {
+      <section class="tarjeta ancho">
         <h2>Banco de ítems</h2>
-        <p class="ayuda">
-          Cada ítem tiene identidad propia y contenido versionado: editar publica una versión nueva
-          y nunca toca lo ya respondido.
-        </p>
+        <details class="porque">
+          <summary>De quién es el banco, y qué pasa al editar</summary>
+          <div class="cuerpo">
+            <p class="ayuda">
+              Cada ítem tiene identidad propia y contenido versionado: editar publica una versión
+              nueva y nunca toca lo ya respondido.
+            </p>
+            <p class="ayuda">
+              El banco es <strong>tuyo, no de un curso</strong>: una pregunta no se asigna a
+              ninguna materia. Se asigna al armar el cuestionario, y ese cuestionario es el que se
+              cuelga de la unidad de un curso — por eso el mismo ítem puede entrar en dos cursos
+              distintos.
+            </p>
+          </div>
+        </details>
+
+        <div class="acciones-fila">
+          <button type="button" (click)="escribirNueva()">+ Escribir una pregunta nueva</button>
+        </div>
 
         <label class="filtro">
           Filtrar por tipo
@@ -39,190 +70,138 @@ interface FilaPar {
           </select>
         </label>
 
+        @if (conocidas().length > 0) {
+          <p class="ayuda">Filtrar por etiqueta</p>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip"
+              [class.activo]="porEtiqueta() === ''"
+              (click)="filtrarPor('')"
+            >
+              todas
+            </button>
+            @for (e of conocidas(); track e.etiqueta) {
+              <button
+                type="button"
+                class="chip"
+                [class.activo]="porEtiqueta() === e.etiqueta"
+                (click)="filtrarPor(e.etiqueta)"
+              >
+                {{ e.etiqueta }} · {{ e.cuantos }}
+              </button>
+            }
+          </div>
+        }
+
+        @if (error()) {
+          <p class="error" role="alert">{{ error()!.mensaje }}</p>
+        }
+        @if (ok()) {
+          <p class="ok" role="status">{{ ok() }}</p>
+        }
+
         @if (items().length === 0) {
-          <p class="vacio">
-            Todavía no hay ítems. Cargá el primero con el formulario de la derecha.
-          </p>
+          <p class="vacio">Todavía no hay ítems. Escribí el primero.</p>
         }
 
         <ul class="lista">
-          @for (i of items(); track i.id) {
-            <li>
+          @for (i of enPantalla(); track i.id; let idx = $index) {
+            <li [style.--orden]="idx">
               <div>
                 <span class="etiqueta">{{ etiqueta(i.tipo) }}</span>
+                @if (i.estado === 'BORRADOR') {
+                  <span class="etiqueta diferida">borrador</span>
+                }
                 <span class="version">v{{ i.version }}</span>
                 <p>{{ i.enunciado }}</p>
+                @if (i.etiquetas.length > 0) {
+                  <div class="chips">
+                    @for (e of i.etiquetas; track e) {
+                      <button type="button" class="chip" (click)="filtrarPor(e)">{{ e }}</button>
+                    }
+                  </div>
+                }
+
+                <!--
+                  La vista previa (CI-59). Lo que se pinta acá sale del MISMO
+                  endpoint que se le sirve al alumno en el examen, así que si
+                  alguna vez filtrara la clave de corrección, se vería acá.
+                -->
+                @if (previaDe() === i.id && previa(); as p) {
+                  <div class="previa">
+                    <p class="ayuda">
+                      <span class="fuente">Así lo ve el alumno</span>
+                      servido por el mismo endpoint que el examen
+                    </p>
+                    <p class="titulo-desafio">{{ p.enunciado }}</p>
+                    @for (o of opcionesDe(p); track o.id) {
+                      <label class="check">
+                        <input type="checkbox" disabled />
+                        {{ o.texto }}
+                      </label>
+                    }
+                    <details>
+                      <summary>Lo que viaja, tal cual</summary>
+                      <pre>{{ p | json }}</pre>
+                    </details>
+                  </div>
+                }
               </div>
               <div class="acciones-fila">
-                <button type="button" class="secundario" (click)="editar(i)">Editar</button>
-                <button class="peligro" type="button" (click)="darDeBaja(i)">Dar de baja</button>
+                @if (porDarDeBaja() === i.id) {
+                  <span class="ayuda">¿Seguro?</span>
+                  <button class="peligro" type="button" (click)="confirmarBaja(i)">
+                    Sí, dar de baja
+                  </button>
+                  <button type="button" class="secundario" (click)="porDarDeBaja.set(null)">
+                    Cancelar
+                  </button>
+                } @else {
+                  <button type="button" class="secundario" (click)="alternarPrevia(i)">
+                    {{ previaDe() === i.id ? 'Cerrar previa' : 'Vista previa' }}
+                  </button>
+                  <button type="button" class="secundario" (click)="editar(i.id)">Editar</button>
+                  <button class="peligro" type="button" (click)="porDarDeBaja.set(i.id)">
+                    Dar de baja
+                  </button>
+                }
               </div>
             </li>
           }
         </ul>
-      </section>
 
-      <section class="tarjeta">
-        @if (editando(); as e) {
-          <h2>Editar ítem</h2>
-          <p class="ayuda">
-            Guardar <strong>no modifica</strong> la versión {{ e.version }}: publica la
-            {{ e.version + 1 }} y deja la anterior intacta. Quien ya respondió sobre la
-            {{ e.version }} se sigue corrigiendo con esa.
-          </p>
-          <button type="button" class="secundario" (click)="cancelarEdicion()">
-            Cancelar y crear uno nuevo
-          </button>
-        } @else {
-          <h2>Nuevo ítem</h2>
-        }
-
-        <form (ngSubmit)="guardar()" #f="ngForm">
-          <label>
-            Tipo
-            <select
-              name="tipo"
-              [(ngModel)]="tipo"
-              (ngModelChange)="reiniciarPorTipo()"
-              [disabled]="editando() !== null"
+        <!--
+          Paginar y no scrollear: con doscientas preguntas, la pantalla larga no
+          es un problema de scroll sino de que no se encuentra nada. Los filtros
+          de arriba son la forma de buscar; esto es solo para no pintar
+          doscientas filas de una.
+        -->
+        @if (paginas() > 1) {
+          <div class="paginador">
+            <button
+              type="button"
+              class="secundario"
+              [disabled]="pagina() === 0"
+              (click)="pagina.set(pagina() - 1)"
             >
-              @for (t of tipos; track t.valor) {
-                <option [value]="t.valor">{{ t.etiqueta }}</option>
-              }
-            </select>
-          </label>
-
-          <label>
-            Enunciado
-            <textarea
-              name="enunciado"
-              rows="2"
-              [(ngModel)]="enunciado"
-              placeholder="La consigna que lee el alumno"
-            ></textarea>
-          </label>
-
-          @if (tipo === 'OPCION_MULTIPLE') {
-            <label class="check">
-              <input type="checkbox" name="multiple" [(ngModel)]="multiple" />
-              Admite más de una respuesta correcta
-            </label>
-
-            @for (o of opciones; track o.id; let i = $index) {
-              <div class="fila">
-                <input [name]="'op' + i" [(ngModel)]="o.texto" placeholder="Opción {{ i + 1 }}" />
-                <label class="check">
-                  <input
-                    [type]="multiple ? 'checkbox' : 'radio'"
-                    [name]="multiple ? 'ok' + i : 'ok'"
-                    [checked]="o.correcta"
-                    (change)="marcar(o)"
-                  />
-                  correcta
-                </label>
-                <button type="button" class="secundario" (click)="quitar(opciones, i)">×</button>
-              </div>
-            }
-            <button type="button" class="secundario" (click)="agregar(opciones, 'o')">
-              + agregar opción
+              <span aria-hidden="true">←</span> Anteriores
             </button>
-          }
-
-          @if (tipo === 'VERDADERO_FALSO') {
-            <label>
-              Afirmación
-              <input
-                name="afirmacion"
-                [(ngModel)]="afirmacion"
-                placeholder="La afirmación a juzgar"
-              />
-            </label>
-            <label>
-              Respuesta correcta
-              <select name="esVerdadero" [(ngModel)]="esVerdadero">
-                <option [ngValue]="true">Verdadero</option>
-                <option [ngValue]="false">Falso</option>
-              </select>
-            </label>
-          }
-
-          @if (tipo === 'EMPAREJAR') {
-            <p class="ayuda">Cargá primero la columna derecha; después emparejá cada concepto.</p>
-            <h3>Derecha</h3>
-            @for (d of derecha; track d.id; let i = $index) {
-              <div class="fila">
-                <input
-                  [name]="'der' + i"
-                  [(ngModel)]="d.texto"
-                  placeholder="Definición {{ i + 1 }}"
-                />
-                <button type="button" class="secundario" (click)="quitar(derecha, i)">×</button>
-              </div>
-            }
-            <button type="button" class="secundario" (click)="agregar(derecha, 'd')">
-              + agregar definición
+            <span class="ayuda" role="status" aria-live="polite">
+              {{ desde() + 1 }}–{{ hasta() }} de {{ items().length }}
+            </span>
+            <button
+              type="button"
+              class="secundario"
+              [disabled]="pagina() >= paginas() - 1"
+              (click)="pagina.set(pagina() + 1)"
+            >
+              Siguientes <span aria-hidden="true">→</span>
             </button>
-
-            <h3>Izquierda</h3>
-            @for (z of izquierda; track z.id; let i = $index) {
-              <div class="fila">
-                <input
-                  [name]="'izq' + i"
-                  [(ngModel)]="z.texto"
-                  placeholder="Concepto {{ i + 1 }}"
-                />
-                <select [name]="'par' + i" [(ngModel)]="z.parId">
-                  <option value="">empareja con…</option>
-                  @for (d of derecha; track d.id) {
-                    <option [value]="d.id">{{ d.texto || d.id }}</option>
-                  }
-                </select>
-                <button type="button" class="secundario" (click)="quitar(izquierda, i)">×</button>
-              </div>
-            }
-            <button type="button" class="secundario" (click)="agregar(izquierda, 'i')">
-              + agregar concepto
-            </button>
-          }
-
-          @if (tipo === 'ORDENAR') {
-            <p class="ayuda">Cargalos en el orden correcto. Al alumno se le muestran mezclados.</p>
-            @for (e of elementos; track e.id; let i = $index) {
-              <div class="fila">
-                <span class="posicion">{{ i + 1 }}</span>
-                <input [name]="'el' + i" [(ngModel)]="e.texto" placeholder="Paso {{ i + 1 }}" />
-                <button type="button" class="secundario" (click)="quitar(elementos, i)">×</button>
-              </div>
-            }
-            <button type="button" class="secundario" (click)="agregar(elementos, 'e')">
-              + agregar paso
-            </button>
-          }
-
-          @if (error()) {
-            <p class="error">
-              {{ error()!.mensaje }}
-              @if (error()!.campo) {
-                <span class="campo">({{ error()!.campo }})</span>
-              }
-            </p>
-          }
-          @if (ok()) {
-            <p class="ok">{{ ok() }}</p>
-          }
-
-          <button type="submit" [disabled]="guardando()">
-            {{
-              guardando()
-                ? 'Guardando…'
-                : editando()
-                  ? 'Publicar versión nueva'
-                  : 'Guardar ítem'
-            }}
-          </button>
-        </form>
+          </div>
+        }
       </section>
-    </div>
+    }
   `,
 })
 export class ProfesorBancoPage {
@@ -230,39 +209,61 @@ export class ProfesorBancoPage {
 
   readonly tipos = TIPOS;
   readonly items = signal<ItemResumen[]>([]);
+  /** Solo de las acciones de la lista: las del formulario las muestra el formulario. */
   readonly error = signal<ErrorApi | null>(null);
   readonly ok = signal('');
-  readonly guardando = signal(false);
 
   filtro: TipoDeItem | '' = '';
-  tipo: TipoDeItem = 'OPCION_MULTIPLE';
-  enunciado = '';
 
-  multiple = false;
-  opciones: FilaSimple[] = [];
+  /** La etiqueta por la que se esta filtrando. Vacio = todas. */
+  readonly porEtiqueta = signal('');
 
-  afirmacion = '';
-  esVerdadero = true;
+  /** El vocabulario del profesor, con el conteo de cada etiqueta. */
+  readonly conocidas = signal<EtiquetaConUso[]>([]);
 
-  izquierda: FilaPar[] = [];
-  derecha: FilaSimple[] = [];
-
-  elementos: FilaSimple[] = [];
-
-  private contador = 0;
+  /** La vista previa abierta, si hay alguna. */
+  readonly previa = signal<VistaPreviaItem | null>(null);
+  readonly previaDe = signal<string | null>(null);
 
   /**
-   * El item que se esta editando, o null si se esta creando uno nuevo.
+   * Que ítem está abierto en el formulario. null = uno nuevo.
    *
-   * Editar NO muta: publica la version siguiente y no toca ninguna anterior
-   * (D-04). Por eso la pantalla lo dice con todas las letras — es la regla mas
-   * facil de malinterpretar de todo el modulo.
+   * El formulario ocupa la pantalla entera en vez de una columna al costado: es
+   * largo —siete tipos, cada uno con lo suyo— y tenerlo siempre ahí obligaba a
+   * scrollear el banco entero para llegar a la lista. Son dos tareas, no una.
    */
-  readonly editando = signal<ItemDetalle | null>(null);
+  readonly editarId = signal<string | null>(null);
+  readonly editando = signal(false);
+
+  /** La pagina de la lista. Ocho por pagina entran sin scroll en un portátil. */
+  readonly pagina = signal(0);
+  readonly porPagina = POR_PAGINA;
+
+  readonly paginas = computed(() => Math.ceil(this.items().length / POR_PAGINA));
+  readonly desde = computed(() => this.pagina() * POR_PAGINA);
+  readonly hasta = computed(() => Math.min(this.desde() + POR_PAGINA, this.items().length));
+  readonly enPantalla = computed(() => this.items().slice(this.desde(), this.hasta()));
+
+  /** El item cuya baja se esta confirmando, o null. */
+  readonly porDarDeBaja = signal<string | null>(null);
 
   constructor() {
-    this.reiniciarPorTipo();
     this.cargar();
+  }
+
+  escribirNueva(): void {
+    this.editarId.set(null);
+    this.editando.set(true);
+  }
+
+  editar(id: string): void {
+    this.editarId.set(id);
+    this.editando.set(true);
+  }
+
+  volverAlBanco(): void {
+    this.editando.set(false);
+    this.editarId.set(null);
   }
 
   etiqueta(tipo: TipoDeItem): string {
@@ -270,217 +271,81 @@ export class ProfesorBancoPage {
   }
 
   cargar(): void {
-    this.api.items(this.filtro).subscribe((i) => this.items.set(i));
+    this.porDarDeBaja.set(null);
+    // Filtrar y volver a cargar empieza de nuevo en la primera pagina: quedarse
+    // en la cuarta de una lista que ahora tiene dos deja la pantalla vacia.
+    this.pagina.set(0);
+    this.api.items(this.filtro, this.porEtiqueta()).subscribe((i) => this.items.set(i));
+    this.api.etiquetas().subscribe({
+      next: (e) => this.conocidas.set(e),
+      error: () => {},
+    });
   }
 
-  reiniciarPorTipo(): void {
-    this.error.set(null);
-    this.ok.set('');
-    this.contador = 0;
-    this.opciones = [this.nueva('o'), this.nueva('o')];
-    this.derecha = [this.nueva('d'), this.nueva('d')];
-    this.izquierda = [this.nuevoPar(), this.nuevoPar()];
-    this.elementos = [this.nueva('e'), this.nueva('e')];
+  /** Clic en un chip: el mismo gesto filtra desde el listado o desde la fila. */
+  filtrarPor(etiqueta: string): void {
+    // Volver a tocar la etiqueta activa la saca. Sin esto, el unico modo de
+    // deshacer el filtro es encontrar el chip "todas", que puede haber
+    // quedado fuera de la pantalla.
+    this.porEtiqueta.set(this.porEtiqueta() === etiqueta ? '' : etiqueta);
+    this.cargar();
   }
 
-  private nueva(prefijo: string): FilaSimple {
-    return { id: prefijo + ++this.contador, texto: '', correcta: false };
-  }
-
-  private nuevoPar(): FilaPar {
-    return { id: 'i' + ++this.contador, texto: '', parId: '' };
-  }
-
-  agregar(lista: any[], prefijo: string): void {
-    lista.push(prefijo === 'i' ? this.nuevoPar() : this.nueva(prefijo));
-  }
-
-  quitar(lista: any[], i: number): void {
-    lista.splice(i, 1);
+  alGuardar(): void {
+    this.volverAlBanco();
+    this.cargar();
   }
 
   /**
-   * Carga un item del banco en el formulario para publicar una version nueva.
-   *
-   * El `tipo` NO se puede cambiar: vive en `item` y no en `item_version`, asi
-   * que es inmutable entre versiones por modelo. El select se deshabilita en
-   * vez de validarlo despues.
+   * Abre o cierra la vista previa. Se pide al backend cada vez y no se cachea:
+   * es barato, y si el profesor acaba de publicar una version nueva tiene que
+   * ver ESA, no la que estaba en memoria.
    */
-  editar(item: ItemResumen): void {
+  alternarPrevia(i: ItemResumen): void {
+    if (this.previaDe() === i.id) {
+      this.previaDe.set(null);
+      this.previa.set(null);
+      return;
+    }
+    this.previaDe.set(i.id);
+    this.previa.set(null);
+    this.api.vistaPrevia(i.id).subscribe({
+      next: (p) => this.previa.set(p),
+      error: () => {
+        this.previaDe.set(null);
+        this.error.set({
+          clave: 'ERROR',
+          campo: null,
+          mensaje: 'No se pudo traer la vista previa del ítem.',
+        });
+      },
+    });
+  }
+
+  /** Lo unico que la previa sabe pintar de a uno: las opciones, si el tipo tiene. */
+  opcionesDe(p: VistaPreviaItem): { id: string; texto: string }[] {
+    const carga = p.payload ?? {};
+    return carga.opciones ?? carga.elementos ?? carga.izquierda ?? [];
+  }
+
+  /**
+   * La unica accion destructiva de la pantalla, y por eso pide confirmacion en
+   * linea: `confirm()` bloquea el hilo del navegador y en una demo se nota.
+   */
+  confirmarBaja(item: ItemResumen): void {
+    this.porDarDeBaja.set(null);
     this.error.set(null);
-    this.ok.set('');
-    this.api.item(item.id).subscribe({
-      next: (d) => {
-        this.editando.set(d);
-        this.tipo = d.tipo;
-        this.enunciado = d.enunciado;
-        // Alto para que los ids nuevos no choquen con los que ya trae el item.
-        this.contador = 1000;
-        this.cargarFormulario(d);
+    this.api.bajaItem(item.id).subscribe({
+      next: () => {
+        this.ok.set('Ítem dado de baja. Lo ya respondido con él se sigue corrigiendo igual.');
+        this.cargar();
       },
       error: () =>
         this.error.set({
           clave: 'ERROR',
           campo: null,
-          mensaje: 'No se pudo abrir el ítem para editar.',
+          mensaje: 'No se pudo dar de baja el ítem.',
         }),
     });
   }
-
-  cancelarEdicion(): void {
-    this.editando.set(null);
-    this.enunciado = '';
-    this.afirmacion = '';
-    this.reiniciarPorTipo();
-  }
-
-  private cargarFormulario(d: ItemDetalle): void {
-    const p = d.payload ?? {};
-    const c = d.criterio ?? {};
-
-    switch (d.tipo) {
-      case 'OPCION_MULTIPLE': {
-        const correctas: string[] = c.correctas ?? [];
-        this.multiple = !!p.multiple;
-        this.opciones = (p.opciones ?? []).map((o: any) => ({
-          id: o.id,
-          texto: o.texto,
-          correcta: correctas.includes(o.id),
-        }));
-        break;
-      }
-      case 'VERDADERO_FALSO': {
-        this.afirmacion = p.afirmacion ?? '';
-        this.esVerdadero = c.esVerdadero === true;
-        break;
-      }
-      case 'EMPAREJAR': {
-        const pares: string[][] = c.pares ?? [];
-        this.derecha = (p.derecha ?? []).map((x: any) => ({
-          id: x.id,
-          texto: x.texto,
-          correcta: false,
-        }));
-        this.izquierda = (p.izquierda ?? []).map((z: any) => ({
-          id: z.id,
-          texto: z.texto,
-          parId: pares.find((par) => par[0] === z.id)?.[1] ?? '',
-        }));
-        break;
-      }
-      case 'ORDENAR': {
-        // El payload viaja MEZCLADO; el orden correcto es el del criterio, y es
-        // el que el profesor tiene que ver para poder corregirlo.
-        const secuencia: string[] = c.secuencia ?? [];
-        const porId = new Map<string, any>((p.elementos ?? []).map((e: any) => [e.id, e]));
-        this.elementos = secuencia
-          .map((id) => porId.get(id))
-          .filter(Boolean)
-          .map((e: any) => ({ id: e.id, texto: e.texto, correcta: false }));
-        break;
-      }
-    }
-  }
-
-  marcar(o: FilaSimple): void {
-    if (this.multiple) {
-      o.correcta = !o.correcta;
-      return;
-    }
-    this.opciones.forEach((x) => (x.correcta = false));
-    o.correcta = true;
-  }
-
-  guardar(): void {
-    this.error.set(null);
-    this.ok.set('');
-    this.guardando.set(true);
-
-    const cuerpo = {
-      tipo: this.tipo,
-      enunciado: this.enunciado,
-      ...this.payloadYCriterio(),
-    };
-
-    const enEdicion = this.editando();
-    const peticion = enEdicion
-      ? this.api.publicarVersion(enEdicion.id, cuerpo as any)
-      : this.api.crearItem(cuerpo as any);
-
-    peticion.subscribe({
-      next: (guardado) => {
-        this.guardando.set(false);
-        this.ok.set(
-          enEdicion
-            ? `Publicada la versión ${guardado.version}. La ${enEdicion.version} queda intacta.`
-            : 'Ítem guardado.',
-        );
-        this.editando.set(null);
-        this.enunciado = '';
-        this.afirmacion = '';
-        this.reiniciarPorTipo();
-        this.cargar();
-      },
-      error: (e) => {
-        this.guardando.set(false);
-        this.error.set(
-          e.error?.mensaje
-            ? e.error
-            : { clave: 'ERROR', campo: null, mensaje: 'No se pudo guardar.' },
-        );
-      },
-    });
-  }
-
-  private payloadYCriterio(): { payload: any; criterio: any } {
-    switch (this.tipo) {
-      case 'OPCION_MULTIPLE':
-        return {
-          payload: {
-            opciones: this.opciones.map((o) => ({ id: o.id, texto: o.texto })),
-            multiple: this.multiple,
-          },
-          criterio: { correctas: this.opciones.filter((o) => o.correcta).map((o) => o.id) },
-        };
-
-      case 'VERDADERO_FALSO':
-        return {
-          payload: { afirmacion: this.afirmacion },
-          criterio: { esVerdadero: this.esVerdadero },
-        };
-
-      case 'EMPAREJAR':
-        return {
-          payload: {
-            izquierda: this.izquierda.map((z) => ({ id: z.id, texto: z.texto })),
-            derecha: this.derecha.map((d) => ({ id: d.id, texto: d.texto })),
-          },
-          criterio: { pares: this.izquierda.map((z) => [z.id, z.parId]) },
-        };
-
-      case 'ORDENAR':
-        return {
-          // El payload va MEZCLADO: si mandáramos los elementos en el orden en
-          // que los cargó el profesor, el orden correcto viajaría dentro de la
-          // vista del alumno sin ser formalmente la clave de corrección.
-          payload: {
-            elementos: mezclar(this.elementos.map((e) => ({ id: e.id, texto: e.texto }))),
-          },
-          criterio: { secuencia: this.elementos.map((e) => e.id) },
-        };
-    }
-  }
-
-  darDeBaja(item: ItemResumen): void {
-    this.api.bajaItem(item.id).subscribe(() => this.cargar());
-  }
-}
-
-function mezclar<T>(lista: T[]): T[] {
-  const copia = [...lista];
-  for (let i = copia.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copia[i], copia[j]] = [copia[j], copia[i]];
-  }
-  return copia;
 }

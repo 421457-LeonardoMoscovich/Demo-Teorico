@@ -24,6 +24,20 @@ public sealed interface PayloadDeItem {
 
     record Ordenar(List<Opcion> elementos) implements PayloadDeItem {}
 
+    /**
+     * Lo unico que ve el alumno es la consigna: las respuestas aceptadas son
+     * clave de correccion y viven en el criterio (CI-17).
+     */
+    record RespuestaCorta(String consigna) implements PayloadDeItem {}
+
+    /**
+     * `unidad` es rotulo, no parte de la respuesta: se pinta al lado del input
+     * ("kg") y el alumno escribe solo el numero. Moodle permite pedir la unidad
+     * escrita y corregirla; no lo copiamos porque duplica la regla de
+     * correccion —hay que decidir si "Kg" vale como "kg"— para ganar poco.
+     */
+    record Numerica(String consigna, String unidad) implements PayloadDeItem {}
+
     /** Modelada para que el jsonb ya la admita. Fuera de la alfa (D-01). */
     record Abierta(String consigna, Integer extensionMaxima) implements PayloadDeItem {}
 

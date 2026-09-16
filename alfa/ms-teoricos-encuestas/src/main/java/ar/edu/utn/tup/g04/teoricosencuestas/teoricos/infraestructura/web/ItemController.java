@@ -7,9 +7,14 @@ import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.dominio.payload.MapeadorJso
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ItemEntity;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.persistencia.ItemVersionEntity;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.CrearItemRequest;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.EtiquetaResponse;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.ItemDetalleResponse;
 import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.ItemResumenResponse;
+import ar.edu.utn.tup.g04.teoricosencuestas.teoricos.infraestructura.web.dto.VistaAlumnoResponse;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -32,6 +38,8 @@ import java.util.UUID;
  * token y nunca de un parametro, asi que un GET del banco ajeno no se puede ni
  * siquiera expresar (RF-USR-07).
  */
+@Tag(name = "Banco de ítems")
+@SecurityRequirement(name = "token")
 @RestController
 @RequestMapping("/teoricos/items")
 public class ItemController {
@@ -61,10 +69,37 @@ public class ItemController {
         return detalle(banco.exigirPropio(identidad.id(), id), version);
     }
 
+    @Operation(summary = "El banco del profesor",
+            description = """
+                    Los dos filtros son opcionales y se combinan con Y: `?tipo=NUMERICA&etiqueta=concurrencia`
+                    trae las numéricas etiquetadas concurrencia.
+
+                    La etiqueta se compara normalizada —minúsculas, sin acentos—, así que
+                    `Concurrencia` encuentra lo etiquetado `concurrencia`.
+                    """)
     @GetMapping
-    public List<ItemResumenResponse> listar(@RequestParam(required = false) TipoDeItem tipo) {
-        return banco.listar(identidad.id(), tipo).stream()
-                .map(item -> resumen(item, banco.versionVigente(item)))
+    public List<ItemResumenResponse> listar(@RequestParam(required = false) TipoDeItem tipo,
+                                            @RequestParam(required = false) String etiqueta) {
+        List<ItemEntity> encontrados = banco.listar(identidad.id(), tipo, etiqueta);
+        Map<UUID, List<String>> porItem = banco.etiquetasDe(encontrados);
+        return encontrados.stream()
+                .map(item -> resumen(item, banco.versionVigente(item),
+                        porItem.getOrDefault(item.getId(), List.of())))
+                .toList();
+    }
+
+    @Operation(summary = "Las etiquetas que el profesor ya usa",
+            description = """
+                    El vocabulario propio, con cuántos ítems vigentes usa cada una. Alimenta el
+                    autocompletado al etiquetar y el filtro del banco.
+
+                    Va ordenado por uso y no alfabético: lo que el profesor etiqueta todo el
+                    tiempo tiene que estar arriba.
+                    """)
+    @GetMapping("/etiquetas")
+    public List<EtiquetaResponse> etiquetas() {
+        return banco.vocabulario(identidad.id()).stream()
+                .map(e -> new EtiquetaResponse(e.getEtiqueta(), e.getCuantos()))
                 .toList();
     }
 
@@ -74,21 +109,50 @@ public class ItemController {
         return detalle(item, banco.versionVigente(item));
     }
 
+    @Operation(summary = "El ítem como lo va a ver el alumno",
+            description = """
+                    Vista previa para el profesor, antes de componer (CI-59).
+
+                    **Devuelve la misma clase que el endpoint del alumno** (`ItemParaAlumno`,
+                    de `VistaAlumnoResponse`), y eso es lo que la hace valer: no es una
+                    maqueta de cómo se vería, es literalmente la proyección que se sirve en
+                    el examen. Si algún día filtrara un campo de corrección, filtraría en
+                    los dos lados o en ninguno — no puede haber una vista previa "limpia"
+                    sobre un endpoint que no lo está.
+
+                    El `orden` y el `puntaje` van en cero: los dos los decide el profesor al
+                    componer, y todavía no compuso nada.
+                    """)
+    @GetMapping("/{id}/vista-previa")
+    public VistaAlumnoResponse.ItemParaAlumno vistaPrevia(@PathVariable UUID id) {
+        ItemEntity item = banco.exigirPropio(identidad.id(), id);
+        ItemVersionEntity version = banco.versionVigente(item);
+        return new VistaAlumnoResponse.ItemParaAlumno(
+                version.getId(), item.getTipo(), version.getEnunciado(),
+                0, 0,
+                json.leerPayload(item.getTipo(), json.aNodo(version.getPayload())));
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void darDeBaja(@PathVariable UUID id) {
         banco.darDeBaja(identidad.id(), id);
     }
 
-    private ItemResumenResponse resumen(ItemEntity item, ItemVersionEntity version) {
+    private ItemResumenResponse resumen(ItemEntity item, ItemVersionEntity version,
+                                        List<String> etiquetas) {
         return new ItemResumenResponse(item.getId(), item.getTipo(), version.getEnunciado(),
-                version.getVersion(), item.getTipo().esAutocorregible());
+                version.getVersion(), item.getTipo().esAutocorregible(), item.getEstado(),
+                etiquetas);
     }
 
     private ItemDetalleResponse detalle(ItemEntity item, ItemVersionEntity version) {
         return new ItemDetalleResponse(item.getId(), item.getTipo(), version.getEnunciado(),
                 version.getVersion(), version.getId(),
                 json.aNodo(version.getPayload()),
-                version.getCriterio() == null ? null : json.aNodo(version.getCriterio()));
+                version.getCriterio() == null ? null : json.aNodo(version.getCriterio()),
+                version.getDevolucion() == null ? null : json.aNodo(version.getDevolucion()),
+                item.getEstado(),
+                banco.etiquetasDe(item.getId()));
     }
 }

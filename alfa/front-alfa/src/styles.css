@@ -23,6 +23,11 @@
   --violeta: #8b5cf6;
   --magenta: #ff2e93;
   --amarillo: #ffd60a;
+  /* El verde es el unico color que dice "salio bien" sin explicacion. Entra
+     recien ahora, y solo para eso: si se usara tambien de acento, dejaria de
+     significar algo. */
+  --verde: #39ff8b;
+  --verde-glow: #39ff8b99;
 
   --on-cian: #0b0716;
   --on-violeta: #0b0716;
@@ -43,6 +48,7 @@
   --glow-violeta: , 0 0 14px #8b5cf699;
   --glow-violeta-fuerte: , 0 0 22px #8b5cf699;
   --glow-violeta-suave: , 0 0 6px #8b5cf699;
+  --glow-verde: , 0 0 24px #39ff8b66;
   --glow-amarillo: , 0 0 14px #ffd60a99;
   --glow-amarillo-fuerte: , 0 0 22px #ffd60a99;
   --glow-amarillo-suave: , 0 0 6px #ffd60a99;
@@ -50,18 +56,31 @@
   --glow-foco: 0 0 0 3px #00e5ff33;
   --sombra-nota: 0 0 18px #8b5cf6aa;
 
-  --pixel: "Press Start 2P", ui-monospace, monospace;
-  --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --pixel: 'Press Start 2P', ui-monospace, monospace;
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radio: 4px;
+
+  /* El alto de la barra. Es un token porque tres reglas lo necesitan —la barra
+     fija, el tope de las columnas y su alto maximo— y descubrir a mano que una
+     quedo en 68 y la otra en 64 cuesta una tarde. */
+  --alto-barra: 68px;
+
+  /* Movimiento. Las curvas nativas de CSS son demasiado flojas para que un
+     boton arcade se sienta mecanico; estas son las de siempre. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --dur-press: 130ms;
+  --dur-color: 140ms;
+  --dur-entrada: 220ms;
+  --dur-salida: 180ms;
 
   color-scheme: dark;
 }
 
 /* El modo claro es el difícil: el cian sobre blanco es ilegible como TEXTO,
    así que acá abajo es relleno y borde, y el texto va en violeta o casi negro. */
-:root[data-tema="light"] {
+:root[data-tema='light'] {
   --fondo: #f8fafc;
   --papel: #ffffff;
   --papel-alt: #eef1f6;
@@ -73,6 +92,10 @@
   --violeta: #7c3aed;
   --magenta: #db2777;
   --amarillo: #ca8a04;
+  /* El verde neon sobre el papel blanco del cartel es casi invisible: en claro
+     baja a un verde que se lee como trazo. */
+  --verde: #12a150;
+  --verde-glow: transparent;
 
   --on-cian: #0b0716;
   --on-violeta: #ffffff;
@@ -90,6 +113,7 @@
   --glow-violeta: ;
   --glow-violeta-fuerte: ;
   --glow-violeta-suave: ;
+  --glow-verde: ;
   --glow-amarillo: ;
   --glow-amarillo-fuerte: ;
   --glow-amarillo-suave: ;
@@ -222,9 +246,14 @@ pre {
   align-items: center;
   gap: 28px;
   padding: 0 32px;
-  height: 68px;
+  height: var(--alto-barra);
   background: var(--papel);
   border-bottom: 2px solid var(--linea);
+  /* Fija: irse de una pantalla larga no puede costar dos scrolls, uno para
+     volver arriba y otro para llegar al link. */
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .barra .marca {
@@ -258,6 +287,18 @@ pre {
   border-bottom: 2px solid transparent;
   text-decoration: none;
   white-space: nowrap;
+}
+
+.barra a {
+  transition:
+    color var(--dur-color) ease,
+    border-bottom-color var(--dur-color) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .barra a:hover {
+    color: var(--tinta);
+  }
 }
 
 .barra a.activo {
@@ -344,6 +385,9 @@ textarea {
   color: var(--tinta);
   width: 100%;
   margin-top: 6px;
+  transition:
+    border-color var(--dur-color) ease,
+    box-shadow var(--dur-color) ease;
 }
 
 input:focus,
@@ -399,20 +443,32 @@ button,
   justify-content: center;
   gap: 8px;
   text-decoration: none;
-  transition: transform 0.06s ease;
+  /* Nunca `all`: la lista explicita evita que un dia entre en la transicion
+     una propiedad que dispara layout. */
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-press) var(--ease-out),
+    background-color var(--dur-color) ease,
+    border-color var(--dur-color) ease,
+    color var(--dur-color) ease;
   box-shadow: 4px 4px 0 var(--sombra) var(--glow-cian);
 }
 
-button:hover:not(:disabled),
-.boton:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--sombra) var(--glow-cian-fuerte);
+@media (hover: hover) and (pointer: fine) {
+  button:hover:not(:disabled),
+  .boton:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--sombra) var(--glow-cian-fuerte);
+  }
 }
 
 button:active:not(:disabled),
 .boton:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0 var(--sombra) var(--glow-cian-suave);
+  /* Asimetrico a proposito: el hundido es instantaneo —es la respuesta al
+     dedo— y la vuelta usa la duracion normal. Al reves se siente laggeado. */
+  transition-duration: 60ms;
 }
 
 button:disabled {
@@ -434,10 +490,12 @@ button.secundario {
   box-shadow: none;
 }
 
-button.secundario:hover:not(:disabled) {
-  background: var(--papel-alt);
-  transform: translate(-1px, -1px);
-  box-shadow: none;
+@media (hover: hover) and (pointer: fine) {
+  button.secundario:hover:not(:disabled) {
+    background: var(--papel-alt);
+    transform: translate(-1px, -1px);
+    box-shadow: none;
+  }
 }
 
 button.secundario:active:not(:disabled) {
@@ -454,10 +512,12 @@ button.peligro {
   box-shadow: none;
 }
 
-button.peligro:hover:not(:disabled) {
-  background: var(--papel-alt);
-  transform: translate(-1px, -1px);
-  box-shadow: none;
+@media (hover: hover) and (pointer: fine) {
+  button.peligro:hover:not(:disabled) {
+    background: var(--papel-alt);
+    transform: translate(-1px, -1px);
+    box-shadow: none;
+  }
 }
 
 .atajos {
@@ -485,9 +545,19 @@ button.peligro:hover:not(:disabled) {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  /* Los botones de fila en pixel font miden mas que media columna. Sin wrap se
+     salian de la tarjeta y se pisaban con la columna de al lado. */
+  flex-wrap: wrap;
   gap: 14px;
   padding: 16px 0;
   border-top: 2px solid var(--linea);
+}
+
+/* El texto se queda con el ancho sobrante y puede achicarse; min-width:0 es lo
+   que deja que un enunciado largo corte en vez de estirar la fila. */
+.lista li > div:first-child {
+  flex: 1 1 220px;
+  min-width: 0;
 }
 
 .lista li p {
@@ -498,8 +568,19 @@ button.peligro:hover:not(:disabled) {
 
 .acciones-fila {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
-  flex: none;
+  /* Se achica y envuelve antes que desbordar la tarjeta. */
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: auto;
+}
+
+/* Un numero no necesita el ancho de un renglon, y estirado deja la unidad
+   ("bases", "kg") pegada al borde derecho, lejos de lo que rotula. */
+.respuesta-numerica {
+  max-width: 220px;
 }
 
 .titulo-desafio {
@@ -619,10 +700,12 @@ button.peligro:hover:not(:disabled) {
   box-shadow: none;
 }
 
-.chip:hover:not(:disabled) {
-  transform: none;
-  box-shadow: none;
-  border-color: var(--violeta);
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover:not(:disabled) {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--violeta);
+  }
 }
 
 .chip.activo {
@@ -649,6 +732,7 @@ input.peso {
   margin: 20px 0;
   font-size: 13px;
   color: var(--tinta-tenue);
+  transition: border-color var(--dur-color) ease;
 }
 
 .totalizador strong {
@@ -656,6 +740,7 @@ input.peso {
   font-size: 22px;
   font-weight: 400;
   color: var(--violeta);
+  transition: color var(--dur-color) ease;
 }
 
 .totalizador span {
@@ -752,7 +837,7 @@ input.peso {
   white-space: nowrap;
 }
 
-:root[data-tema="light"] .fuente {
+:root[data-tema='light'] .fuente {
   /* El cian no se lee como texto sobre blanco: en claro el rotulo va en
      violeta y el cian queda de borde. */
   color: var(--violeta);
@@ -831,6 +916,15 @@ input.peso {
   border-radius: var(--radio);
   border-left: 3px solid transparent;
   margin-bottom: 2px;
+  transition:
+    background-color var(--dur-color) ease,
+    border-left-color var(--dur-color) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pregunta label.check:hover {
+    background: var(--papel-alt);
+  }
 }
 
 .pregunta label.check.elegida {
@@ -926,4 +1020,1171 @@ input.peso {
 .pregunta.mal .posicion {
   border-color: var(--magenta);
   color: var(--magenta);
+}
+
+/* ------------------------------------------------------------- el foco --- */
+
+/* Los inputs ya mostraban el foco; los botones no, y son la mitad de la
+   interfaz. Quien navega con teclado se quedaba sin saber dónde está parado.
+   `:focus-visible` y no `:focus`: con el mouse el anillo no aparece. */
+button:focus-visible,
+.boton:focus-visible,
+.barra a:focus-visible,
+.chip:focus-visible {
+  outline: 2px solid var(--cian);
+  outline-offset: 3px;
+}
+
+:root[data-tema='light'] button:focus-visible,
+:root[data-tema='light'] .boton:focus-visible,
+:root[data-tema='light'] .barra a:focus-visible,
+:root[data-tema='light'] .chip:focus-visible {
+  /* Mismo problema de siempre: el cian no se ve sobre blanco. */
+  outline-color: var(--violeta);
+}
+
+/* El desplazamiento de los botones al hover es decoración. Para quien pidió
+   menos movimiento en el sistema operativo, no vale la pena. */
+@media (prefers-reduced-motion: reduce) {
+  button,
+  .boton {
+    transition: none;
+  }
+
+  button:hover:not(:disabled),
+  .boton:hover,
+  button:active:not(:disabled),
+  .boton:active {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------ pantalla --- */
+
+/* Un solo breakpoint más, a 720px. Lo que se rompe abajo de eso son siempre
+   las mismas tres cosas: la barra de seis elementos, las filas que asumen que
+   entra todo a lo ancho, y la fuente pixel —que no achica sola y desborda. */
+@media (max-width: 720px) {
+  main {
+    padding: 20px 16px 48px;
+  }
+
+  h1 {
+    font-size: 15px;
+  }
+
+  h2 {
+    font-size: 13px;
+  }
+
+  .barra {
+    flex-wrap: wrap;
+    height: auto;
+    gap: 14px;
+    padding: 14px 16px;
+  }
+
+  /* Sin esto el separador empuja el nombre y el botón de salir fuera de la
+     pantalla en vez de dejarlos bajar a la línea siguiente. */
+  .barra .espacio {
+    flex-basis: 100%;
+    height: 0;
+  }
+
+  .tarjeta {
+    padding: 20px 18px;
+  }
+
+  .login {
+    width: 100%;
+  }
+
+  .cabecera-cuestionario,
+  .cabecera-resultado,
+  .lista li,
+  .linea-peso,
+  .fila,
+  .acciones-fila {
+    flex-wrap: wrap;
+  }
+
+  .acciones-fila {
+    flex: 1 1 100%;
+  }
+
+  /* La sangría de 40px que ordena el roadmap en escritorio deja las filas de
+     una unidad sin ancho útil en un teléfono. */
+  .descripcion-unidad,
+  .unidad .lista,
+  .unidad > button,
+  .tipos-desafio {
+    margin-left: 16px;
+  }
+
+  .atajos {
+    flex-wrap: wrap;
+  }
+
+  .atajos button {
+    flex: 1 1 100%;
+  }
+}
+
+/* ---------------------------------------------------------- entradas --- */
+
+/* Lo que APARECE despues de una accion —un error, un acuse, la ficha
+   publicada, la nota— hoy entra de golpe y empuja lo que hay debajo. Es el
+   caso clasico de cambio brusco: no se anima por lindo, se anima para que el
+   ojo entienda que apareció algo en vez de que la pagina saltó.
+
+   `@starting-style` y no keyframes: son elementos que el `@if` de Angular
+   monta y desmonta, y una transicion retoma desde donde esta si el usuario
+   vuelve a disparar la accion. Un keyframe reinicia desde cero. */
+
+.error,
+.ok,
+.ficha {
+  transition:
+    opacity var(--dur-entrada) var(--ease-out),
+    transform var(--dur-entrada) var(--ease-out);
+}
+
+@starting-style {
+  .error,
+  .ok,
+  .ficha {
+    opacity: 0;
+    /* -6px y no mas: el mensaje baja hasta su lugar, no vuela. */
+    transform: translateY(-6px);
+  }
+}
+
+/* El panel de tipos reemplaza al boton "+ Crear desafio" en el mismo lugar,
+   asi que crece DESDE ahi. El origen arriba a la izquierda es lo que lo ata
+   visualmente al control que lo abrio. */
+.tipos-desafio {
+  transform-origin: top left;
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
+}
+
+@starting-style {
+  .tipos-desafio {
+    opacity: 0;
+    /* Nunca desde scale(0): nada en el mundo real aparece de la nada. */
+    transform: scale(0.97) translateY(-4px);
+  }
+}
+
+/* La placa de la nota es el unico momento de la app que el alumno espera de
+   verdad. No se festeja —puede ser un 30— pero tampoco aparece como un dato
+   mas de la tabla: entra sola, un toque mas lenta que el resto. */
+.nota {
+  transition:
+    opacity 260ms var(--ease-out),
+    transform 260ms var(--ease-out);
+}
+
+@starting-style {
+  .nota {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+/* Va al final a proposito: para desactivar un `@starting-style` hay que
+   redeclararlo despues, no antes. Se conserva el fundido —que es lo que
+   comunica que algo apareció— y se saca todo el desplazamiento. */
+@media (prefers-reduced-motion: reduce) {
+  @starting-style {
+    .error,
+    .ok,
+    .ficha,
+    .tipos-desafio,
+    .nota {
+      transform: none;
+    }
+  }
+}
+
+/* ------------------------------------------------- correccion humana --- */
+
+/* El badge de la barra: cuantas correcciones esperan a la profesora. Al alumno
+   nunca se le avisa nada (CI-37), asi que este es el unico contador de la app. */
+.barra a.con-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  font-family: var(--pixel);
+  font-size: 10px;
+  min-width: 20px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--magenta);
+  color: #ffffff;
+  text-align: center;
+}
+
+/* Para lectores de pantalla: el "3" del badge solo no dice nada. */
+.sr-solo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.correccion {
+  border-top: 2px solid var(--linea);
+  padding: 22px 0;
+}
+
+.correccion:first-of-type {
+  border-top: none;
+}
+
+.correccion h3 {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Lo que escribio el alumno. En serif-neutro y con aire: es lo unico de toda
+   la app que hay que LEER despacio para poder puntuarlo. */
+.respuesta-alumno {
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  background: var(--papel-alt);
+  border-left: 3px solid var(--cian);
+  border-radius: var(--radio);
+  padding: 16px 18px;
+  margin: 12px 0;
+}
+
+.rubrica {
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--tinta-tenue);
+}
+
+.rubrica summary {
+  cursor: pointer;
+  font-family: var(--pixel);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.rubrica p {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  border: 2px dashed var(--linea);
+  border-radius: var(--radio);
+  line-height: 1.6;
+}
+
+.fila.puntuar {
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+/* ---- el estado de espera, del lado del alumno ---- */
+
+/* La placa sin nota. En amarillo y no en violeta: no es un resultado, es la
+   ausencia de uno, y tiene que leerse distinto de un cero. */
+.nota.esperando {
+  border-color: var(--amarillo);
+  color: var(--amarillo);
+  text-shadow: none;
+  font-size: 13px;
+}
+
+.nota.esperando .sufijo {
+  font-size: 11px;
+  color: var(--amarillo);
+  line-height: 1.8;
+  text-align: center;
+}
+
+.peso-pregunta.espera,
+.marca-espera {
+  color: var(--amarillo);
+  border-color: var(--amarillo);
+}
+
+.marca-espera {
+  font-family: var(--pixel);
+  font-size: 10px;
+  padding: 4px 10px;
+  border: 1px solid var(--amarillo);
+  border-radius: 999px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.pregunta.espera .posicion {
+  border-color: var(--amarillo);
+  color: var(--amarillo);
+}
+
+/* El contador de palabras de una respuesta abierta. */
+.contador-palabras {
+  margin: 8px 0 0;
+}
+
+.contador-palabras.pasado {
+  color: var(--amarillo);
+}
+
+/* Puntaje parcial: existe solo con correccion humana, porque los cuatro tipos
+   automaticos son todo o nada. En violeta tenue — ni el verde de correcta ni
+   el magenta de incorrecta, que es exactamente lo que quiere decir. */
+.marca-parcial {
+  font-family: var(--pixel);
+  font-size: 10px;
+  padding: 4px 10px;
+  border: 1px dashed var(--violeta);
+  border-radius: 999px;
+  color: var(--violeta);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Un envelope en el panel de demo. */
+.evento {
+  margin: 0 0 14px 40px;
+}
+
+.evento .ayuda {
+  margin-bottom: 6px;
+}
+
+/* Reutilizar un cuestionario ya compuesto. */
+.reutilizar {
+  border: 2px dashed var(--violeta);
+  border-radius: var(--radio);
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+
+.reutilizar h3 {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.reutilizar .fila {
+  border-top: 1px solid var(--linea);
+  padding-top: 10px;
+}
+
+/* ------------------------------------------------ entrada de la pagina --- */
+
+/* Cada navegacion monta el componente de la ruta como hermano del
+   `router-outlet`. Solo opacidad, y corta: la pagina entera desplazandose en
+   cada click cansa a la decima navegacion, y el contenido de adentro ya trae
+   su propio escalonado. Sin `display:block` el host es inline y el navegador
+   ignora cualquier transform que le pongamos. */
+
+/* El cruce real: la pantalla que se va y la que entra se superponen 180ms.
+   Solo opacidad —la animacion que trae el navegador por defecto—: un
+   desplazamiento lateral estaria mintiendo, porque la barra es un menu plano,
+   no una pila, y "Banco" no esta a la derecha de "Cursos" en ningun sentido.
+
+   Bajo `prefers-reduced-motion` el cruce se conserva: un fundido no es
+   movimiento, y es justo lo que evita el salto que la opcion quiere evitar. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+  animation-timing-function: var(--ease-out);
+}
+
+/* `display:block` siempre: el host de la ruta es inline por defecto y el
+   navegador ignora cualquier transform que se le ponga. */
+main > :not(router-outlet) {
+  display: block;
+}
+
+/* Respaldo para el navegador que todavia no tiene la API. No cruza nada —no
+   puede— pero la pantalla nueva entra fundida en vez de aparecer de golpe. */
+@supports not (view-transition-name: none) {
+  main > :not(router-outlet) {
+    transition: opacity 160ms var(--ease-out);
+  }
+
+  @starting-style {
+    main > :not(router-outlet) {
+      opacity: 0;
+    }
+  }
+}
+
+/* ------------------------------------------------- filas escalonadas --- */
+
+/* Las filas que llegan del backend no entran todas en el mismo frame:
+   escalonadas, el ojo lee "son N cosas separadas" en vez de "aparecio un
+   bloque". El tope en 6 es lo que evita que un banco de veinte preguntas
+   tarde un segundo entero en terminar de armarse. */
+
+.pregunta,
+.correccion,
+.lista > li,
+.evento {
+  --orden: 0;
+  transition:
+    opacity var(--dur-entrada) var(--ease-out),
+    transform var(--dur-entrada) var(--ease-out);
+  transition-delay: calc(min(var(--orden), 6) * 45ms);
+}
+
+@starting-style {
+  .pregunta,
+  .correccion,
+  .lista > li,
+  .evento {
+    opacity: 0;
+    /* 6px: la fila se acomoda en su lugar, no viaja hasta el. */
+    transform: translateY(6px);
+  }
+}
+
+/* ---- la fila corregida se va, no desaparece ---- */
+
+/* Es la unica salida de toda la app, y esta es la razon: cuando la profesora
+   puntua, la fila sale del arreglo y las de abajo pegan un salto hacia arriba.
+   Con tres pendientes en pantalla eso deja la duda de cual se fue. Corriendose
+   hacia afuera queda dicho. El reflow posterior sigue siendo instantaneo —para
+   colapsarlo habria que animar altura, y no vale ese precio aca. */
+
+.correccion.saliendo {
+  opacity: 0;
+  transform: translateX(-12px);
+  pointer-events: none;
+  /* Sin esto hereda el retraso del escalonado y la salida arranca tarde. */
+  transition-delay: 0s;
+  transition-duration: var(--dur-salida);
+}
+
+/* ---- la rubrica ---- */
+
+/* El `<details>` abre de golpe y empuja la fila de puntaje media pantalla
+   abajo. Se funde el contenido en vez de animar la altura: el salto del
+   contenedor ocurre igual, pero deja de leerse como un parpadeo. */
+
+.rubrica[open] p {
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+@starting-style {
+  .rubrica[open] p {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* ---- el badge de la barra ---- */
+
+.badge {
+  transition:
+    opacity var(--dur-entrada) var(--ease-out),
+    transform var(--dur-entrada) var(--ease-out);
+}
+
+@starting-style {
+  .badge {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* Un latido cuando el numero SUBE —nunca cuando baja, que eso es consecuencia
+   de lo que la profesora acaba de hacer. Keyframe y no transicion porque va y
+   vuelve, y se puede: el sondeo es cada diez segundos, esto no se dispara dos
+   veces seguidas. La clase se limpia en `animationend`, asi que el proximo
+   aviso reinicia limpio. */
+
+@keyframes latido {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.badge.pulso {
+  animation: latido 320ms var(--ease-out);
+}
+
+/* ---- menos movimiento ---- */
+
+/* Se conserva el fundido en todo —es lo que comunica que algo aparecio o se
+   fue— y se sacan el desplazamiento, el escalonado y el latido. */
+
+@media (prefers-reduced-motion: reduce) {
+  .pregunta,
+  .correccion,
+  .lista > li,
+  .evento {
+    transition-delay: 0s;
+  }
+
+  .correccion.saliendo {
+    transform: none;
+  }
+
+  .badge.pulso {
+    animation: none;
+  }
+
+  @starting-style {
+    .pregunta,
+    .correccion,
+    .lista > li,
+    .evento,
+    .rubrica[open] p,
+    .badge {
+      transform: none;
+    }
+  }
+}
+
+/* ------------------------------------------------------------ frontera --- */
+
+/* El bloque que dice lo que NO se configura en esta pantalla. Va en gris y con
+   borde punteado a proposito: es informacion, no un control: si tuviera el
+   tratamiento de una tarjeta activa, alguien va a intentar tocarlo. */
+
+.frontera {
+  border: 2px dashed var(--linea);
+  border-radius: var(--radio);
+  padding: 16px 18px;
+  margin: 20px 0;
+}
+
+.frontera h3 {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.frontera .ayuda {
+  margin-bottom: 14px;
+}
+
+.linea-frontera {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--tinta-tenue);
+  margin: 0 0 8px;
+}
+
+.linea-frontera:last-child {
+  margin-bottom: 0;
+}
+
+/* La referencia al contrato queda al final de la linea y no pegada al texto:
+   es una cita, no parte de la frase. */
+.linea-frontera .version {
+  margin-left: auto;
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .linea-frontera .version {
+    margin-left: 0;
+  }
+}
+
+/* El campo de devolucion cuelga de su opcion: sangrado y mas chico, para que
+   la fila de la opcion siga leyendose como la unidad principal. */
+.devolucion-opcion {
+  margin: -4px 0 12px 0;
+  font-size: 13px;
+}
+
+/* --------------------------------------------------------- devolucion --- */
+
+/* Lo que el profesor le explica al alumno una vez corregido (CI-58).
+   Sangrada y sobre papel-alt: es una voz distinta de la del sistema —la del
+   profesor— y tiene que leerse como un comentario al margen y no como un
+   campo mas del desglose. */
+
+.devolucion {
+  margin: 12px 0 0 40px;
+  padding: 14px 16px;
+  background: var(--papel-alt);
+  border-left: 3px solid var(--violeta);
+  border-radius: var(--radio);
+}
+
+.devolucion p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* La devolucion de una opcion arranca con la opcion, para que se entienda de
+   cual habla sin volver al enunciado. */
+.devolucion .por-opcion {
+  margin-top: 10px;
+  color: var(--tinta-tenue);
+}
+
+.devolucion .por-opcion .etiqueta {
+  /* El texto de una opcion puede ser largo; la pastilla no puede obligar a la
+     fila a no cortarse nunca. */
+  white-space: normal;
+  margin-right: 8px;
+}
+
+@media (max-width: 720px) {
+  .devolucion {
+    margin-left: 16px;
+  }
+}
+
+/* ------------------------------------------------------- vista previa --- */
+
+/* El item como lo va a ver el alumno (CI-59). Enmarcado en cian —el color del
+   rotulo de procedencia— porque es lo mismo que dice ese rotulo: esto no es
+   nuestra pantalla, es la del otro lado. */
+
+.previa {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border: 2px solid var(--cian);
+  border-radius: var(--radio);
+  background: var(--papel-alt);
+}
+
+.previa .ayuda {
+  margin-bottom: 12px;
+}
+
+.previa .titulo-desafio {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Las opciones van deshabilitadas: se miran, no se contestan. */
+.previa label.check {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.previa details {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--tinta-tenue);
+}
+
+.previa summary {
+  cursor: pointer;
+  font-family: var(--pixel);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.previa pre {
+  margin-top: 10px;
+  font-size: 11.5px;
+}
+
+/* ------------------------------------------------- cartel de confirmación - */
+/* El velo es oscuro en los DOS temas y no sigue a `--fondo`: es un foco, y un
+   foco necesita que lo de atrás se apague. En modo claro un velo blanco sobre
+   fondo blanco no taparía nada y el cartel no se leería como una capa. */
+
+.velo-confirmacion {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0b0716cc;
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  animation: velo-entra var(--dur-entrada) var(--ease-out) both;
+}
+
+.velo-confirmacion.yendose {
+  animation: velo-sale var(--dur-salida) var(--ease-out) both;
+}
+
+.cartel-confirmacion {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  max-width: 420px;
+  text-align: center;
+  padding: 32px 28px;
+  background: var(--papel);
+  border: 2px solid var(--verde);
+  border-radius: var(--radio);
+  box-shadow: 0 12px 40px #00000066 var(--glow-verde);
+  animation: cartel-entra var(--dur-entrada) var(--ease-out) both;
+}
+
+.tilde {
+  width: 76px;
+  height: 76px;
+  overflow: visible;
+  fill: none;
+  stroke: var(--verde);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 10px var(--verde-glow));
+}
+
+/* El aro se dibuja primero y el trazo entra atrás: se lee como un gesto que
+   termina, no como dos formas que aparecen juntas. */
+.tilde-aro {
+  stroke-dasharray: 145;
+  stroke-dashoffset: 145;
+  animation: trazar 420ms var(--ease-out) forwards;
+}
+
+.tilde-trazo {
+  stroke-dasharray: 34;
+  stroke-dashoffset: 34;
+  animation: trazar 260ms var(--ease-out) 300ms forwards;
+}
+
+.cartel-mensaje {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 12px;
+  line-height: 1.8;
+  letter-spacing: 0.5px;
+  color: var(--tinta);
+}
+
+.cartel-detalle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--tinta-tenue);
+}
+
+@keyframes velo-entra {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes velo-sale {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes cartel-entra {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes trazar {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Quien pidió menos movimiento igual tiene que VER el tilde: no se anima el
+   trazo, se muestra dibujado. Apagar la animación sin esto lo dejaría con
+   stroke-dashoffset intacto, o sea invisible. */
+@media (prefers-reduced-motion: reduce) {
+  .velo-confirmacion,
+  .velo-confirmacion.yendose,
+  .cartel-confirmacion {
+    animation: none;
+  }
+
+  .tilde-aro,
+  .tilde-trazo {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* -------------------------------------- una consigna por pantalla (alumno) - */
+
+/* Sola en la pantalla no necesita la linea que la separaba de la siguiente. */
+.pregunta.sola {
+  border-top: none;
+  padding-top: 8px;
+}
+
+/* Los pasos. Sirven de dos cosas a la vez: decir cuantas faltan —que es lo
+   que se pierde al mostrar de a una— y marcar cuales ya tienen respuesta. */
+.pasos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 14px;
+}
+
+.paso {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-family: var(--pixel);
+  font-size: 10px;
+  color: var(--tinta-tenue);
+  background: var(--papel-alt);
+  border: 2px solid var(--linea);
+  border-radius: var(--radio);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-color) var(--ease-out),
+    color var(--dur-color) var(--ease-out);
+}
+
+.paso.hecha {
+  color: var(--verde);
+  border-color: var(--verde);
+}
+
+.paso.actual {
+  color: var(--on-cian);
+  background: var(--cian);
+  border-color: var(--cian);
+  box-shadow: 0 0 0 1px var(--cian) var(--glow-cian-suave);
+}
+
+/* En SECUENCIAL todos los pasos menos el actual estan deshabilitados: no es un
+   boton roto, es el modo. Por eso no se atenua hasta desaparecer —sigue siendo
+   el mapa de cuanto falta— y solo se le saca el cursor de mano. */
+.paso:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.paso.actual:disabled {
+  opacity: 1;
+}
+
+.navegacion-consignas {
+  justify-content: space-between;
+  margin: 18px 0 4px;
+}
+
+.aviso-secuencial {
+  border-left: 2px solid var(--amarillo);
+  padding-left: 12px;
+}
+
+/* El selector de navegacion, en el armado. */
+.navegacion {
+  margin: 18px 0 6px;
+  padding: 14px 16px;
+  border: 2px solid var(--linea);
+  border-radius: var(--radio);
+}
+
+.navegacion legend {
+  font-family: var(--pixel);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--tinta-tenue);
+  padding: 0 6px;
+}
+
+.navegacion .ayuda-inline {
+  display: block;
+  font-size: 12.5px;
+  color: var(--tinta-tenue);
+}
+
+
+/* -------------------------------------------- barra de accion del armado - */
+/*
+  Pegada al pie de su columna: el total y Publicar se miran despues de CADA
+  peso que se cambia, y tenerlos al fondo obligaba a bajar, mirar, y volver a
+  subir por cada ajuste.
+
+  Va adentro de la columna —que es la que scrollea— y no fija a la ventana:
+  pertenece a este formulario, no a la pantalla.
+*/
+.barra-accion {
+  position: sticky;
+  /* -28px y no 0: el sticky se frena contra el borde del CONTENIDO, y la
+     tarjeta tiene 28px de padding abajo. Con 0 quedaba una franja donde se veia
+     pasar el texto por el costado de la barra. */
+  bottom: -28px;
+  z-index: 5;
+  display: grid;
+  gap: 12px;
+  /* Los margenes negativos son el padding de .tarjeta: la barra llega hasta el
+     borde de la columna, si no queda flotando con el fondo asomando a los
+     costados justo donde pasa el contenido que scrollea por debajo. */
+  margin: 20px -28px -28px;
+  padding: 16px 28px;
+  background: var(--papel);
+  border-top: 2px solid var(--linea);
+  /* La sombra hacia arriba dice que hay contenido pasando por debajo; sin ella
+     la barra se lee como el final de la lista y no como una capa. */
+  box-shadow: 0 -10px 18px -10px var(--sombra);
+}
+
+.barra-accion .totalizador {
+  margin: 0;
+}
+
+@media (max-width: 1080px) {
+  .barra-accion {
+    margin: 20px -20px -20px;
+    padding: 16px 20px;
+  }
+}
+
+/* ------------------------------------------------------- prosa plegada --- */
+/*
+  La explicacion de por que cada cosa es como es NO se borra: es la mitad del
+  trabajo y es lo que se defiende. Se pliega, que es otra cosa — sigue a un
+  clic, y deja de costar una pantalla de scroll cada vez que alguien entra a
+  cargar una pregunta.
+*/
+.porque {
+  margin: 0 0 20px;
+  border: 2px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--papel-alt);
+}
+
+.porque > summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-family: var(--pixel);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--tinta-tenue);
+  list-style: none;
+}
+
+.porque > summary::-webkit-details-marker {
+  display: none;
+}
+
+/*
+  El triangulito lo dibujamos con bordes, no con un glifo: el nativo no se
+  puede colorear, y `content: '▸'` no existe en Press Start 2P —cae al
+  fallback y se ve como un punto—.
+*/
+.porque > summary::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-right: 10px;
+  vertical-align: 1px;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid var(--tinta-tenue);
+  transition: transform var(--dur-color) var(--ease-out);
+}
+
+.porque[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.porque > summary:focus-visible {
+  outline: none;
+  box-shadow: var(--glow-foco);
+}
+
+.porque .cuerpo {
+  padding: 0 14px 4px;
+}
+
+.porque .cuerpo > :last-child {
+  margin-bottom: 14px;
+}
+
+
+/* ------------------------------------------------------------- el cajon - */
+/*
+  El banco se mira en un cajon y no en una columna fija al costado. Un catalogo
+  de treinta preguntas puesto en pantalla por si acaso es lo que hacia larga
+  esta pantalla: nadie lo lee entero, busca dos y las agrega.
+
+  Fixed y no sticky: es una capa sobre la pagina, no una parte de ella. Por eso
+  tampoco mueve nada de lo que hay debajo cuando se abre.
+*/
+.cajon-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: #0b071699;
+  animation: velo-entra var(--dur-entrada) var(--ease-out) both;
+}
+
+.cajon {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 31;
+  width: min(460px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--papel);
+  border-left: 2px solid var(--linea);
+  box-shadow: -12px 0 40px #00000055;
+  animation: cajon-entra var(--dur-entrada) var(--ease-out) both;
+}
+
+@keyframes cajon-entra {
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cajon,
+  .cajon-fondo {
+    animation: none;
+  }
+}
+
+.cajon-cabecera,
+.cajon-pie {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--papel);
+}
+
+.cajon-cabecera {
+  border-bottom: 2px solid var(--linea);
+}
+
+.cajon-cabecera h3 {
+  margin-right: auto;
+}
+
+.cajon-pie {
+  border-top: 2px solid var(--linea);
+}
+
+/* Lo unico que scrollea es la lista, y eso es lo que un cajon SI puede hacer:
+   es una capa entera, no una caja perdida adentro de la pagina. */
+.cajon-cuerpo {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  scrollbar-gutter: stable;
+}
+
+.buscador {
+  margin-bottom: 14px;
+}
+
+.cajon .lista li {
+  padding: 4px 0;
+}
+
+.cajon label.check {
+  align-items: flex-start;
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .cajon {
+    width: 100vw;
+    border-left: none;
+  }
+}
+
+/* ------------------------------------------------------ regla de sorteo - */
+
+.regla-sorteo {
+  margin: 18px 0;
+  padding: 16px 18px;
+  border: 2px dashed var(--violeta);
+  border-radius: var(--radio);
+  background: var(--papel-alt);
+}
+
+.regla-sorteo.mal {
+  border-color: var(--magenta);
+}
+
+.regla-sorteo h3 {
+  margin-bottom: 12px;
+}
+
+.regla-sorteo .fila {
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.regla-sorteo label {
+  margin-bottom: 0;
+}
+
+/* La etiqueta elegible del cajon de sorteo: una fila entera clickeable. */
+.etiqueta-sorteable {
+  width: 100%;
+  justify-content: space-between;
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 14px;
+  background: var(--papel-alt);
+  border: 2px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  color: var(--tinta);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .etiqueta-sorteable:hover:not(:disabled) {
+    border-color: var(--cian);
+  }
+}
+
+.etiqueta-sorteable:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* --------------------------------------------------------- paginador --- */
+
+.paginador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 2px solid var(--linea);
+}
+
+.paginador .ayuda {
+  margin: 0;
 }
